@@ -41,7 +41,6 @@
     <nav class="filters-bar">
         <div class="filter-group">Día <select id="f0"><option value="">Todos</option></select></div>
         <div class="filter-group">Responsable <select id="f1"><option value="">Todos</option></select></div>
-        <div class="filter-group">Espacio <select id="f3"><option value="">Todos</option></select></div>
     </nav>
 
     <div class="table-container">
@@ -113,15 +112,15 @@
                 opts.forEach(v => { s.innerHTML += `<option value="${v}">${v}</option>`; });
                 s.onchange = filter;
             };
-            make('f0', 0); make('f1', 1); make('f3', 3);
+            make('f0', 0); // Día
+            make('f1', 1); // Responsable
         }
 
         function filter() {
             const v0 = document.getElementById('f0').value;
             const v1 = document.getElementById('f1').value;
-            const v3 = document.getElementById('f3').value;
             const filtered = rawData.filter(r => 
-                (!v0 || r[0] === v0) && (!v1 || r[1] === v1) && (!v3 || r[3] === v3)
+                (!v0 || r[0] === v0) && (!v1 || r[1] === v1)
             );
             draw(filtered);
         }
