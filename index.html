@@ -22,11 +22,10 @@
         tbody tr { display: flex; align-items: center; border-bottom: 1px solid #eee; transition: 0.3s; }
         tbody tr.completed { opacity: 0.3; background: #f0f0f0; }
         tbody tr.completed td { text-decoration: line-through; }
-        td { padding: 15px 10px; flex: 1; font-size: 14px; margin: 0 5px; }
+        td { padding: 15px 10px; flex: 1; font-size: 13px; margin: 0 5px; }
         .col-necesidad { flex: 2; font-weight: bold; }
         .col-notas { flex: 1.5; font-size: 12px; }
         .col-check { flex: 0.4; text-align: center; }
-        .badge { background: var(--badge-bg); color: white; padding: 3px 8px; border-radius: 4px; font-size: 11px; }
         .check-btn { width: 25px; height: 25px; border-radius: 50%; border: 2px solid var(--badge-bg); cursor: pointer; display: inline-block; }
         tr.completed .check-btn { background: var(--success-color); border-color: var(--success-color); position: relative; }
         tr.completed .check-btn::after { content: '✓'; color: white; position: absolute; left: 5px; top: 0; }
@@ -70,17 +69,13 @@
                 download: true,
                 complete: function(res) {
                     const processed = [];
-                    // r[3] es la columna ESPACIO. Si tiene texto, procesamos la fila.
                     res.data.forEach((r, i) => {
                         if (i === 0 || (!r[3] && !r[4])) return;
-
                         if (r[0] && r[0].trim() !== "") lastDia = r[0].trim();
                         if (r[1] && r[1].trim() !== "") lastResp = r[1].trim();
                         if (r[2] && r[2].trim() !== "") lastHora = r[2].trim();
-
                         processed.push([lastDia, lastResp, lastHora, r[3], r[4], r[5], r[6]]);
                     });
-
                     rawData = processed;
                     draw(rawData);
                     fill(rawData);
@@ -100,7 +95,7 @@
                     <td>${r[2] || ''}</td>
                     <td style="text-transform:uppercase"><b>${r[3] || ''}</b></td>
                     <td class="col-necesidad">${r[4] ? r[4].replace(/\n/g, '<br>') : ''}</td>
-                    <td>${r[5] ? '<span class="badge">'+r[5]+'</span>' : ''}</td>
+                    <td>${r[5] || ''}</td>
                     <td class="col-notas">${r[6] || ''}</td>
                     <td class="col-check"><div class="check-btn" onclick="done(${i})"></div></td>
                 `;
@@ -130,7 +125,6 @@
             );
             draw(filtered);
         }
-
         window.onload = load;
     </script>
 </body>
