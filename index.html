@@ -1,5 +1,6 @@
 <script>
-    const url = 'https://docs.google.com/spreadsheets/d/e/2PACX-1vQAjbZFpNcEopTvKwlp2Nn6EpFWNPAf3hMK0vc_NRM5K3NhSTe73DsHUjEV3YjKGWT4auUjQ3kXpucf/pub?gid=0&single=true&output=csv';
+    // Usamos un número de versión aleatorio para saltar el caché del navegador
+    const url = 'https://docs.google.com/spreadsheets/d/e/2PACX-1vQAjbZFpNcEopTvKwlp2Nn6EpFWNPAf3hMK0vc_NRM5K3NhSTe73DsHUjEV3YjKGWT4auUjQ3kXpucf/pub?gid=0&single=true&output=csv&cache=' + Math.random();
 
     let rawData = [];
     let lastDia = "";
@@ -10,30 +11,35 @@
         Papa.parse(url, {
             download: true,
             complete: function(res) {
-                // Procesamos los datos para rellenar los huecos en blanco (celdas combinadas)
                 const processed = [];
-                const rows = res.data.slice(1); // Ignorar cabecera
+                // Buscamos dónde empiezan realmente los datos ignorando filas vacías al inicio
+                const rows = res.data;
+                
+                rows.forEach((r, index) => {
+                    // Ignoramos la fila de encabezados (la que dice DIA, RESPONSABLE...)
+                    if (index === 0) return;
+                    
+                    // Si la fila no tiene NADA en la columna de ESPACIO (r[3]) o NECESIDAD (r[4]), 
+                    // la saltamos, PERO seguimos procesando las de abajo.
+                    if (!r[3] && !r[4]) return;
 
-                rows.forEach(r => {
-                    // Si la fila está totalmente vacía, la ignoramos
-                    if (r.length < 4 || !r[3]) return; 
-
-                    // Lógica de "memoria" para celdas vacías
-                    if (r[0] && r[0].trim() !== "") lastDia = r[0];
-                    if (r[1] && r[1].trim() !== "") lastResp = r[1];
-                    if (r[2] && r[2].trim() !== "") lastHora = r[2];
+                    // Lógica de "memoria" para celdas combinadas o vacías
+                    if (r[0] && r[0].trim() !== "") lastDia = r[0].trim();
+                    if (r[1] && r[1].trim() !== "") lastResp = r[1].trim();
+                    if (r[2] && r[2].trim() !== "") lastHora = r[2].trim();
 
                     processed.push([
-                        lastDia,    // Día
-                        lastResp,   // Responsable
-                        lastHora,   // Horario
-                        r[3],       // Espacio
-                        r[4],       // Necesidad
-                        r[5],       // Info
-                        r[6]        // Notas
+                        lastDia || "LUNES", // Por si la primera está vacía
+                        lastResp || "-",
+                        lastHora || "-",
+                        r[3] ? r[3].trim() : "",
+                        r[4] ? r[4].trim() : "",
+                        r[5] ? r[5].trim() : "",
+                        r[6] ? r[6].trim() : ""
                     ]);
                 });
 
+                console.log("Datos procesados correctamente:", processed);
                 rawData = processed;
                 draw(rawData);
                 fill(rawData);
@@ -44,15 +50,21 @@
     function draw(data) {
         const container = document.getElementById('content');
         container.innerHTML = '';
+        
+        if (data.length === 0) {
+            container.innerHTML = '<tr><td colspan="8" style="text-align:center; padding:20px;">Cargando datos o no se encontraron filas válidas...</td></tr>';
+            return;
+        }
+
         data.forEach((r, i) => {
             const tr = document.createElement('tr');
             tr.id = 'r' + i;
             tr.innerHTML = `
-                <td><b>${r[0] || ''}</b></td>
-                <td><b>${r[1] || ''}</b></td>
-                <td>${r[2] || ''}</td>
-                <td style="text-transform:uppercase"><b>${r[3] || ''}</b></td>
-                <td class="col-necesidad">${r[4] || ''}</td>
+                <td><b>${r[0]}</b></td>
+                <td><b>${r[1]}</b></td>
+                <td>${r[2]}</td>
+                <td style="text-transform:uppercase"><b>${r[3]}</b></td>
+                <td class="col-necesidad">${r[4].replace(/\n/g, '<br>')}</td>
                 <td>${r[5] ? '<span class="badge">'+r[5]+'</span>' : ''}</td>
                 <td class="col-notas">${r[6] || ''}</td>
                 <td class="col-check"><div class="check-btn" onclick="done(${i})"></div></td>
@@ -66,8 +78,8 @@
     function fill(data) {
         const make = (id, idx) => {
             const s = document.getElementById(id);
-            if (s.options.length > 1) return; // Evitar duplicar filtros
-            const opts = [...new Set(data.map(r => r[idx]))].filter(v => v && v.trim() !== "");
+            if (s.options.length > 1) return;
+            const opts = [...new Set(data.map(r => r[idx]))].filter(v => v && v.trim() !== "" && v !== "-");
             opts.forEach(v => { s.innerHTML += `<option value="${v}">${v}</option>`; });
             s.onchange = filter;
         };
