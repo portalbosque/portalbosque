@@ -1,122 +1,88 @@
-<!DOCTYPE html>
-<html lang="es">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Seteos Logísticos - Portal Bosque</title>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/PapaParse/5.3.2/papaparse.min.js"></script>
-    <style>
-        :root {
-            --header-bg: #3a4d4a; --filter-bg: #e9e9b3; --text-dark: #333;
-            --border-color: #000; --badge-bg: #52635f; --success-color: #28a745;
-        }
-        body { font-family: sans-serif; margin: 0; background: #fff; color: var(--text-dark); }
-        .main-header { background: var(--header-bg); color: white; padding: 15px 40px; display: flex; justify-content: space-between; align-items: center; }
-        .filters-bar { background: var(--filter-bg); padding: 15px 40px; display: flex; flex-wrap: wrap; gap: 20px; }
-        .filter-group { display: flex; align-items: center; gap: 10px; font-weight: bold; }
-        select { padding: 6px; border-radius: 20px; border: 1px solid #ccc; min-width: 120px; }
-        .table-container { padding: 20px 40px; overflow-x: auto; }
-        table { width: 100%; border-collapse: collapse; min-width: 900px; }
-        thead tr { display: flex; border-bottom: 2px solid #000; padding-bottom: 10px; }
-        th { background: var(--badge-bg); color: white; padding: 10px; border-radius: 20px; flex: 1; margin: 0 5px; font-size: 14px; }
-        tbody tr { display: flex; align-items: center; border-bottom: 1px solid #eee; transition: 0.3s; }
-        tbody tr.completed { opacity: 0.3; background: #f0f0f0; }
-        tbody tr.completed td { text-decoration: line-through; }
-        td { padding: 15px 10px; flex: 1; font-size: 14px; margin: 0 5px; }
-        .col-necesidad { flex: 2; font-weight: bold; }
-        .col-notas { flex: 1.5; font-size: 12px; }
-        .col-check { flex: 0.4; text-align: center; }
-        .badge { background: var(--badge-bg); color: white; padding: 3px 8px; border-radius: 4px; font-size: 11px; }
-        .check-btn { width: 25px; height: 25px; border-radius: 50%; border: 2px solid var(--badge-bg); cursor: pointer; display: inline-block; }
-        tr.completed .check-btn { background: var(--success-color); border-color: var(--success-color); position: relative; }
-        tr.completed .check-btn::after { content: '✓'; color: white; position: absolute; left: 5px; top: 0; }
-    </style>
-</head>
-<body>
+<script>
+    const url = 'https://docs.google.com/spreadsheets/d/e/2PACX-1vQAjbZFpNcEopTvKwlp2Nn6EpFWNPAf3hMK0vc_NRM5K3NhSTe73DsHUjEV3YjKGWT4auUjQ3kXpucf/pub?gid=0&single=true&output=csv';
 
-    <header class="main-header">
-        <div><h1 style="margin:0; font-size:24px; text-transform:uppercase;">Portal<br><span style="font-weight:normal">Bosque</span></h1></div>
-        <div style="text-align:right"><h2>Seteos Logísticos</h2><p>Ciclo Otoño 2026</p></div>
-    </header>
+    let rawData = [];
+    let lastDia = "";
+    let lastResp = "";
+    let lastHora = "";
 
-    <nav class="filters-bar">
-        <div class="filter-group">Día <select id="f0"><option value="">Todos</option></select></div>
-        <div class="filter-group">Responsable <select id="f1"><option value="">Todos</option></select></div>
-        <div class="filter-group">Espacio <select id="f3"><option value="">Todos</option></select></div>
-    </nav>
+    async function load() {
+        Papa.parse(url, {
+            download: true,
+            complete: function(res) {
+                // Procesamos los datos para rellenar los huecos en blanco (celdas combinadas)
+                const processed = [];
+                const rows = res.data.slice(1); // Ignorar cabecera
 
-    <div class="table-container">
-        <table>
-            <thead>
-                <tr>
-                    <th>Día</th><th>Responsable</th><th>Horario</th><th>Espacio</th>
-                    <th style="flex:2">Necesidad</th><th>Info</th><th style="flex:1.5">Notas</th><th style="flex:0.4">Ok</th>
-                </tr>
-            </thead>
-            <tbody id="content"></tbody>
-        </table>
-    </div>
+                rows.forEach(r => {
+                    // Si la fila está totalmente vacía, la ignoramos
+                    if (r.length < 4 || !r[3]) return; 
 
-    <script>
-        const url = 'https://docs.google.com/spreadsheets/d/e/2PACX-1vQAjbZFpNcEopTvKwlp2Nn6EpFWNPAf3hMK0vc_NRM5K3NhSTe73DsHUjEV3YjKGWT4auUjQ3kXpucf/pub?gid=0&single=true&output=csv';
+                    // Lógica de "memoria" para celdas vacías
+                    if (r[0] && r[0].trim() !== "") lastDia = r[0];
+                    if (r[1] && r[1].trim() !== "") lastResp = r[1];
+                    if (r[2] && r[2].trim() !== "") lastHora = r[2];
 
-        let rawData = [];
+                    processed.push([
+                        lastDia,    // Día
+                        lastResp,   // Responsable
+                        lastHora,   // Horario
+                        r[3],       // Espacio
+                        r[4],       // Necesidad
+                        r[5],       // Info
+                        r[6]        // Notas
+                    ]);
+                });
 
-        async function load() {
-            Papa.parse(url, {
-                download: true,
-                complete: function(res) {
-                    // results.data[0] son los encabezados, los ignoramos
-                    rawData = res.data.slice(1).filter(r => r[0]); 
-                    draw(rawData);
-                    fill(rawData);
-                }
-            });
-        }
+                rawData = processed;
+                draw(rawData);
+                fill(rawData);
+            }
+        });
+    }
 
-        function draw(data) {
-            const container = document.getElementById('content');
-            container.innerHTML = '';
-            data.forEach((r, i) => {
-                const tr = document.createElement('tr');
-                tr.id = 'r' + i;
-                tr.innerHTML = `
-                    <td><b>${r[0] || ''}</b></td>
-                    <td><b>${r[1] || ''}</b></td>
-                    <td>${r[2] || ''}</td>
-                    <td style="text-transform:uppercase"><b>${r[3] || ''}</b></td>
-                    <td class="col-necesidad">${r[4] || ''}</td>
-                    <td>${r[5] ? '<span class="badge">'+r[5]+'</span>' : ''}</td>
-                    <td class="col-notas">${r[6] || ''}</td>
-                    <td class="col-check"><div class="check-btn" onclick="done(${i})"></div></td>
-                `;
-                container.appendChild(tr);
-            });
-        }
+    function draw(data) {
+        const container = document.getElementById('content');
+        container.innerHTML = '';
+        data.forEach((r, i) => {
+            const tr = document.createElement('tr');
+            tr.id = 'r' + i;
+            tr.innerHTML = `
+                <td><b>${r[0] || ''}</b></td>
+                <td><b>${r[1] || ''}</b></td>
+                <td>${r[2] || ''}</td>
+                <td style="text-transform:uppercase"><b>${r[3] || ''}</b></td>
+                <td class="col-necesidad">${r[4] || ''}</td>
+                <td>${r[5] ? '<span class="badge">'+r[5]+'</span>' : ''}</td>
+                <td class="col-notas">${r[6] || ''}</td>
+                <td class="col-check"><div class="check-btn" onclick="done(${i})"></div></td>
+            `;
+            container.appendChild(tr);
+        });
+    }
 
-        function done(i) { document.getElementById('r'+i).classList.toggle('completed'); }
+    function done(i) { document.getElementById('r'+i).classList.toggle('completed'); }
 
-        function fill(data) {
-            const make = (id, idx) => {
-                const s = document.getElementById(id);
-                const opts = [...new Set(data.map(r => r[idx]))].filter(v => v);
-                opts.forEach(v => { s.innerHTML += `<option value="${v}">${v}</option>`; });
-                s.onchange = filter;
-            };
-            make('f0', 0); make('f1', 1); make('f3', 3);
-        }
+    function fill(data) {
+        const make = (id, idx) => {
+            const s = document.getElementById(id);
+            if (s.options.length > 1) return; // Evitar duplicar filtros
+            const opts = [...new Set(data.map(r => r[idx]))].filter(v => v && v.trim() !== "");
+            opts.forEach(v => { s.innerHTML += `<option value="${v}">${v}</option>`; });
+            s.onchange = filter;
+        };
+        make('f0', 0); make('f1', 1); make('f3', 3);
+    }
 
-        function filter() {
-            const v0 = document.getElementById('f0').value;
-            const v1 = document.getElementById('f1').value;
-            const v3 = document.getElementById('f3').value;
-            const filtered = rawData.filter(r => 
-                (!v0 || r[0] === v0) && (!v1 || r[1] === v1) && (!v3 || r[3] === v3)
-            );
-            draw(filtered);
-        }
+    function filter() {
+        const v0 = document.getElementById('f0').value;
+        const v1 = document.getElementById('f1').value;
+        const v3 = document.getElementById('f3').value;
+        const filtered = rawData.filter(r => 
+            (!v0 || r[0] === v0) && (!v1 || r[1] === v1) && (!v3 || r[3] === v3)
+        );
+        draw(filtered);
+    }
 
-        window.onload = load;
-    </script>
-</body>
-</html>
+    window.onload = load;
+</script>
