@@ -7,222 +7,116 @@
     <script src="https://cdnjs.cloudflare.com/ajax/libs/PapaParse/5.3.2/papaparse.min.js"></script>
     <style>
         :root {
-            --header-bg: #3a4d4a;
-            --filter-bg: #e9e9b3;
-            --text-dark: #333;
-            --border-color: #000;
-            --badge-bg: #52635f;
-            --success-color: #28a745;
+            --header-bg: #3a4d4a; --filter-bg: #e9e9b3; --text-dark: #333;
+            --border-color: #000; --badge-bg: #52635f; --success-color: #28a745;
         }
-
-        body {
-            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-            margin: 0; padding: 0; background-color: #fff; color: var(--text-dark);
-        }
-
-        .main-header {
-            background-color: var(--header-bg);
-            color: white; padding: 15px 40px;
-            display: flex; justify-content: space-between; align-items: center;
-        }
-
-        .logo-section { display: flex; align-items: center; gap: 15px; }
-        .brand-name { font-size: 24px; line-height: 1; text-transform: uppercase; font-weight: bold; margin: 0; }
-        .brand-name span { font-weight: normal; }
-        .title-section { text-align: right; }
-        .title-section h2 { margin: 0; font-size: 20px; }
-        .title-section p { margin: 0; opacity: 0.9; }
-
-        .filters-bar {
-            background-color: var(--filter-bg);
-            padding: 15px 40px;
-            display: flex; flex-wrap: wrap; gap: 20px; align-items: center;
-        }
-
-        .filter-group { display: flex; align-items: center; gap: 10px; }
-        .filter-group label { font-weight: bold; font-size: 16px; }
-
-        .filter-group select {
-            padding: 6px 12px; border-radius: 20px; border: 1px solid #ccc;
-            background: white; min-width: 130px;
-        }
-
+        body { font-family: sans-serif; margin: 0; background: #fff; color: var(--text-dark); }
+        .main-header { background: var(--header-bg); color: white; padding: 15px 40px; display: flex; justify-content: space-between; align-items: center; }
+        .filters-bar { background: var(--filter-bg); padding: 15px 40px; display: flex; flex-wrap: wrap; gap: 20px; }
+        .filter-group { display: flex; align-items: center; gap: 10px; font-weight: bold; }
+        select { padding: 6px; border-radius: 20px; border: 1px solid #ccc; min-width: 120px; }
         .table-container { padding: 20px 40px; overflow-x: auto; }
         table { width: 100%; border-collapse: collapse; min-width: 900px; }
-
-        thead tr {
-            display: flex; justify-content: space-between;
-            border-bottom: 2px solid var(--border-color);
-            padding-bottom: 15px; margin-bottom: 10px;
-        }
-
-        th {
-            background-color: var(--badge-bg); color: white;
-            padding: 10px 15px; border-radius: 20px;
-            font-size: 14px; text-align: center; flex: 1; margin: 0 5px;
-        }
-
-        tbody tr {
-            display: flex; justify-content: space-between; align-items: center;
-            border-bottom: 1px solid #eee; transition: 0.3s;
-        }
-
-        tbody tr.completed { background-color: #f9f9f9; opacity: 0.4; }
+        thead tr { display: flex; border-bottom: 2px solid #000; padding-bottom: 10px; }
+        th { background: var(--badge-bg); color: white; padding: 10px; border-radius: 20px; flex: 1; margin: 0 5px; font-size: 14px; }
+        tbody tr { display: flex; align-items: center; border-bottom: 1px solid #eee; transition: 0.3s; }
+        tbody tr.completed { opacity: 0.3; background: #f0f0f0; }
         tbody tr.completed td { text-decoration: line-through; }
-
         td { padding: 15px 10px; flex: 1; font-size: 14px; margin: 0 5px; }
-
-        .bold { font-weight: bold; }
-        .uppercase { text-transform: uppercase; }
-        .text-small { font-size: 13px; line-height: 1.4; }
-        
-        .badge {
-            background-color: var(--badge-bg); color: white;
-            padding: 4px 10px; border-radius: 4px; font-size: 11px;
-        }
-
-        .check-btn {
-            width: 25px; height: 25px; border-radius: 50%;
-            border: 2px solid var(--badge-bg); background: white;
-            cursor: pointer; display: flex; align-items: center; justify-content: center;
-        }
-
-        tr.completed .check-btn { background: var(--success-color); border-color: var(--success-color); }
-        tr.completed .check-btn::after { content: '✓'; color: white; font-weight: bold; }
-
-        .col-necesidad { flex: 2; }
-        .col-notas { flex: 1.5; }
-        .col-check { flex: 0.4; text-align: center; display: flex; justify-content: center; }
+        .col-necesidad { flex: 2; font-weight: bold; }
+        .col-notas { flex: 1.5; font-size: 12px; }
+        .col-check { flex: 0.4; text-align: center; }
+        .badge { background: var(--badge-bg); color: white; padding: 3px 8px; border-radius: 4px; font-size: 11px; }
+        .check-btn { width: 25px; height: 25px; border-radius: 50%; border: 2px solid var(--badge-bg); cursor: pointer; display: inline-block; }
+        tr.completed .check-btn { background: var(--success-color); border-color: var(--success-color); position: relative; }
+        tr.completed .check-btn::after { content: '✓'; color: white; position: absolute; left: 5px; top: 0; }
     </style>
 </head>
 <body>
 
     <header class="main-header">
-        <div class="logo-section">
-            <h1 class="brand-name">Portal<br><span>Bosque</span></h1>
-        </div>
-        <div class="title-section">
-            <h2>Seteos Logísticos</h2>
-            <p>Ciclo Otoño 2026</p>
-        </div>
+        <div><h1 style="margin:0; font-size:24px; text-transform:uppercase;">Portal<br><span style="font-weight:normal">Bosque</span></h1></div>
+        <div style="text-align:right"><h2>Seteos Logísticos</h2><p>Ciclo Otoño 2026</p></div>
     </header>
 
     <nav class="filters-bar">
-        <div class="filter-group"><label>Día</label><select id="filter-dia"><option value="">Ej: Lunes</option></select></div>
-        <div class="filter-group"><label>Responsable</label><select id="filter-responsable"><option value="">Ej: Heber</option></select></div>
-        <div class="filter-group"><label>Horario</label><select id="filter-horario"><option value="">Ej: 7:00am</option></select></div>
-        <div class="filter-group"><label>Espacio</label><select id="filter-espacio"><option value="">Ej: Yurta</option></select></div>
+        <div class="filter-group">Día <select id="f0"><option value="">Todos</option></select></div>
+        <div class="filter-group">Responsable <select id="f1"><option value="">Todos</option></select></div>
+        <div class="filter-group">Espacio <select id="f3"><option value="">Todos</option></select></div>
     </nav>
 
-    <main class="table-container">
+    <div class="table-container">
         <table>
             <thead>
                 <tr>
                     <th>Día</th><th>Responsable</th><th>Horario</th><th>Espacio</th>
-                    <th class="col-necesidad">Necesidad</th><th>Info</th><th class="col-notas">Notas</th><th class="col-check">Ok</th>
+                    <th style="flex:2">Necesidad</th><th>Info</th><th style="flex:1.5">Notas</th><th style="flex:0.4">Ok</th>
                 </tr>
             </thead>
-            <tbody id="table-body"></tbody>
+            <tbody id="content"></tbody>
         </table>
-    </main>
+    </div>
 
     <script>
-        // NUEVO LINK ACTUALIZADO
-        const csvUrl = 'https://docs.google.com/spreadsheets/d/e/2PACX-1vQAjbZFpNcEopTvKwlp2Nn6EpFWNPAf3hMK0vc_NRM5K3NhSTe73DsHUjEV3YjKGWT4auUjQ3kXpucf/pub?gid=0&single=true&output=csv';
+        const url = 'https://docs.google.com/spreadsheets/d/e/2PACX-1vQAjbZFpNcEopTvKwlp2Nn6EpFWNPAf3hMK0vc_NRM5K3NhSTe73DsHUjEV3YjKGWT4auUjQ3kXpucf/pub?gid=0&single=true&output=csv';
 
-        let allData = [];
+        let rawData = [];
 
-        function fetchData() {
-            Papa.parse(csvUrl, {
+        async function load() {
+            Papa.parse(url, {
                 download: true,
-                header: true,
-                skipEmptyLines: true,
-                complete: function(results) {
-                    // Normalizar claves (quitar espacios y tildes básicas)
-                    allData = results.data.map(row => {
-                        const normalized = {};
-                        for (let key in row) {
-                            normalized[key.trim()] = row[key];
-                        }
-                        return normalized;
-                    });
-                    
-                    renderTable(allData);
-                    setupFilters(allData);
-                },
-                error: function(err) {
-                    console.error("Error al cargar el CSV:", err);
+                complete: function(res) {
+                    // results.data[0] son los encabezados, los ignoramos
+                    rawData = res.data.slice(1).filter(r => r[0]); 
+                    draw(rawData);
+                    fill(rawData);
                 }
             });
         }
 
-        function renderTable(data) {
-            const tbody = document.getElementById('table-body');
-            tbody.innerHTML = '';
-
-            data.forEach((row, index) => {
-                if (!row.Día && !row.Dia) return;
-
+        function draw(data) {
+            const container = document.getElementById('content');
+            container.innerHTML = '';
+            data.forEach((r, i) => {
                 const tr = document.createElement('tr');
-                tr.id = `row-${index}`;
-                
+                tr.id = 'r' + i;
                 tr.innerHTML = `
-                    <td class="bold">${row.Día || row.Dia || '-'}</td>
-                    <td class="bold">${row.Responsable || '-'}</td>
-                    <td class="bold">${row.Horario || '-'}</td>
-                    <td class="bold uppercase">${row.Espacio || '-'}</td>
-                    <td class="text-small col-necesidad"><strong>${row.Necesidad || '-'}</strong></td>
-                    <td>${row.Info ? `<span class="badge">${row.Info}</span>` : '-'}</td>
-                    <td class="text-small col-notas">${row.Observaciones || row.Notas || '-'}</td>
-                    <td class="col-check">
-                        <div class="check-btn" onclick="toggleComplete(${index})"></div>
-                    </td>
+                    <td><b>${r[0] || ''}</b></td>
+                    <td><b>${r[1] || ''}</b></td>
+                    <td>${r[2] || ''}</td>
+                    <td style="text-transform:uppercase"><b>${r[3] || ''}</b></td>
+                    <td class="col-necesidad">${r[4] || ''}</td>
+                    <td>${r[5] ? '<span class="badge">'+r[5]+'</span>' : ''}</td>
+                    <td class="col-notas">${r[6] || ''}</td>
+                    <td class="col-check"><div class="check-btn" onclick="done(${i})"></div></td>
                 `;
-                tbody.appendChild(tr);
+                container.appendChild(tr);
             });
         }
 
-        function toggleComplete(id) {
-            document.getElementById(`row-${id}`).classList.toggle('completed');
-        }
+        function done(i) { document.getElementById('r'+i).classList.toggle('completed'); }
 
-        function setupFilters(data) {
-            const createOptions = (id, key) => {
-                const select = document.getElementById(id);
-                // Si ya tiene opciones (salvo la primera), no duplicamos
-                if (select.options.length > 1) return;
-
-                const values = [...new Set(data.map(item => item[key]).filter(v => v))];
-                values.forEach(v => {
-                    const opt = document.createElement('option');
-                    opt.value = v; opt.textContent = v;
-                    select.appendChild(opt);
-                });
-                select.addEventListener('change', filterData);
+        function fill(data) {
+            const make = (id, idx) => {
+                const s = document.getElementById(id);
+                const opts = [...new Set(data.map(r => r[idx]))].filter(v => v);
+                opts.forEach(v => { s.innerHTML += `<option value="${v}">${v}</option>`; });
+                s.onchange = filter;
             };
-
-            createOptions('filter-dia', 'Día');
-            createOptions('filter-responsable', 'Responsable');
-            createOptions('filter-horario', 'Horario');
-            createOptions('filter-espacio', 'Espacio');
+            make('f0', 0); make('f1', 1); make('f3', 3);
         }
 
-        function filterData() {
-            const fDia = document.getElementById('filter-dia').value;
-            const fResp = document.getElementById('filter-responsable').value;
-            const fHora = document.getElementById('filter-horario').value;
-            const fEsp = document.getElementById('filter-espacio').value;
-
-            const filtered = allData.filter(row => {
-                return (!fDia || row.Día === fDia) &&
-                       (!fResp || row.Responsable === fResp) &&
-                       (!fHora || row.Horario === fHora) &&
-                       (!fEsp || row.Espacio === fEsp);
-            });
-            renderTable(filtered);
+        function filter() {
+            const v0 = document.getElementById('f0').value;
+            const v1 = document.getElementById('f1').value;
+            const v3 = document.getElementById('f3').value;
+            const filtered = rawData.filter(r => 
+                (!v0 || r[0] === v0) && (!v1 || r[1] === v1) && (!v3 || r[3] === v3)
+            );
+            draw(filtered);
         }
 
-        window.onload = fetchData;
+        window.onload = load;
     </script>
 </body>
 </html>
