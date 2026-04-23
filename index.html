@@ -11,31 +11,92 @@
             --border-color: #000; --badge-bg: #52635f; --success-color: #28a745;
         }
         body { font-family: sans-serif; margin: 0; background: #fff; color: var(--text-dark); }
-        .main-header { background: var(--header-bg); color: white; padding: 15px 40px; display: flex; justify-content: space-between; align-items: center; }
-        .filters-bar { background: var(--filter-bg); padding: 15px 40px; display: flex; flex-wrap: wrap; gap: 20px; }
-        .filter-group { display: flex; align-items: center; gap: 10px; font-weight: bold; }
-        select { padding: 6px; border-radius: 20px; border: 1px solid #ccc; min-width: 120px; }
+        
+        /* Header optimizado */
+        .main-header { 
+            background: var(--header-bg); 
+            color: white; 
+            padding: 10px 40px; 
+            display: flex; 
+            justify-content: space-between; 
+            align-items: center; 
+        }
+
+        /* Logo con tamaño controlado */
+        .logo-container img {
+            height: 50px; /* Ajusta este valor si lo querés aún más chico */
+            width: auto;
+            display: block;
+        }
+
+        .title-section { text-align: right; }
+        .title-section h2 { margin: 0; font-size: 18px; }
+        .title-section p { margin: 0; font-size: 12px; opacity: 0.8; }
+
+        /* Filtros más chicos y responsivos */
+        .filters-bar { 
+            background: var(--filter-bg); 
+            padding: 8px 40px; 
+            display: flex; 
+            flex-wrap: wrap; 
+            gap: 15px; 
+            align-items: center;
+        }
+        .filter-group { 
+            display: flex; 
+            align-items: center; 
+            gap: 8px; 
+            font-weight: bold; 
+            font-size: 14px; 
+        }
+        select { 
+            padding: 4px 8px; 
+            border-radius: 15px; 
+            border: 1px solid #ccc; 
+            min-width: 100px; 
+            font-size: 13px; 
+            outline: none;
+        }
+
+        /* Tabla */
         .table-container { padding: 20px 40px; overflow-x: auto; }
         table { width: 100%; border-collapse: collapse; min-width: 900px; }
         thead tr { display: flex; border-bottom: 2px solid #000; padding-bottom: 10px; }
-        th { background: var(--badge-bg); color: white; padding: 10px; border-radius: 20px; flex: 1; margin: 0 5px; font-size: 14px; }
+        th { background: var(--badge-bg); color: white; padding: 8px; border-radius: 20px; flex: 1; margin: 0 5px; font-size: 13px; }
+        
         tbody tr { display: flex; align-items: center; border-bottom: 1px solid #eee; transition: 0.3s; }
         tbody tr.completed { opacity: 0.3; background: #f0f0f0; }
         tbody tr.completed td { text-decoration: line-through; }
-        td { padding: 15px 10px; flex: 1; font-size: 13px; margin: 0 5px; }
+        
+        td { padding: 12px 10px; flex: 1; font-size: 13px; margin: 0 5px; }
         .col-necesidad { flex: 2; font-weight: bold; }
-        .col-notas { flex: 1.5; font-size: 12px; }
+        .col-notas { flex: 1.5; font-size: 11px; }
         .col-check { flex: 0.4; text-align: center; }
-        .check-btn { width: 25px; height: 25px; border-radius: 50%; border: 2px solid var(--badge-bg); cursor: pointer; display: inline-block; }
+
+        /* Botón OK */
+        .check-btn { width: 22px; height: 22px; border-radius: 50%; border: 2px solid var(--badge-bg); cursor: pointer; display: inline-block; background: white; }
         tr.completed .check-btn { background: var(--success-color); border-color: var(--success-color); position: relative; }
-        tr.completed .check-btn::after { content: '✓'; color: white; position: absolute; left: 5px; top: 0; }
+        tr.completed .check-btn::after { content: '✓'; color: white; position: absolute; left: 4px; top: -1px; font-weight: bold; }
+
+        /* Media Query para Celulares */
+        @media (max-width: 600px) {
+            .main-header, .filters-bar { padding: 10px 15px; }
+            .logo-container img { height: 40px; }
+            .filter-group { font-size: 12px; }
+            select { min-width: 80px; padding: 3px; }
+        }
     </style>
 </head>
 <body>
 
     <header class="main-header">
-        <div><h1 style="margin:0; font-size:24px; text-transform:uppercase;">Portal<br><span style="font-weight:normal">Bosque</span></h1></div>
-        <div style="text-align:right"><h2>Seteos Logísticos</h2><p>Ciclo Otoño 2026</p></div>
+        <div class="logo-container">
+            <img src="https://portalbosque.github.io/portalbosque/logo.png" alt="Portal Bosque">
+        </div>
+        <div class="title-section">
+            <h2>Seteos Logísticos</h2>
+            <p>Ciclo Otoño 2026</p>
+        </div>
     </header>
 
     <nav class="filters-bar">
@@ -59,9 +120,7 @@
         const url = 'https://docs.google.com/spreadsheets/d/e/2PACX-1vQAjbZFpNcEopTvKwlp2Nn6EpFWNPAf3hMK0vc_NRM5K3NhSTe73DsHUjEV3YjKGWT4auUjQ3kXpucf/pub?gid=0&single=true&output=csv&v=' + Math.random();
 
         let rawData = [];
-        let lastDia = "";
-        let lastResp = "";
-        let lastHora = "";
+        let lastDia = ""; let lastResp = ""; let lastHora = "";
 
         async function load() {
             Papa.parse(url, {
@@ -112,8 +171,7 @@
                 opts.forEach(v => { s.innerHTML += `<option value="${v}">${v}</option>`; });
                 s.onchange = filter;
             };
-            make('f0', 0); // Día
-            make('f1', 1); // Responsable
+            make('f0', 0); make('f1', 1);
         }
 
         function filter() {
