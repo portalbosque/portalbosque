@@ -12,7 +12,7 @@
         }
         body { font-family: sans-serif; margin: 0; background: #fff; color: var(--text-dark); }
         
-        /* Header con Tipografía Editorial */
+        /* Header */
         .main-header { 
             background: var(--header-bg); 
             color: white; 
@@ -23,25 +23,24 @@
         }
         .brand-name { 
             font-family: 'PP Editorial New', 'Editorial New', 'Georgia', serif; 
-            font-size: 22px; 
-            text-transform: uppercase; 
+            font-size: 24px; 
             font-weight: 900; 
-            line-height: 0.9;
+            line-height: 1;
             letter-spacing: -0.5px;
         }
-        .brand-name span { font-weight: 200; display: block; }
+        .brand-name span { font-weight: 200; }
 
         .title-section { text-align: right; }
         .title-section h2 { margin: 0; font-size: 16px; font-weight: bold; }
         .title-section p { margin: 0; font-size: 11px; opacity: 0.8; }
 
-        /* FILTROS MINI */
+        /* Filtros compactos */
         .filters-bar { 
             background: var(--filter-bg); 
             padding: 5px 40px; 
             display: flex; 
             flex-wrap: wrap; 
-            gap: 10px; 
+            gap: 12px; 
             align-items: center;
         }
         .filter-group { 
@@ -53,15 +52,15 @@
         }
         select { 
             padding: 2px 5px; 
-            border-radius: 10px; 
+            border-radius: 8px; 
             border: 1px solid #bbb; 
             min-width: 80px; 
             font-size: 11px; 
-            outline: none;
             height: 24px;
+            outline: none;
         }
 
-        /* Tabla */
+        /* Tabla y contenido */
         .table-container { padding: 15px 40px; overflow-x: auto; }
         table { width: 100%; border-collapse: collapse; min-width: 900px; }
         thead tr { display: flex; border-bottom: 2px solid #000; padding-bottom: 8px; }
@@ -83,14 +82,14 @@
         @media (max-width: 600px) {
             .main-header, .filters-bar { padding: 8px 15px; }
             .table-container { padding: 10px 15px; }
-            .brand-name { font-size: 18px; }
+            .brand-name { font-size: 20px; }
         }
     </style>
 </head>
 <body>
 
     <header class="main-header">
-        <div class="brand-name">PORTAL<span>BOSQUE</span></div>
+        <div class="brand-name">Portal <span>Bosque</span></div>
         <div class="title-section">
             <h2>Seteos Logísticos</h2>
             <p>Ciclo Otoño 2026</p>
@@ -126,10 +125,14 @@
                 complete: function(res) {
                     const processed = [];
                     res.data.forEach((r, i) => {
+                        // Saltar cabecera y filas vacías críticas
                         if (i === 0 || (!r[3] && !r[4])) return;
+                        
+                        // Lógica de arrastre de datos para celdas combinadas
                         if (r[0] && r[0].trim() !== "") lastDia = r[0].trim();
                         if (r[1] && r[1].trim() !== "") lastResp = r[1].trim();
                         if (r[2] && r[2].trim() !== "") lastHora = r[2].trim();
+                        
                         processed.push([lastDia, lastResp, lastHora, r[3], r[4], r[5], r[6]]);
                     });
                     rawData = processed;
@@ -152,3 +155,41 @@
                     <td style="text-transform:uppercase"><b>${r[3] || ''}</b></td>
                     <td class="col-necesidad">${r[4] ? r[4].replace(/\n/g, '<br>') : ''}</td>
                     <td>${r[5] || ''}</td>
+                    <td class="col-notas">${r[6] || ''}</td>
+                    <td class="col-check"><div class="check-btn" onclick="done(${i})"></div></td>
+                `;
+                container.appendChild(tr);
+            });
+        }
+
+        function done(i) { document.getElementById('r'+i).classList.toggle('completed'); }
+
+        function fill(data) {
+            const make = (id, idx) => {
+                const s = document.getElementById(id);
+                if (s.options.length > 1) return;
+                const opts = [...new Set(data.map(r => r[idx]))].filter(v => v && v.trim() !== "");
+                opts.sort().forEach(v => {
+                    const el = document.createElement('option');
+                    el.value = v;
+                    el.textContent = v;
+                    s.appendChild(el);
+                });
+                s.onchange = filter;
+            };
+            make('f0', 0); // Filtro Día
+            make('f1', 1); // Filtro Responsable
+        }
+
+        function filter() {
+            const v0 = document.getElementById('f0').value;
+            const v1 = document.getElementById('f1').value;
+            const filtered = rawData.filter(r => 
+                (!v0 || r[0] === v0) && (!v1 || r[1] === v1)
+            );
+            draw(filtered);
+        }
+        window.onload = load;
+    </script>
+</body>
+</html>
