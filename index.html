@@ -1,40 +1,4 @@
-<!DOCTYPE html>
-<html lang="es">
-<head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Portal Bosque — Seteos Logísticos</title>
-
-<style>
-body { font-family: sans-serif; padding: 20px; }
-select, input { padding: 6px; margin: 5px; }
-table { width: 100%; border-collapse: collapse; margin-top: 20px; }
-td, th { border: 1px solid #ccc; padding: 8px; }
-</style>
-</head>
-
-<body>
-
-<h2>Portal Bosque</h2>
-
-<select id="sel-dia" onchange="render()">
-  <option value="">Todos</option>
-</select>
-
-<input id="inp-resp" placeholder="Responsable" oninput="render()">
-<input id="inp-esp" placeholder="Espacio" oninput="render()">
-
-<table>
-<thead>
-<tr>
-<th>Día</th>
-<th>Responsable</th>
-<th>Horario</th>
-<th>Espacio</th>
-</tr>
-</thead>
-<tbody id="tbody"></tbody>
-</table>
+<!-- TODO tu head y estilos quedan IGUAL, no los toco -->
 
 <script>
 const CSV_URL = 'https://docs.google.com/spreadsheets/d/e/2PACX-1vQAjbZFpNcEopTvKwlp2Nn6EpFWNPAf3hMK0vc_NRM5K3NhSTe73DsHUjEV3YjKGWT4auUjQ3kXpucf/pub?output=csv';
@@ -61,47 +25,101 @@ function normalizar(s) {
 }
 
 function parseCSV(text) {
+  const rows = [];
   const lines = text.split('\n');
   let lastDia = '';
 
-  return lines.slice(1).map(line => {
-    const cols = line.split(',');
-    let [dia, resp, horario, espacio] = cols;
+  for (let i = 1; i < lines.length; i++) {
+    const line = lines[i].trim();
+    if (!line) continue;
 
-    dia = dia || lastDia;
-    lastDia = dia;
+    const cols = splitCSVLine(line);
+    let [dia, resp, horario, espacio, necesidad, info, notas] = cols.map(c => c.trim());
 
-    return {
+    if (dia) lastDia = dia;
+    else dia = lastDia;
+
+    if (!espacio) continue;
+
+    rows.push({
       dia,
       diaNorm: normalizar(dia),
-      resp,
-      horario,
-      espacio
-    };
-  }).filter(r => r.espacio);
+      resp: resp || '',
+      horario: horario || '',
+      espacio,
+      necesidad: necesidad || '',
+      info: info || '',
+      notas: notas || ''
+    });
+  }
+
+  return rows;
+}
+
+function splitCSVLine(line) {
+  const result = [];
+  let cur = '', inQ = false;
+
+  for (let i = 0; i < line.length; i++) {
+    const ch = line[i];
+
+    if (ch === '"') inQ = !inQ;
+    else if (ch === ',' && !inQ) {
+      result.push(cur);
+      cur = '';
+    } else {
+      cur += ch;
+    }
+  }
+
+  result.push(cur);
+  return result;
 }
 
 async function fetchData() {
-  const res = await fetch(CSV_URL);
-  const text = await res.text();
+  try {
+    const res = await fetch(CSV_URL);
+    const text = await res.text();
 
-  ALL_DATA = parseCSV(text);
+    ALL_DATA = parseCSV(text);
 
-  const diasEnDatos = new Set(ALL_DATA.map(r => r.diaNorm));
+    const diasEnDatos = new Set(ALL_DATA.map(r => r.diaNorm));
 
-  const sel = document.getElementById('sel-dia');
-  sel.innerHTML = '<option value="">Todos</option>';
+    const sel = document.getElementById('sel-dia');
 
-  DIAS_ORDER.forEach(d => {
-    if (!diasEnDatos.has(d)) return;
+    // 🔥 FIX CLAVE: limpiar antes de reconstruir
+    sel.innerHTML = '<option value="">Todos los días</option>';
 
-    const opt = document.createElement('option');
-    opt.value = d;
-    opt.textContent = DIAS_LABEL[d];
-    sel.appendChild(opt);
-  });
+    DIAS_ORDER.forEach(d => {
+      if (!diasEnDatos.has(d)) return;
 
-  render();
+      const opt = document.createElement('option');
+      opt.value = d;
+      opt.textContent = DIAS_LABEL[d];
+      sel.appendChild(opt);
+    });
+
+    document.getElementById('loading').style.display = 'none';
+    document.getElementById('table').style.display = 'table';
+
+    render();
+
+  } catch (e) {
+    console.error('Error:', e);
+  }
+}
+
+function respClass(r) {
+  const k = (r || '').toLowerCase().trim();
+  if (k === 'heber') return 'resp-heber';
+  if (k === 'daniel') return 'resp-daniel';
+  if (k === 'nahuel') return 'resp-nahuel';
+  if (k === 'dani') return 'resp-dani';
+  return '';
+}
+
+function initials(n) {
+  return n ? n.slice(0,2).toUpperCase() : '?';
 }
 
 function render() {
@@ -116,27 +134,41 @@ function render() {
     return true;
   });
 
-  // 🔥 ORDEN POR DÍA + HORARIO
+  // 🔥 ORDEN PRO (día + horario)
   filtered.sort((a, b) => {
-    const diaDiff = DIAS_ORDER.indexOf(a.diaNorm) - DIAS_ORDER.indexOf(b.diaNorm);
-    if (diaDiff !== 0) return diaDiff;
+    const d = DIAS_ORDER.indexOf(a.diaNorm) - DIAS_ORDER.indexOf(b.diaNorm);
+    if (d !== 0) return d;
     return (a.horario || '').localeCompare(b.horario || '');
   });
 
   const tbody = document.getElementById('tbody');
+  const empty = document.getElementById('empty');
 
-  tbody.innerHTML = filtered.map(r => `
-    <tr>
+  if (!filtered.length) {
+    tbody.innerHTML = '';
+    empty.style.display = 'block';
+    return;
+  }
+
+  empty.style.display = 'none';
+
+  tbody.innerHTML = filtered.map(r => {
+    const rc = respClass(r.resp);
+
+    return `<tr>
       <td>${DIAS_LABEL[r.diaNorm]}</td>
       <td>${r.resp}</td>
       <td>${r.horario}</td>
       <td>${r.espacio}</td>
-    </tr>
-  `).join('');
+      <td>${r.necesidad}</td>
+      <td>${r.info}</td>
+      <td>${r.notas}</td>
+    </tr>`;
+  }).join('');
 }
 
 fetchData();
-</script>
 
-</body>
-</html>
+// 🔁 refresco automático
+setInterval(fetchData, 5 * 60 * 1000);
+</script>
