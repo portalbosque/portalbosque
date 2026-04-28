@@ -129,27 +129,39 @@ async function init() {
   const res = await fetch(CSV_URL);
   const text = await res.text();
 
-  DATA = text.split('\n').slice(1).map(line => {
-    const cols = line.split(',');
+  DATA = text.split('\n')
+    .slice(1) // skip header
+    .map(line => line.trim()) // trim whitespace
+    .filter(line => line.length > 0) // remove empty lines
+    .map(line => {
+      const cols = line.split(',');
+      
+      const diaNorm = normalizar(cols[0]);
+      
+      // Only keep rows with valid days and non-empty space
+      if (!diaNorm || !cols[3] || !cols[3].trim()) {
+        return null;
+      }
 
-    return {
-      diaNorm: normalizar(cols[0]),
-      resp: (cols[1] || '').trim(),
-      horario: (cols[2] || '').trim(),
-      horarioSort: normalizarHora(cols[2] || ''),
-      espacio: (cols[3] || '').trim()
-    };
-  }).filter(r => r.espacio);
+      return {
+        diaNorm: diaNorm,
+        resp: (cols[1] || '').trim(),
+        horario: (cols[2] || '').trim(),
+        horarioSort: normalizarHora(cols[2] || ''),
+        espacio: (cols[3] || '').trim()
+      };
+    })
+    .filter(r => r !== null); // remove null entries
 
   // Collect unique days that exist in data
   DATA.forEach(row => {
-    if (row.diaNorm) {
+    if (row.diaNorm && DIAS_ORDER.includes(row.diaNorm)) {
       DIAS_IN_DATA.add(row.diaNorm);
     }
   });
 
-  console.log('Days found in data:', Array.from(DIAS_IN_DATA));
-  console.log('Days in DIAS_ORDER:', DIAS_ORDER);
+  console.log('Days found in data:', Array.from(DIAS_IN_DATA).sort((a, b) => DIAS_ORDER.indexOf(a) - DIAS_ORDER.indexOf(b)));
+  console.log('Total rows loaded:', DATA.length);
 
   construirDropdown();
   render();
@@ -160,7 +172,7 @@ function construirDropdown() {
 
   sel.innerHTML = '<option value="">Todos los días</option>';
 
-  // Only show days that actually exist in the data
+  // Show days in correct order, only if they exist in data
   DIAS_ORDER.forEach(d => {
     if (DIAS_IN_DATA.has(d)) {
       const opt = document.createElement('option');
