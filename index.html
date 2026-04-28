@@ -137,8 +137,6 @@
 const CSV_URL = 'https://docs.google.com/spreadsheets/d/e/2PACX-1vQAjbZFpNcEopTvKwlp2Nn6EpFWNPAf3hMK0vc_NRM5K3NhSTe73DsHUjEV3YjKGWT4auUjQ3kXpucf/pub?output=csv';
 let ALL_DATA = [];
 
-const DIAS_ORDER = ['LUNES','MARTES','MIERCOLES','MIÉRCOLES','JUEVES','VIERNES','SABADO','SÁBADO','DOMINGO'];
-
 function parseCSV(text) {
   const rows = []; const lines = text.split('\n'); let lastDia = '';
   for (let i = 1; i < lines.length; i++) {
@@ -167,18 +165,9 @@ async function fetchData() {
     if (!res.ok) throw new Error('HTTP ' + res.status);
     const text = await res.text();
     ALL_DATA = parseCSV(text);
-
-    const diasEnDatos = new Set(ALL_DATA.map(r => r.dia).filter(Boolean));
-    const dias = DIAS_ORDER.filter(d => diasEnDatos.has(d));
-
+    const dias = [...new Set(ALL_DATA.map(r => r.dia).filter(Boolean))];
     const sel = document.getElementById('sel-dia');
-    dias.forEach(d => {
-      const opt = document.createElement('option');
-      opt.value = d;
-      opt.textContent = d.charAt(0) + d.slice(1).toLowerCase();
-      sel.appendChild(opt);
-    });
-
+    dias.forEach(d => { const opt = document.createElement('option'); opt.value = d; opt.textContent = d.charAt(0) + d.slice(1).toLowerCase(); sel.appendChild(opt); });
     document.getElementById('loading').style.display = 'none';
     document.getElementById('table').style.display = 'table';
     const now = new Date();
