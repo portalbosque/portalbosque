@@ -8,9 +8,6 @@
 <style>
   :root {
     --dark:       #1e3a2f;
-    --dark2:      #162d23;
-    --dark3:      #254536;
-    --green:      #2d5c3e;
     --green-btn:  #1e3a2f;
     --green-light:#e8f0e4;
     --green-acc:  #3a7a52;
@@ -24,10 +21,10 @@
     --text2:      #3a5040;
     --text3:      #6a8070;
     --filter-bg:  #eef3e8;
-    --heber-bg:   #1e3a2f; --heber-fg: #a8d4b8; --heber-bd: #2d5c3e;
-    --daniel-bg:  #1a2040; --daniel-fg:#8898d8; --daniel-bd:#283878;
-    --nahuel-bg:  #3a2010; --nahuel-fg:#d8a868; --nahuel-bd:#6a3818;
-    --dani-bg:    #1a2040; --dani-fg:  #8898d8; --dani-bd:  #283878;
+    --heber-bg:   #1e3a2f; --heber-fg: #a8d4b8;
+    --daniel-bg:  #1a2040; --daniel-fg:#8898d8;
+    --nahuel-bg:  #3a2010; --nahuel-fg:#d8a868;
+    --dani-bg:    #1a2040; --dani-fg:  #8898d8;
     --heber-dot:  #5aaf7a;
     --daniel-dot: #6878c8;
     --nahuel-dot: #c88848;
@@ -38,114 +35,147 @@
 
   .header {
     background: var(--dark);
-    padding: 1.4rem 2.5rem;
+    padding: 1rem 1.5rem;
     display: flex; align-items: center; justify-content: space-between;
     position: sticky; top: 0; z-index: 100;
   }
-  .header-logo { height: 52px; filter: brightness(0) invert(1) opacity(.95); }
-  .header-logo-text { display: none; font-family: 'Playfair Display', serif; font-size: 22px; color: #fff; letter-spacing: .04em; }
+  .header-logo { height: 44px; filter: brightness(0) invert(1) opacity(.95); }
+  .header-logo-text { display: none; font-family: 'Playfair Display', serif; font-size: 20px; color: #fff; }
   .header-right { text-align: right; }
-  .header-title { font-size: 20px; font-weight: 600; color: #fff; letter-spacing: .01em; }
-  .header-cycle { font-size: 13px; color: #a8d4b8; font-family: 'DM Mono', monospace; margin-top: 3px; letter-spacing: .06em; }
+  .header-title { font-size: 18px; font-weight: 600; color: #fff; }
+  .header-cycle { font-size: 12px; color: #a8d4b8; font-family: 'DM Mono', monospace; margin-top: 2px; letter-spacing: .06em; }
 
   .filters {
     background: var(--filter-bg);
-    padding: .85rem 2.5rem;
-    display: flex; gap: 1.2rem; align-items: center; flex-wrap: wrap;
+    padding: .75rem 1.5rem;
+    display: flex; gap: 1rem; align-items: center; flex-wrap: wrap;
     border-bottom: 1px solid var(--border);
   }
-  .filter-group { display: flex; align-items: center; gap: 8px; }
-  .filter-label { font-size: 12px; font-weight: 600; color: var(--text); letter-spacing: .04em; text-transform: uppercase; }
+  .filter-group { display: flex; align-items: center; gap: 6px; }
+  .filter-label { font-size: 11px; font-weight: 600; color: var(--text); letter-spacing: .04em; text-transform: uppercase; white-space: nowrap; }
   select, input[type=text] {
     font-family: 'DM Sans', sans-serif; font-size: 13px;
-    padding: 6px 12px; border-radius: 6px;
+    padding: 6px 10px; border-radius: 6px;
     border: 1.5px solid var(--border);
     background: #fff; color: var(--text);
     outline: none; transition: border-color .15s;
-    min-width: 110px;
+    min-width: 100px;
   }
-  select { appearance: none; background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 12 12'%3E%3Cpath fill='%233a5040' d='M6 8L1 3h10z'/%3E%3C/svg%3E"); background-repeat: no-repeat; background-position: right 10px center; padding-right: 28px; }
+  select { appearance: none; background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 12 12'%3E%3Cpath fill='%233a5040' d='M6 8L1 3h10z'/%3E%3C/svg%3E"); background-repeat: no-repeat; background-position: right 8px center; padding-right: 26px; }
   select:focus, input:focus { border-color: var(--green-acc); }
-  .count { margin-left: auto; font-size: 12px; color: var(--text3); font-family: 'DM Mono', monospace; background: #fff; border: 1px solid var(--border); padding: 4px 10px; border-radius: 20px; }
+  .count { margin-left: auto; font-size: 11px; color: var(--text3); font-family: 'DM Mono', monospace; background: #fff; border: 1px solid var(--border); padding: 3px 10px; border-radius: 20px; white-space: nowrap; }
 
   .status {
-    padding: .5rem 2.5rem; font-size: 11px; font-family: 'DM Mono', monospace;
+    padding: .45rem 1.5rem; font-size: 10px; font-family: 'DM Mono', monospace;
     color: var(--text3); background: var(--bg2);
     border-bottom: 1px solid var(--border2);
-    display: flex; align-items: center; gap: 7px;
+    display: flex; align-items: center; gap: 6px;
   }
   .status-dot { width: 6px; height: 6px; border-radius: 50%; background: var(--green-acc); animation: pulse 2s ease-in-out infinite; flex-shrink: 0; }
   @keyframes pulse { 0%,100%{opacity:1} 50%{opacity:.3} }
 
-  .table-wrap { padding: 1.5rem 2.5rem; overflow-x: auto; }
+  .table-wrap { padding: 1.2rem 1.5rem; overflow-x: auto; }
   table { width: 100%; border-collapse: collapse; background: var(--bg2); border-radius: 10px; overflow: hidden; box-shadow: 0 1px 4px rgba(0,0,0,.06); }
   thead tr { background: var(--green-btn); }
   th {
-    text-align: left; font-family: 'DM Sans', sans-serif; font-size: 12px; font-weight: 600;
+    text-align: left; font-family: 'DM Sans', sans-serif; font-size: 11px; font-weight: 600;
     color: #fff; letter-spacing: .04em; text-transform: uppercase;
-    padding: 11px 16px; white-space: nowrap;
+    padding: 10px 14px; white-space: nowrap;
   }
   thead tr th:first-child { border-radius: 10px 0 0 0; }
   thead tr th:last-child  { border-radius: 0 10px 0 0; }
-  td { padding: 13px 16px; border-bottom: 1px solid var(--border2); vertical-align: middle; line-height: 1.55; font-size: 13px; }
+  td { padding: 11px 14px; border-bottom: 1px solid var(--border2); vertical-align: middle; line-height: 1.5; font-size: 13px; }
   tr:last-child td { border-bottom: none; }
   tbody tr:hover td { background: var(--green-light) !important; transition: background .12s; }
 
-  .dia-text { font-size: 13px; font-weight: 500; color: var(--text); }
-  .person { display: flex; align-items: center; gap: 9px; }
+  .person { display: flex; align-items: center; gap: 8px; }
   .avatar {
-    width: 32px; height: 32px; border-radius: 50%;
+    width: 30px; height: 30px; border-radius: 50%;
     display: inline-flex; align-items: center; justify-content: center;
-    font-size: 11px; font-weight: 700; flex-shrink: 0;
+    font-size: 10px; font-weight: 700; flex-shrink: 0;
     font-family: 'DM Mono', monospace; border: 2px solid;
   }
-  .resp-name { font-size: 13px; font-weight: 500; }
-  .resp-heber  .avatar { background: var(--heber-bg);  color: var(--heber-fg);  border-color: var(--heber-dot); }
+  .resp-name { font-size: 12px; font-weight: 600; }
+  .resp-heber  .avatar { background: var(--heber-bg); color: var(--heber-fg); border-color: var(--heber-dot); }
   .resp-heber  .resp-name { color: var(--heber-dot); }
   .resp-daniel .avatar { background: var(--daniel-bg); color: var(--daniel-fg); border-color: var(--daniel-dot); }
   .resp-daniel .resp-name { color: var(--daniel-dot); }
   .resp-nahuel .avatar { background: var(--nahuel-bg); color: var(--nahuel-fg); border-color: var(--nahuel-dot); }
   .resp-nahuel .resp-name { color: var(--nahuel-dot); }
-  .resp-dani   .avatar { background: var(--dani-bg);   color: var(--dani-fg);   border-color: var(--dani-dot); }
+  .resp-dani   .avatar { background: var(--dani-bg); color: var(--dani-fg); border-color: var(--dani-dot); }
   .resp-dani   .resp-name { color: var(--dani-dot); }
 
-  .horario { font-family: 'DM Mono', monospace; font-size: 13px; color: var(--text2); font-weight: 500; }
+  .dia-text { font-size: 12px; font-weight: 500; color: var(--text); }
+  .horario  { font-family: 'DM Mono', monospace; font-size: 12px; color: var(--text2); font-weight: 500; }
   .esp-name { font-weight: 600; font-size: 13px; color: var(--text); }
-  .nec { font-size: 13px; color: var(--text2); line-height: 1.6; }
-  .nec strong { color: var(--text); font-weight: 600; }
-  .op-tag {
-    display: inline-block; font-family: 'DM Sans', sans-serif;
-    font-size: 12px; font-weight: 600; letter-spacing: .02em;
-    background: var(--op-bg); color: var(--op-fg);
-    border-radius: 5px; padding: 3px 10px;
-  }
-  .info-act { font-size: 13px; color: var(--green-acc); font-weight: 500; }
-  .info-hora { font-family: 'DM Mono', monospace; font-size: 11px; color: var(--text3); margin-top: 2px; }
-  .nota { font-size: 12px; color: var(--text3); line-height: 1.5; }
+  .nec  { font-size: 12px; color: var(--text2); line-height: 1.55; }
+  .nota { font-size: 11px; color: var(--text3); line-height: 1.4; }
+  .op-tag { display: inline-block; font-size: 11px; font-weight: 600; background: var(--op-bg); color: var(--op-fg); border-radius: 5px; padding: 2px 8px; }
+  .info-act  { font-size: 12px; color: var(--green-acc); font-weight: 500; }
+  .info-hora { font-family: 'DM Mono', monospace; font-size: 10px; color: var(--text3); margin-top: 2px; }
 
   .ok-btn {
-    width: 32px; height: 32px; border-radius: 50%;
-    border: 2px solid var(--border);
-    background: #fff; cursor: pointer;
+    width: 30px; height: 30px; border-radius: 50%;
+    border: 2px solid var(--border); background: #fff; cursor: pointer;
     display: flex; align-items: center; justify-content: center;
-    transition: all .18s; outline: none;
-    margin: 0 auto;
+    transition: all .18s; outline: none; margin: 0 auto;
   }
   .ok-btn:hover { border-color: var(--green-acc); background: var(--green-light); }
   .ok-btn.done { background: var(--green-acc); border-color: var(--green-acc); }
   .ok-btn.done svg { stroke: #fff; }
-  .ok-btn svg { width: 16px; height: 16px; stroke: var(--border); stroke-width: 2.5; fill: none; transition: stroke .18s; }
-  td.ok-cell { text-align: center; width: 60px; }
+  .ok-btn svg { width: 14px; height: 14px; stroke: var(--border); stroke-width: 2.5; fill: none; transition: stroke .18s; }
+  td.ok-cell { text-align: center; width: 50px; }
 
   .loading { padding: 4rem; text-align: center; font-family: 'DM Mono', monospace; font-size: 12px; color: var(--text3); }
   .empty   { padding: 3rem; text-align: center; font-family: 'DM Mono', monospace; font-size: 12px; color: var(--text3); }
+
   .footer {
-    padding: 1rem 2.5rem; border-top: 1px solid var(--border);
-    font-family: 'DM Mono', monospace; font-size: 11px; color: var(--text3);
+    padding: .8rem 1.5rem; border-top: 1px solid var(--border);
+    font-family: 'DM Mono', monospace; font-size: 10px; color: var(--text3);
     display: flex; justify-content: space-between; align-items: center;
     background: var(--bg2);
   }
   .footer a { color: var(--green-acc); text-decoration: none; }
+
+  /* MOBILE CARDS */
+  .cards { display: none; padding: .8rem 1rem; }
+  .card {
+    background: var(--bg2); border-radius: 10px;
+    border: 1px solid var(--border2);
+    margin-bottom: .7rem;
+    box-shadow: 0 1px 3px rgba(0,0,0,.05);
+    overflow: hidden;
+  }
+  .card-header {
+    display: flex; align-items: center; justify-content: space-between;
+    padding: .65rem 1rem; background: var(--green-btn); gap: 8px;
+  }
+  .card-header-left { display: flex; align-items: center; gap: 8px; flex: 1; min-width: 0; }
+  .card-dia { font-size: 10px; font-weight: 600; color: #a8d4b8; text-transform: uppercase; letter-spacing: .08em; font-family: 'DM Mono', monospace; white-space: nowrap; }
+  .card-esp { font-size: 14px; font-weight: 700; color: #fff; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+  .card-horario { font-family: 'DM Mono', monospace; font-size: 12px; color: #a8d4b8; white-space: nowrap; }
+  .card-body { padding: .7rem 1rem; display: flex; flex-direction: column; gap: .45rem; }
+  .card-nec  { font-size: 13px; color: var(--text2); line-height: 1.55; }
+  .card-nota { font-size: 11px; color: var(--text3); font-style: italic; }
+  .card-footer {
+    display: flex; align-items: center; justify-content: flex-end;
+    padding: .5rem 1rem; border-top: 1px solid var(--border2); gap: 8px;
+  }
+  .card-ok-label { font-size: 11px; color: var(--text3); font-family: 'DM Mono', monospace; }
+
+  @media (max-width: 700px) {
+    .table-wrap { display: none; }
+    .cards { display: block; }
+    .filters { padding: .65rem 1rem; gap: .6rem; }
+    .filter-group { flex: 1; min-width: 130px; }
+    select, input[type=text] { width: 100%; min-width: unset; font-size: 14px; }
+    .header { padding: .8rem 1rem; }
+    .header-logo { height: 36px; }
+    .header-title { font-size: 15px; }
+    .header-cycle { font-size: 10px; }
+    .status { padding: .4rem 1rem; }
+    .footer { padding: .6rem 1rem; flex-direction: column; gap: 4px; text-align: center; }
+  }
 </style>
 </head>
 <body>
@@ -163,7 +193,7 @@
 <div class="filters">
   <div class="filter-group">
     <span class="filter-label">Día</span>
-    <select id="sel-dia" onchange="render()"><option value="">Todos los días</option></select>
+    <select id="sel-dia" onchange="render()"><option value="">Todos</option></select>
   </div>
   <div class="filter-group">
     <span class="filter-label">Responsable</span>
@@ -171,7 +201,7 @@
   </div>
   <div class="filter-group">
     <span class="filter-label">Espacio</span>
-    <input id="inp-esp" type="text" placeholder="Ej: Yurta" oninput="render()" style="width:140px">
+    <input id="inp-esp" type="text" placeholder="Ej: Yurta" oninput="render()">
   </div>
   <span class="count" id="count">—</span>
 </div>
@@ -188,7 +218,7 @@
       <tr>
         <th>Día</th>
         <th>Responsable</th>
-        <th>Horario Seteo</th>
+        <th>Horario</th>
         <th>Espacio</th>
         <th>Necesidad</th>
         <th>Info</th>
@@ -198,8 +228,10 @@
     </thead>
     <tbody id="tbody"></tbody>
   </table>
-  <div id="empty" class="empty" style="display:none">Sin resultados para este filtro.</div>
+  <div id="empty" class="empty" style="display:none">Sin resultados.</div>
 </div>
+
+<div class="cards" id="cards"></div>
 
 <footer class="footer">
   <span>Portal Bosque · <a href="https://www.portalbosque.com" target="_blank">portalbosque.com</a></span>
@@ -210,181 +242,180 @@
 const CSV_URL = 'https://docs.google.com/spreadsheets/d/e/2PACX-1vQAjbZFpNcEopTvKwlp2Nn6EpFWNPAf3hMK0vc_NRM5K3NhSTe73DsHUjEV3YjKGWT4auUjQ3kXpucf/pub?gid=0&single=true&output=csv';
 let ALL_DATA = [];
 
-const DIAS_ORDER   = ['LUNES','MARTES','MIERCOLES','JUEVES','VIERNES','SABADO','DOMINGO'];
+const DIAS_ORDER    = ['LUNES','MARTES','MIERCOLES','JUEVES','VIERNES','SABADO','DOMINGO'];
 const RESPS_VALIDOS = ['heber','daniel','nahuel','dani'];
 
-function normalizar(s) {
-  return (s || '').toUpperCase().normalize('NFD').replace(/[\u0300-\u036f]/g, '');
+function normalizar(s){
+  return (s||'').toUpperCase().normalize('NFD').replace(/[\u0300-\u036f]/g,'');
 }
-
-function parseCSV(text) {
-  const rows = []; const lines = text.split('\n'); let lastDia = '';
-  for (let i = 1; i < lines.length; i++) {
-    const line = lines[i].trim(); if (!line) continue;
-    const cols = splitCSVLine(line); if (cols.length < 4) continue;
-    let [dia, resp, horario, espacio, necesidad, info, notas] = cols.map(c => c.trim());
-    if (dia) lastDia = dia; else dia = lastDia;
-    if (!espacio) continue;
-    rows.push({
-      dia, diaNorm: normalizar(dia),
-      resp: resp||'', horario: horario||'',
-      espacio, necesidad: necesidad||'', info: info||'', notas: notas||''
-    });
+function parseCSV(text){
+  const rows=[]; const lines=text.split('\n'); let lastDia='';
+  for(let i=1;i<lines.length;i++){
+    const line=lines[i].trim(); if(!line) continue;
+    const cols=splitCSVLine(line); if(cols.length<4) continue;
+    let [dia,resp,horario,espacio,necesidad,info,notas]=cols.map(c=>c.trim());
+    if(dia) lastDia=dia; else dia=lastDia;
+    if(!espacio) continue;
+    rows.push({dia,diaNorm:normalizar(dia),resp:resp||'',horario:horario||'',espacio,necesidad:necesidad||'',info:info||'',notas:notas||''});
   }
   return rows;
 }
-
-function splitCSVLine(line) {
-  const result = []; let cur = '', inQ = false;
-  for (let i = 0; i < line.length; i++) {
-    const ch = line[i];
-    if (ch === '"') { inQ = !inQ; }
-    else if (ch === ',' && !inQ) { result.push(cur); cur = ''; }
-    else { cur += ch; }
+function splitCSVLine(line){
+  const result=[]; let cur='',inQ=false;
+  for(let i=0;i<line.length;i++){
+    const ch=line[i];
+    if(ch==='"'){inQ=!inQ;}
+    else if(ch===','&&!inQ){result.push(cur);cur='';}
+    else{cur+=ch;}
   }
   result.push(cur); return result;
 }
-
-function populateSelect(id, values) {
-  const sel = document.getElementById(id);
-  while (sel.options.length > 1) sel.remove(1);
-  values.forEach(v => {
-    const opt = document.createElement('option');
-    opt.value = v.val !== undefined ? v.val : v;
-    opt.textContent = v.label !== undefined ? v.label : v;
+function populateSelect(id,values){
+  const sel=document.getElementById(id);
+  while(sel.options.length>1) sel.remove(1);
+  values.forEach(v=>{
+    const opt=document.createElement('option');
+    opt.value=v.val!==undefined?v.val:v;
+    opt.textContent=v.label!==undefined?v.label:v;
     sel.appendChild(opt);
   });
 }
-
-async function fetchData() {
-  try {
-    const res = await fetch(CSV_URL);
-    if (!res.ok) throw new Error('HTTP ' + res.status);
-    const text = await res.text();
-    ALL_DATA = parseCSV(text);
-
-    // Días ordenados
-    const diasNormEnDatos = new Set(ALL_DATA.map(r => r.diaNorm).filter(Boolean));
-    const diasOpts = DIAS_ORDER
-      .filter(dNorm => diasNormEnDatos.has(dNorm))
-      .map(dNorm => {
-        const original = ALL_DATA.find(r => r.diaNorm === dNorm).dia;
-        return { val: dNorm, label: original.charAt(0).toUpperCase() + original.slice(1).toLowerCase() };
-      });
-    populateSelect('sel-dia', diasOpts);
-
-    // Responsables — solo nombres válidos
-    const resps = [...new Set(ALL_DATA.map(r => r.resp).filter(r => RESPS_VALIDOS.includes(r.toLowerCase().trim())))].sort();
-    populateSelect('sel-resp', resps);
-
-    document.getElementById('loading').style.display = 'none';
-    document.getElementById('table').style.display = 'table';
-    const now = new Date();
-    document.getElementById('status-text').textContent = `Datos sincronizados · ${now.toLocaleDateString('es-UY')} ${now.toLocaleTimeString('es-UY', {hour:'2-digit',minute:'2-digit'})}`;
-    document.getElementById('last-update').textContent = `Última actualización: ${now.toLocaleDateString('es-UY')}`;
+async function fetchData(){
+  try{
+    const res=await fetch(CSV_URL);
+    if(!res.ok) throw new Error('HTTP '+res.status);
+    const text=await res.text();
+    ALL_DATA=parseCSV(text);
+    const diasNorm=new Set(ALL_DATA.map(r=>r.diaNorm).filter(Boolean));
+    const diasOpts=DIAS_ORDER.filter(d=>diasNorm.has(d)).map(d=>{
+      const orig=ALL_DATA.find(r=>r.diaNorm===d).dia;
+      return {val:d,label:orig.charAt(0).toUpperCase()+orig.slice(1).toLowerCase()};
+    });
+    populateSelect('sel-dia',diasOpts);
+    const resps=[...new Set(ALL_DATA.map(r=>r.resp).filter(r=>RESPS_VALIDOS.includes(r.toLowerCase().trim())))].sort();
+    populateSelect('sel-resp',resps);
+    document.getElementById('loading').style.display='none';
+    document.getElementById('table').style.display='table';
+    const now=new Date();
+    document.getElementById('status-text').textContent=`Datos sincronizados · ${now.toLocaleDateString('es-UY')} ${now.toLocaleTimeString('es-UY',{hour:'2-digit',minute:'2-digit'})}`;
+    document.getElementById('last-update').textContent=`Última actualización: ${now.toLocaleDateString('es-UY')}`;
     render();
-  } catch(e) {
-    document.getElementById('loading').textContent = 'Error al cargar datos. Revisá la conexión o los permisos de la planilla.';
-    document.getElementById('status-text').textContent = 'Sin conexión con Google Sheets';
-    document.querySelector('.status-dot').style.background = '#c05050';
-    document.querySelector('.status-dot').style.animation = 'none';
+  } catch(e){
+    document.getElementById('loading').textContent='Error al cargar datos.';
+    document.getElementById('status-text').textContent='Sin conexión con Google Sheets';
+    document.querySelector('.status-dot').style.background='#c05050';
+    document.querySelector('.status-dot').style.animation='none';
   }
 }
-
-function respClass(r) {
-  const k = (r||'').toLowerCase().trim();
-  if (k === 'heber')  return 'resp-heber';
-  if (k === 'daniel') return 'resp-daniel';
-  if (k === 'nahuel') return 'resp-nahuel';
-  if (k === 'dani')   return 'resp-dani';
+function respClass(r){
+  const k=(r||'').toLowerCase().trim();
+  if(k==='heber')  return 'resp-heber';
+  if(k==='daniel') return 'resp-daniel';
+  if(k==='nahuel') return 'resp-nahuel';
+  if(k==='dani')   return 'resp-dani';
   return '';
 }
-function initials(n) { return n ? n.slice(0,2).toUpperCase() : '?' }
-
-// ---- OK state con reset semanal ----
-function getWeekKey() {
-  const now = new Date();
-  const jan1 = new Date(now.getFullYear(), 0, 1);
-  const week = Math.ceil(((now - jan1) / 86400000 + jan1.getDay() + 1) / 7);
+function initials(n){ return n?n.slice(0,2).toUpperCase():'?'; }
+function getWeekKey(){
+  const now=new Date();
+  const jan1=new Date(now.getFullYear(),0,1);
+  const week=Math.ceil(((now-jan1)/86400000+jan1.getDay()+1)/7);
   return `ok_${now.getFullYear()}_w${week}`;
 }
-function loadOkState() {
-  const key = getWeekKey();
-  try { return JSON.parse(localStorage.getItem(key) || '{}'); } catch { return {}; }
+function loadOkState(){
+  try{ return JSON.parse(localStorage.getItem(getWeekKey())||'{}'); } catch{ return {}; }
 }
-function saveOkState(state) {
-  Object.keys(localStorage).forEach(k => { if (k.startsWith('ok_') && k !== getWeekKey()) localStorage.removeItem(k); });
-  localStorage.setItem(getWeekKey(), JSON.stringify(state));
+function saveOkState(state){
+  Object.keys(localStorage).forEach(k=>{ if(k.startsWith('ok_')&&k!==getWeekKey()) localStorage.removeItem(k); });
+  localStorage.setItem(getWeekKey(),JSON.stringify(state));
 }
-function toggleOk(id) {
-  const state = loadOkState();
-  state[id] = !state[id];
+function toggleOk(id){
+  const state=loadOkState();
+  state[id]=!state[id];
   saveOkState(state);
-  const btn = document.querySelector(`[data-ok-id="${id}"]`);
-  if (btn) btn.classList.toggle('done', !!state[id]);
+  document.querySelectorAll(`[data-ok-id="${id}"]`).forEach(btn=>btn.classList.toggle('done',!!state[id]));
 }
-function rowId(r, idx) {
-  return normalizar(r.diaNorm + '_' + r.resp + '_' + r.espacio + '_' + idx).replace(/\s+/g,'_');
+function rowId(r,idx){
+  return normalizar(r.diaNorm+'_'+r.resp+'_'+r.espacio+'_'+idx).replace(/\s+/g,'_');
 }
-
-function render() {
+function buildInfoHtml(r){
+  if((r.info||'').toLowerCase().includes('operativa')) return `<span class="op-tag">Operativa</span>`;
+  const lines=r.info.split('\n');
+  const act=lines[0]||''; const hora=lines.slice(1).join(' ');
+  if(!act) return `<span style="color:var(--text3)">—</span>`;
+  return `<div class="info-act">${act}</div>${hora?`<div class="info-hora">${hora}</div>`:''}`;
+}
+function render(){
   const dia  = normalizar(document.getElementById('sel-dia').value);
   const resp = document.getElementById('sel-resp').value.toLowerCase().trim();
   const esp  = document.getElementById('inp-esp').value.toLowerCase().trim();
-
-  const filtered = ALL_DATA.filter(r => {
-    if (dia  && r.diaNorm !== dia) return false;
-    if (resp && r.resp.toLowerCase() !== resp) return false;
-    if (esp  && !r.espacio.toLowerCase().includes(esp)) return false;
+  const filtered=ALL_DATA.filter(r=>{
+    if(dia  && r.diaNorm!==dia) return false;
+    if(resp && r.resp.toLowerCase()!==resp) return false;
+    if(esp  && !r.espacio.toLowerCase().includes(esp)) return false;
     return true;
   });
+  document.getElementById('count').textContent=filtered.length+' fila'+(filtered.length!==1?'s':'');
+  const empty=document.getElementById('empty');
+  if(!filtered.length){
+    document.getElementById('tbody').innerHTML='';
+    document.getElementById('cards').innerHTML='';
+    empty.style.display='block'; return;
+  }
+  empty.style.display='none';
+  const okState=loadOkState();
 
-  document.getElementById('count').textContent = filtered.length + ' fila' + (filtered.length !== 1 ? 's' : '');
-  const tbody = document.getElementById('tbody');
-  const empty = document.getElementById('empty');
-
-  if (!filtered.length) { tbody.innerHTML = ''; empty.style.display = 'block'; return; }
-  empty.style.display = 'none';
-
-  const isOp = r => (r.info||'').toLowerCase().includes('operativa') || (r.info||'').toLowerCase().includes('tarea operativa');
-  const okState = loadOkState();
-
-  tbody.innerHTML = filtered.map((r, idx) => {
-    const rc = respClass(r.resp);
-    const op = isOp(r);
-    const infoLines = r.info.split('\n');
-    const infoAct = infoLines[0] || '';
-    const infoHora = infoLines.slice(1).join(' ');
-    const id = rowId(r, idx);
-    const isDone = !!okState[id];
-
-    const respHtml = r.resp
-      ? `<div class="person ${rc}"><div class="avatar">${initials(r.resp)}</div><span class="resp-name">${r.resp}</span></div>`
-      : `<span style="color:var(--text3)">—</span>`;
-
-    const infoHtml = op
-      ? `<span class="op-tag">Operativa</span>`
-      : infoAct
-        ? `<div class="info-act">${infoAct}</div>${infoHora ? `<div class="info-hora">${infoHora}</div>` : ''}`
-        : `<span style="color:var(--text3)">—</span>`;
-
+  // DESKTOP
+  document.getElementById('tbody').innerHTML=filtered.map((r,idx)=>{
+    const rc=respClass(r.resp); const id=rowId(r,idx); const isDone=!!okState[id];
+    const respHtml=r.resp
+      ?`<div class="person ${rc}"><div class="avatar">${initials(r.resp)}</div><span class="resp-name">${r.resp}</span></div>`
+      :`<span style="color:var(--text3)">—</span>`;
     return `<tr>
-      <td><span class="dia-text">${r.dia.charAt(0).toUpperCase() + r.dia.slice(1).toLowerCase()}</span></td>
+      <td><span class="dia-text">${r.dia.charAt(0).toUpperCase()+r.dia.slice(1).toLowerCase()}</span></td>
       <td>${respHtml}</td>
-      <td><span class="horario">${r.horario || '—'}</span></td>
+      <td><span class="horario">${r.horario||'—'}</span></td>
       <td><span class="esp-name">${r.espacio}</span></td>
-      <td><div class="nec">${r.necesidad || '—'}</div></td>
-      <td>${infoHtml}</td>
-      <td><div class="nota">${r.notas || '—'}</div></td>
-      <td class="ok-cell"><button class="ok-btn${isDone ? ' done' : ''}" data-ok-id="${id}" onclick="toggleOk('${id}')">
+      <td><div class="nec">${r.necesidad||'—'}</div></td>
+      <td>${buildInfoHtml(r)}</td>
+      <td><div class="nota">${r.notas||'—'}</div></td>
+      <td class="ok-cell"><button class="ok-btn${isDone?' done':''}" data-ok-id="${id}" onclick="toggleOk('${id}')">
         <svg viewBox="0 0 16 16"><polyline points="2.5,8.5 6.5,12.5 13.5,4"/></svg>
       </button></td>
     </tr>`;
   }).join('');
+
+  // MOBILE CARDS
+  document.getElementById('cards').innerHTML=filtered.map((r,idx)=>{
+    const rc=respClass(r.resp); const id=rowId(r,idx); const isDone=!!okState[id];
+    const respHtml=r.resp
+      ?`<div class="person ${rc}"><div class="avatar">${initials(r.resp)}</div><span class="resp-name">${r.resp}</span></div>`:'';
+    return `<div class="card">
+      <div class="card-header">
+        <div class="card-header-left">
+          <span class="card-dia">${r.dia.charAt(0).toUpperCase()+r.dia.slice(1).toLowerCase()}</span>
+          <span class="card-esp">${r.espacio}</span>
+        </div>
+        <span class="card-horario">${r.horario||''}</span>
+      </div>
+      <div class="card-body">
+        ${respHtml}
+        ${r.necesidad?`<div class="card-nec">${r.necesidad}</div>`:''}
+        <div>${buildInfoHtml(r)}</div>
+        ${r.notas?`<div class="card-nota">${r.notas}</div>`:''}
+      </div>
+      <div class="card-footer">
+        <span class="card-ok-label">Completado</span>
+        <button class="ok-btn${isDone?' done':''}" data-ok-id="${id}" onclick="toggleOk('${id}')">
+          <svg viewBox="0 0 16 16"><polyline points="2.5,8.5 6.5,12.5 13.5,4"/></svg>
+        </button>
+      </div>
+    </div>`;
+  }).join('');
 }
 
 fetchData();
-setInterval(fetchData, 5 * 60 * 1000);
+setInterval(fetchData, 5*60*1000);
 </script>
 </body>
 </html>
