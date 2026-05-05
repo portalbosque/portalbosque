@@ -8,78 +8,89 @@
 <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@600;700&family=DM+Sans:wght@300;400;500;600&family=DM+Mono:wght@400;500&display=swap" rel="stylesheet">
 
 <style>
-/* =========================
-   TU CSS ORIGINAL (INTACTO)
-========================= */
-body { margin:0; font-family:'DM Sans', sans-serif; background:#f5f7f2; color:#1a2e20; }
-
-.header {
-  background:#1e3a2f;
-  padding:1rem 1.5rem;
-  color:white;
-  display:flex;
-  justify-content:space-between;
-  align-items:center;
+:root {
+  --dark:#1e3a2f;
+  --green-btn:#1e3a2f;
+  --green-light:#e8f0e4;
+  --green-acc:#3a7a52;
+  --op-bg:#2d5c3e;
+  --op-fg:#fff;
+  --border:#c8d8c0;
+  --border2:#dde8d8;
+  --bg:#f5f7f2;
+  --bg2:#fff;
+  --text:#1a2e20;
+  --text2:#3a5040;
+  --text3:#6a8070;
+  --filter-bg:#eef3e8;
+  --pending-bg:#fff8e6;
+  --pending-border:#e6a817;
+  --pending-text:#7a5500;
 }
 
-.header-title { font-weight:600; }
-.status { padding:10px 1.5rem; font-size:12px; }
+*{box-sizing:border-box;margin:0;padding:0}
+body{background:var(--bg);font-family:'DM Sans',sans-serif;color:var(--text)}
 
-.table-wrap { padding:1rem 1.5rem; }
+.header{background:var(--dark);padding:1rem;display:flex;justify-content:space-between;align-items:center}
+.header-title{color:#fff;font-weight:600}
+.header-cycle{color:#a8d4b8;font-size:12px}
 
-table {
-  width:100%;
-  border-collapse:collapse;
-  background:white;
-  border-radius:10px;
-  overflow:hidden;
-}
+.today-bar{background:var(--dark);padding:.5rem 1rem;color:#fff;display:flex;gap:10px;align-items:center}
+.today-badge{background:var(--green-acc);padding:3px 10px;border-radius:20px;font-weight:700}
+.today-date{margin-left:auto;color:#a8d4b8;font-size:12px}
 
-th {
-  background:#1e3a2f;
-  color:white;
-  text-align:left;
-  font-size:11px;
-  padding:10px;
-}
+.filters{display:flex;gap:10px;padding:1rem;background:var(--filter-bg);flex-wrap:wrap}
+select,input{padding:6px;border-radius:6px;border:1px solid var(--border)}
 
-td {
-  padding:10px;
-  border-bottom:1px solid #eee;
-  font-size:13px;
-}
+.status{padding:.5rem 1rem;font-size:11px;color:var(--text3)}
 
-.ok-btn {
-  padding:6px 12px;
-  border-radius:20px;
-  border:1px solid #ccc;
-  cursor:pointer;
-  font-size:12px;
-  background:white;
-}
+.table-wrap{padding:1rem}
+table{width:100%;border-collapse:collapse;background:#fff}
+th{background:var(--green-btn);color:#fff;padding:10px;font-size:11px;text-transform:uppercase}
+td{padding:10px;border-bottom:1px solid var(--border2);font-size:13px}
 
-.ok-btn.done {
-  background:#3a7a52;
-  color:white;
-  border-color:#3a7a52;
-}
+.ok-btn{padding:5px 10px;border-radius:20px;border:1px solid var(--border);cursor:pointer;background:#fff}
+.ok-btn.done{background:var(--green-acc);color:#fff}
+
+.pending-section{margin:1rem;border:2px solid var(--pending-border);display:none;border-radius:8px;overflow:hidden}
+.pending-section.visible{display:block}
+.pending-header{background:var(--pending-border);color:#fff;padding:.5rem 1rem;font-weight:700}
+.pending-table td{padding:8px;background:var(--pending-bg);border-bottom:1px solid #f0d88a;font-size:12px}
 </style>
 </head>
 
 <body>
 
 <div class="header">
-  <div class="header-title">Portal Bosque — Seteos Logísticos</div>
+  <div style="color:#fff;font-weight:700">Portal Bosque</div>
+  <div class="header-cycle">Seteos Logísticos</div>
 </div>
 
-<div class="status" id="status">Cargando...</div>
+<div class="today-bar">
+  <span>Hoy</span>
+  <span class="today-badge" id="today-badge">—</span>
+  <span class="today-date" id="today-date">—</span>
+</div>
+
+<div class="filters">
+  <select id="sel-dia" onchange="render()"><option value="">Hoy</option></select>
+  <select id="sel-resp" onchange="render()"><option value="">Todos</option></select>
+  <input id="inp-esp" placeholder="Espacio" oninput="render()">
+</div>
+
+<div class="status" id="status-text">Cargando...</div>
+
+<div class="pending-section" id="pending-section">
+  <div class="pending-header">Pendientes de ayer</div>
+  <table id="pending-table"></table>
+</div>
 
 <div class="table-wrap">
   <table>
     <thead>
       <tr>
         <th>Día</th>
-        <th>Responsable</th>
+        <th>Resp</th>
         <th>Horario</th>
         <th>Espacio</th>
         <th>Necesidad</th>
@@ -93,120 +104,116 @@ td {
 </div>
 
 <script>
-/* =========================
-   🔵 BACKEND
-========================= */
-const APPS_SCRIPT_URL =
-'https://script.google.com/macros/s/AKfycbykJx6LauaXrGkUnmocIeNinK5fHDxL_zFlk2Os32s3yUiC42CnIzlp-pTSOUeqBuo/exec';
+
+const CSV_URL = "https://docs.google.com/spreadsheets/d/e/2PACX-1vQAjbZFpNcEopTvKwlp2Nn6EpFWNPAf3hMK0vc_NRM5K3NhSTe73DsHUjEV3YjKGWT4auUjQ3kXpucf/pub?gid=0&single=true&output=csv";
+const SCRIPT_URL = "https://script.google.com/macros/s/AKfycbykJx6LauaXrGkUnmocIeNinK5fHDxL_zFlk2Os32s3yUiC42CnIzlp-pTSOUeqBuo/exec";
 
 let DATA = [];
-let ROWS = [];
+let MAP = [];
 
-function normalizar(t){
-  return (t||'').toUpperCase()
-    .normalize('NFD')
-    .replace(/[\u0300-\u036f]/g,'');
+function norm(s){return (s||"").toUpperCase().normalize("NFD").replace(/\p{Diacritic}/gu,"");}
+
+function today(){
+  return ["DOMINGO","LUNES","MARTES","MIERCOLES","JUEVES","VIERNES","SABADO"][new Date().getDay()];
 }
 
-/* =========================
-   🔵 CARGAR DATOS
-========================= */
-async function load() {
-  try {
-    const res = await fetch(APPS_SCRIPT_URL + '?getData=true');
-    const json = await res.json();
+function yesterday(){
+  const d=new Date();d.setDate(d.getDate()-1);
+  return ["DOMINGO","LUNES","MARTES","MIERCOLES","JUEVES","VIERNES","SABADO"][d.getDay()];
+}
 
-    DATA = [];
-    ROWS = [];
+async function load(){
+  const r=await fetch(CSV_URL+"?t="+Date.now());
+  const t=await r.text();
+  parse(t);
+  render();
+  pending();
+}
 
-    let lastDia = '';
-
-    for (let i=1;i<json.data.length;i++){
-      const r = json.data[i];
-      if(!r || r.length<4) continue;
-
-      let [dia,resp,horario,espacio,nec,info,notas,ok] =
-        r.map(e => (e||'').toString().trim());
-
-      if(dia) lastDia = dia; else dia = lastDia;
-      if(!espacio) continue;
-
-      DATA.push({
-        dia,
-        resp,
-        horario,
-        espacio,
-        nec,
-        info,
-        notas,
-        ok: (ok||'').toUpperCase()==='SI'
-      });
-
-      ROWS.push(i+1);
-    }
-
-    render();
-    document.getElementById('status').innerText = 'Sincronizado ✔️';
-
-  } catch(e){
-    console.error(e);
-    document.getElementById('status').innerText = 'Error de conexión';
+function parse(t){
+  const lines=t.split("\n");
+  DATA=[];MAP=[];
+  let last="";
+  for(let i=1;i<lines.length;i++){
+    const c=lines[i].split(",");
+    if(!c[3]) continue;
+    if(c[0]) last=c[0];
+    DATA.push({
+      dia:last,
+      diaN:norm(last),
+      resp:c[1],
+      horario:c[2],
+      esp:c[3],
+      nec:c[4],
+      info:c[5],
+      notas:c[6],
+      ok:c[7]==="SI"
+    });
+    MAP.push(i+1);
   }
 }
 
-/* =========================
-   🟢 TOGGLE OK
-========================= */
-async function toggle(i){
-  const row = DATA[i];
-  const sheetRow = ROWS[i];
-  const newVal = row.ok ? '' : 'SI';
-
-  try {
-    const res = await fetch(
-      APPS_SCRIPT_URL + `?row=${sheetRow}&value=${newVal}`
-    );
-
-    const json = await res.json();
-    if(!json.ok) throw new Error();
-
-    row.ok = !row.ok;
-    await load();
-
-  } catch(e){
-    alert('Error al guardar');
-  }
-}
-
-/* =========================
-   🔵 RENDER
-========================= */
 function render(){
-  const tbody = document.getElementById('tbody');
+  const dia=document.getElementById("sel-dia").value||today();
+  const resp=document.getElementById("sel-resp").value;
+  const esp=document.getElementById("inp-esp").value.toLowerCase();
 
-  tbody.innerHTML = DATA.map((r,i)=>`
+  const f=DATA.filter(r=>
+    (!dia||r.diaN===dia)&&
+    (!resp||r.resp===resp)&&
+    (!esp||r.esp.toLowerCase().includes(esp))
+  );
+
+  document.getElementById("tbody").innerHTML=f.map((r,i)=>`
     <tr>
       <td>${r.dia}</td>
-      <td>${r.resp}</td>
-      <td>${r.horario}</td>
-      <td>${r.espacio}</td>
-      <td>${r.nec}</td>
-      <td>${r.info}</td>
-      <td>${r.notas}</td>
-      <td>
-        <button class="ok-btn ${r.ok?'done':''}" onclick="toggle(${i})">
-          ${r.ok?'OK':'Pendiente'}
-        </button>
-      </td>
+      <td>${r.resp||"-"}</td>
+      <td>${r.horario||"-"}</td>
+      <td>${r.esp}</td>
+      <td>${r.nec||""}</td>
+      <td>${r.info||""}</td>
+      <td>${r.notas||""}</td>
+      <td><button class="ok-btn ${r.ok?'done':''}" onclick="toggle(${i})">${r.ok?'OK':'-'}</button></td>
     </tr>
-  `).join('');
+  `).join("");
+
+  document.getElementById("today-badge").textContent=today();
+  document.getElementById("today-date").textContent=new Date().toLocaleDateString("es-UY");
 }
 
-/* =========================
-   AUTO START
-========================= */
+function pending(){
+  const y=yesterday();
+  const p=DATA.filter(r=>r.diaN===y&&!r.ok);
+  const sec=document.getElementById("pending-section");
+  const tb=document.getElementById("pending-table");
+
+  if(!p.length){sec.classList.remove("visible");return;}
+  sec.classList.add("visible");
+
+  tb.innerHTML=p.map(r=>`
+    <tr>
+      <td>${r.dia} - ${r.esp}</td>
+      <td>${r.resp}</td>
+      <td>${r.nec||""}</td>
+    </tr>
+  `).join("");
+}
+
+async function toggle(i){
+  const r=DATA[i];
+  r.ok=!r.ok;
+
+  await fetch(SCRIPT_URL,{
+    method:"POST",
+    body:JSON.stringify({row:MAP[i],value:r.ok?"SI":""})
+  });
+
+  render();
+  pending();
+}
+
 load();
-setInterval(load, 60000);
+
 </script>
 
 </body>
