@@ -48,7 +48,6 @@
   .header-title { font-size: 18px; font-weight: 600; color: #fff; }
   .header-cycle { font-size: 12px; color: #a8d4b8; font-family: 'DM Mono', monospace; margin-top: 2px; letter-spacing: .06em; }
 
-  /* HOY BADGE */
   .today-bar {
     background: var(--dark);
     padding: .5rem 1.5rem .6rem;
@@ -93,7 +92,6 @@
   .status-dot { width: 6px; height: 6px; border-radius: 50%; background: var(--green-acc); animation: pulse 2s ease-in-out infinite; flex-shrink: 0; }
   @keyframes pulse { 0%,100%{opacity:1} 50%{opacity:.3} }
 
-  /* SECCION PENDIENTES */
   .pending-section {
     margin: 1rem 1.5rem .5rem;
     border: 2px solid var(--pending-border);
@@ -107,7 +105,6 @@
     padding: .55rem 1rem;
     display: flex; align-items: center; gap: 8px;
   }
-  .pending-icon { font-size: 14px; }
   .pending-title { font-size: 12px; font-weight: 700; color: #fff; letter-spacing: .04em; text-transform: uppercase; font-family: 'DM Mono', monospace; }
   .pending-count { margin-left: auto; background: rgba(255,255,255,.25); color: #fff; font-size: 11px; font-weight: 700; padding: 2px 8px; border-radius: 10px; font-family: 'DM Mono', monospace; }
   .pending-table { width: 100%; border-collapse: collapse; background: var(--pending-bg); }
@@ -116,6 +113,7 @@
   .pending-table .pend-esp { font-weight: 700; color: var(--pending-text); }
   .pending-table .pend-dia { font-size: 11px; color: #9a7200; font-family: 'DM Mono', monospace; }
   .pending-table .pend-resp { font-size: 11px; color: var(--pending-text); }
+  .pending-table td.ok-cell { text-align: center; width: 120px; }
 
   .table-wrap { padding: 1.2rem 1.5rem; overflow-x: auto; }
   table { width: 100%; border-collapse: collapse; background: var(--bg2); border-radius: 10px; overflow: hidden; box-shadow: 0 1px 4px rgba(0,0,0,.06); }
@@ -131,16 +129,13 @@
   tr:last-child td { border-bottom: none; }
   tbody tr:hover td { background: var(--green-light) !important; transition: background .12s; }
 
-  /* DIA BADGE */
   .dia-badge {
     display: inline-flex; flex-direction: column; align-items: center;
     background: var(--dark); color: #a8d4b8;
     border-radius: 7px; padding: 4px 10px; min-width: 68px;
   }
   .dia-badge-name { font-size: 11px; font-weight: 700; letter-spacing: .06em; text-transform: uppercase; font-family: 'DM Mono', monospace; color: #fff; }
-  .dia-badge-sub  { font-size: 9px; color: #a8d4b8; letter-spacing: .04em; font-family: 'DM Mono', monospace; }
 
-  /* HORARIO BADGE */
   .horario-badge {
     display: inline-flex; align-items: center; gap: 5px;
     background: var(--green-light); border: 1px solid var(--border);
@@ -173,7 +168,6 @@
   .info-act  { font-size: 12px; color: var(--green-acc); font-weight: 500; }
   .info-hora { font-family: 'DM Mono', monospace; font-size: 10px; color: var(--text3); margin-top: 2px; }
 
-  /* BOTON COMPLETADO */
   .ok-btn {
     display: flex; align-items: center; gap: 6px;
     padding: 5px 12px; border-radius: 20px;
@@ -184,7 +178,6 @@
   }
   .ok-btn:hover { border-color: var(--green-acc); background: var(--green-light); color: var(--green-acc); }
   .ok-btn.done { background: var(--green-acc); border-color: var(--green-acc); color: #fff; }
-  .ok-btn.done svg { stroke: #fff; }
   .ok-btn svg { width: 13px; height: 13px; stroke: currentColor; stroke-width: 2.5; fill: none; flex-shrink: 0; }
   .ok-btn.loading { opacity: .6; pointer-events: none; }
   td.ok-cell { text-align: center; width: 120px; }
@@ -200,7 +193,6 @@
   }
   .footer a { color: var(--green-acc); text-decoration: none; }
 
-  /* MOBILE CARDS */
   .cards { display: none; padding: .8rem 1rem; }
   .card {
     background: var(--bg2); border-radius: 10px;
@@ -229,16 +221,6 @@
   .card-footer {
     display: flex; align-items: center; justify-content: flex-end;
     padding: .5rem 1rem; border-top: 1px solid var(--border2); gap: 8px;
-  }
-  .card-ok-label { font-size: 11px; color: var(--text3); font-family: 'DM Mono', monospace; }
-
-  /* CARD PENDIENTE */
-  .card.card-pending { border: 2px solid var(--pending-border); }
-  .card.card-pending .card-header { background: var(--pending-border); }
-  .card-pending-tag {
-    font-size: 9px; font-weight: 700; background: rgba(255,255,255,.25);
-    color: #fff; padding: 1px 6px; border-radius: 8px;
-    font-family: 'DM Mono', monospace; text-transform: uppercase; letter-spacing: .06em;
   }
 
   @media (max-width: 700px) {
@@ -297,7 +279,6 @@
   <span id="status-text">Conectando con Google Sheets...</span>
 </div>
 
-<!-- PENDIENTES DEL DÍA ANTERIOR -->
 <div class="pending-section" id="pending-section">
   <div class="pending-header">
     <span class="pending-title">⚠ Pendientes de ayer sin completar</span>
@@ -340,8 +321,8 @@ const APPS_SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbykJx6LauaXrGkU
 let ALL_DATA = [];
 let ROW_INDEX_MAP = [];
 
-const DIAS_ORDER    = ['LUNES','MARTES','MIERCOLES','JUEVES','VIERNES','SABADO','DOMINGO'];
-const DIAS_LABELS   = {'LUNES':'Lunes','MARTES':'Martes','MIERCOLES':'Miércoles','JUEVES':'Jueves','VIERNES':'Viernes','SABADO':'Sábado','DOMINGO':'Domingo'};
+const DIAS_ORDER  = ['LUNES','MARTES','MIERCOLES','JUEVES','VIERNES','SABADO','DOMINGO'];
+const DIAS_LABELS = {'LUNES':'Lunes','MARTES':'Martes','MIERCOLES':'Miércoles','JUEVES':'Jueves','VIERNES':'Viernes','SABADO':'Sábado','DOMINGO':'Domingo'};
 const RESPS_VALIDOS = ['heber','daniel','nahuel','dani'];
 
 function getTodayNorm() {
@@ -359,119 +340,134 @@ function formatTodayDate() {
   const d = new Date();
   return d.toLocaleDateString('es-UY', { weekday: 'long', day: 'numeric', month: 'long' });
 }
-
-function normalizar(s){
+function normalizar(s) {
   return (s||'').toUpperCase().normalize('NFD').replace(/[\u0300-\u036f]/g,'');
 }
 
-function parseCSV(text){
-  const rows=[]; const lines=text.split('\n'); let lastDia=''; let sheetRow=1;
+function parseCSV(text) {
+  const rows = []; const lines = text.split('\n'); let lastDia = ''; let sheetRow = 1;
   ROW_INDEX_MAP = [];
-  for(let i=1;i<lines.length;i++){
+  for (let i = 1; i < lines.length; i++) {
     sheetRow++;
-    const line=lines[i].trim(); if(!line) continue;
-    const cols=splitCSVLine(line); if(cols.length<4) continue;
-    let [dia,resp,horario,espacio,necesidad,info,notas,completado]=cols.map(c=>c.trim());
-    if(dia) lastDia=dia; else dia=lastDia;
-    if(!espacio) continue;
-    const isDone = (completado||'').toUpperCase()==='SI';
-    rows.push({dia,diaNorm:normalizar(dia),resp:resp||'',horario:horario||'',espacio,necesidad:necesidad||'',info:info||'',notas:notas||'',completado:isDone});
+    const line = lines[i].trim(); if (!line) continue;
+    const cols = splitCSVLine(line); if (cols.length < 4) continue;
+    let [dia,resp,horario,espacio,necesidad,info,notas,completado] = cols.map(c=>c.trim());
+    if (dia) lastDia = dia; else dia = lastDia;
+    if (!espacio) continue;
+    const isDone = (completado||'').toUpperCase() === 'SI';
+    rows.push({dia, diaNorm:normalizar(dia), resp:resp||'', horario:horario||'', espacio, necesidad:necesidad||'', info:info||'', notas:notas||'', completado:isDone});
     ROW_INDEX_MAP.push(sheetRow);
   }
   return rows;
 }
 
-function splitCSVLine(line){
-  const result=[]; let cur='',inQ=false;
-  for(let i=0;i<line.length;i++){
-    const ch=line[i];
-    if(ch==='"'){inQ=!inQ;}
-    else if(ch===','&&!inQ){result.push(cur);cur='';}
-    else{cur+=ch;}
+function splitCSVLine(line) {
+  const result = []; let cur = '', inQ = false;
+  for (let i = 0; i < line.length; i++) {
+    const ch = line[i];
+    if (ch === '"') { inQ = !inQ; }
+    else if (ch === ',' && !inQ) { result.push(cur); cur = ''; }
+    else { cur += ch; }
   }
   result.push(cur); return result;
 }
 
-function populateSelect(id,values){
-  const sel=document.getElementById(id);
-  while(sel.options.length>1) sel.remove(1);
-  values.forEach(v=>{
-    const opt=document.createElement('option');
-    opt.value=v.val!==undefined?v.val:v;
-    opt.textContent=v.label!==undefined?v.label:v;
+function populateSelect(id, values) {
+  const sel = document.getElementById(id);
+  while (sel.options.length > 1) sel.remove(1);
+  values.forEach(v => {
+    const opt = document.createElement('option');
+    opt.value = v.val !== undefined ? v.val : v;
+    opt.textContent = v.label !== undefined ? v.label : v;
     sel.appendChild(opt);
   });
 }
 
-async function fetchData(){
-  try{
-    const res=await fetch(CSV_URL+'&t='+Date.now());
-    if(!res.ok) throw new Error('HTTP '+res.status);
-    const text=await res.text();
-    ALL_DATA=parseCSV(text);
-    const diasNorm=new Set(ALL_DATA.map(r=>r.diaNorm).filter(Boolean));
-    const diasOpts=DIAS_ORDER.filter(d=>diasNorm.has(d)).map(d=>{
-      const orig=ALL_DATA.find(r=>r.diaNorm===d).dia;
-      return {val:d,label:DIAS_LABELS[d]||orig};
-    });
-    populateSelect('sel-dia',diasOpts);
-    const resps=[...new Set(ALL_DATA.map(r=>r.resp).filter(r=>RESPS_VALIDOS.includes(r.toLowerCase().trim())))].sort();
-    populateSelect('sel-resp',resps);
-    document.getElementById('loading').style.display='none';
-    document.getElementById('table').style.display='table';
-    const now=new Date();
-    document.getElementById('status-text').textContent=`Datos sincronizados · ${now.toLocaleDateString('es-UY')} ${now.toLocaleTimeString('es-UY',{hour:'2-digit',minute:'2-digit'})}`;
-    document.getElementById('last-update').textContent=`Última actualización: ${now.toLocaleDateString('es-UY')}`;
+async function fetchData() {
+  try {
+    const res = await fetch(CSV_URL + '&t=' + Date.now());
+    if (!res.ok) throw new Error('HTTP ' + res.status);
+    const text = await res.text();
+    ALL_DATA = parseCSV(text);
+
+    const diasNorm = new Set(ALL_DATA.map(r => r.diaNorm).filter(Boolean));
+    const diasOpts = DIAS_ORDER.filter(d => diasNorm.has(d)).map(d => ({val:d, label:DIAS_LABELS[d]||d}));
+    populateSelect('sel-dia', diasOpts);
+    const resps = [...new Set(ALL_DATA.map(r => r.resp).filter(r => RESPS_VALIDOS.includes(r.toLowerCase().trim())))].sort();
+    populateSelect('sel-resp', resps);
+
+    document.getElementById('loading').style.display = 'none';
+    document.getElementById('table').style.display = 'table';
+    const now = new Date();
+    document.getElementById('status-text').textContent = `Datos sincronizados · ${now.toLocaleDateString('es-UY')} ${now.toLocaleTimeString('es-UY',{hour:'2-digit',minute:'2-digit'})}`;
+    document.getElementById('last-update').textContent = `Última actualización: ${now.toLocaleDateString('es-UY')}`;
+
     const todayNorm = getTodayNorm();
-    const todayLabel = DIAS_LABELS[todayNorm] || todayNorm;
-    document.getElementById('today-badge').textContent = todayLabel.toUpperCase();
+    document.getElementById('today-badge').textContent = (DIAS_LABELS[todayNorm]||todayNorm).toUpperCase();
     document.getElementById('today-date').textContent = formatTodayDate();
+
     render();
     renderPendientes();
-  } catch(e){
-    document.getElementById('loading').textContent='Error al cargar datos.';
-    document.getElementById('status-text').textContent='Sin conexión con Google Sheets';
-    document.querySelector('.status-dot').style.background='#c05050';
-    document.querySelector('.status-dot').style.animation='none';
+  } catch(e) {
+    document.getElementById('loading').textContent = 'Error al cargar datos.';
+    document.getElementById('status-text').textContent = 'Sin conexión con Google Sheets';
+    document.querySelector('.status-dot').style.background = '#c05050';
+    document.querySelector('.status-dot').style.animation = 'none';
   }
 }
 
 function renderPendientes() {
   const ayer = getYesterdayNorm();
-  const pendientes = ALL_DATA.filter(r => r.diaNorm === ayer && !r.completado);
+  const pendientes = ALL_DATA.map((r,i) => ({r,i})).filter(({r}) => r.diaNorm === ayer && !r.completado);
   const sec = document.getElementById('pending-section');
   const tbl = document.getElementById('pending-table');
   const cnt = document.getElementById('pending-count');
   if (!pendientes.length) { sec.classList.remove('visible'); return; }
   sec.classList.add('visible');
   cnt.textContent = pendientes.length;
-  tbl.innerHTML = pendientes.map(r => `
-    <tr>
+  tbl.innerHTML = pendientes.map(({r,i}) => `
+    <tr id="pend-row-${i}">
       <td><span class="pend-dia">${DIAS_LABELS[r.diaNorm]||r.dia} · ${r.horario||'—'}</span></td>
       <td><span class="pend-esp">${r.espacio}</span></td>
       <td><span class="pend-resp">${r.resp||'—'}</span></td>
-      <td><span class="pend-nec" style="font-size:11px;color:var(--pending-text)">${r.necesidad||''}</span></td>
+      <td><span style="font-size:11px;color:var(--pending-text)">${r.necesidad||''}</span></td>
+      <td class="ok-cell">${okBtnHtml(i, r.completado)}</td>
     </tr>
   `).join('');
 }
 
-async function toggleOk(dataIdx, btnEl) {
+async function toggleOk(dataIdx) {
   const row = ALL_DATA[dataIdx];
   const sheetRow = ROW_INDEX_MAP[dataIdx];
   const newVal = row.completado ? '' : 'SI';
+
   row.completado = !row.completado;
   document.querySelectorAll(`[data-ok-idx="${dataIdx}"]`).forEach(btn => {
     btn.classList.toggle('done', row.completado);
     btn.classList.add('loading');
     btn.querySelector('.ok-label').textContent = row.completado ? 'Completado' : 'Pendiente';
   });
+
   try {
-    await fetch(APPS_SCRIPT_URL, {
-      method: 'POST',
-      mode: 'no-cors',
-      headers: {'Content-Type':'application/json'},
-      body: JSON.stringify({row: sheetRow, value: newVal})
-    });
+    const url = `${APPS_SCRIPT_URL}?row=${sheetRow}&value=${encodeURIComponent(newVal)}`;
+    await fetch(url, { method: 'GET', mode: 'no-cors' });
+
+    if (row.completado) {
+      const pendRow = document.getElementById(`pend-row-${dataIdx}`);
+      if (pendRow) {
+        pendRow.style.transition = 'opacity .3s';
+        pendRow.style.opacity = '0';
+        setTimeout(() => {
+          pendRow.remove();
+          const tbl = document.getElementById('pending-table');
+          if (!tbl.querySelector('tr')) {
+            document.getElementById('pending-section').classList.remove('visible');
+          } else {
+            document.getElementById('pending-count').textContent = tbl.querySelectorAll('tr').length;
+          }
+        }, 300);
+      }
+    }
   } catch(e) {
     row.completado = !row.completado;
     document.querySelectorAll(`[data-ok-idx="${dataIdx}"]`).forEach(btn => {
@@ -484,31 +480,31 @@ async function toggleOk(dataIdx, btnEl) {
   }
 }
 
-function respClass(r){
-  const k=(r||'').toLowerCase().trim();
-  if(k==='heber')  return 'resp-heber';
-  if(k==='daniel') return 'resp-daniel';
-  if(k==='nahuel') return 'resp-nahuel';
-  if(k==='dani')   return 'resp-dani';
+function respClass(r) {
+  const k = (r||'').toLowerCase().trim();
+  if (k==='heber')  return 'resp-heber';
+  if (k==='daniel') return 'resp-daniel';
+  if (k==='nahuel') return 'resp-nahuel';
+  if (k==='dani')   return 'resp-dani';
   return '';
 }
-function initials(n){ return n?n.slice(0,2).toUpperCase():'?'; }
+function initials(n) { return n ? n.slice(0,2).toUpperCase() : '?'; }
 
-function buildInfoHtml(r){
-  if((r.info||'').toLowerCase().includes('operativa')) return `<span class="op-tag">Operativa</span>`;
-  const lines=r.info.split('\n');
-  const act=lines[0]||''; const hora=lines.slice(1).join(' ');
-  if(!act) return `<span style="color:var(--text3)">—</span>`;
-  return `<div class="info-act">${act}</div>${hora?`<div class="info-hora">${hora}</div>`:''}`;
+function buildInfoHtml(r) {
+  if ((r.info||'').toLowerCase().includes('operativa')) return `<span class="op-tag">Operativa</span>`;
+  const lines = r.info.split('\n');
+  const act = lines[0]||''; const hora = lines.slice(1).join(' ');
+  if (!act) return `<span style="color:var(--text3)">—</span>`;
+  return `<div class="info-act">${act}</div>${hora ? `<div class="info-hora">${hora}</div>` : ''}`;
 }
 
-function buildDiaBadge(r){
+function buildDiaBadge(r) {
   const label = DIAS_LABELS[r.diaNorm] || r.dia;
   return `<div class="dia-badge"><span class="dia-badge-name">${label.toUpperCase()}</span></div>`;
 }
 
-function buildHorarioBadge(horario){
-  if(!horario) return `<span style="color:var(--text3)">—</span>`;
+function buildHorarioBadge(horario) {
+  if (!horario) return `<span style="color:var(--text3)">—</span>`;
   return `<div class="horario-badge">
     <svg class="horario-badge-icon" viewBox="0 0 16 16" fill="none" stroke="var(--green-acc)" stroke-width="1.8">
       <circle cx="8" cy="8" r="6.5"/><polyline points="8,4.5 8,8.5 10.5,10"/>
@@ -517,39 +513,40 @@ function buildHorarioBadge(horario){
   </div>`;
 }
 
-function okBtnHtml(dataIdx, isDone){
-  const check = `<svg viewBox="0 0 16 16"><polyline points="2.5,8.5 6.5,12.5 13.5,4"/></svg>`;
-  return `<button class="ok-btn${isDone?' done':''}" data-ok-idx="${dataIdx}" onclick="toggleOk(${dataIdx},this)">
-    ${check}<span class="ok-label">${isDone?'Completado':'Pendiente'}</span>
+function okBtnHtml(dataIdx, isDone) {
+  return `<button class="ok-btn${isDone?' done':''}" data-ok-idx="${dataIdx}" onclick="toggleOk(${dataIdx})">
+    <svg viewBox="0 0 16 16"><polyline points="2.5,8.5 6.5,12.5 13.5,4"/></svg>
+    <span class="ok-label">${isDone ? 'Completado' : 'Pendiente'}</span>
   </button>`;
 }
 
-function render(){
+function render() {
   const selDia = document.getElementById('sel-dia').value;
-  const todayNorm = getTodayNorm();
-  const dia   = selDia || todayNorm;
-  const resp  = document.getElementById('sel-resp').value.toLowerCase().trim();
-  const esp   = document.getElementById('inp-esp').value.toLowerCase().trim();
-  const filtered = ALL_DATA.map((r,i)=>({r,i})).filter(({r})=>{
-    if(dia  && r.diaNorm!==dia) return false;
-    if(resp && r.resp.toLowerCase()!==resp) return false;
-    if(esp  && !r.espacio.toLowerCase().includes(esp)) return false;
+  const dia    = selDia || getTodayNorm();
+  const resp   = document.getElementById('sel-resp').value.toLowerCase().trim();
+  const esp    = document.getElementById('inp-esp').value.toLowerCase().trim();
+
+  const filtered = ALL_DATA.map((r,i) => ({r,i})).filter(({r}) => {
+    if (dia  && r.diaNorm !== dia) return false;
+    if (resp && r.resp.toLowerCase() !== resp) return false;
+    if (esp  && !r.espacio.toLowerCase().includes(esp)) return false;
     return true;
   });
-  document.getElementById('count').textContent=filtered.length+' fila'+(filtered.length!==1?'s':'');
-  const empty=document.getElementById('empty');
-  if(!filtered.length){
-    document.getElementById('tbody').innerHTML='';
-    document.getElementById('cards').innerHTML='';
-    empty.style.display='block'; return;
-  }
-  empty.style.display='none';
 
-  document.getElementById('tbody').innerHTML=filtered.map(({r,i})=>{
-    const rc=respClass(r.resp);
-    const respHtml=r.resp
-      ?`<div class="person ${rc}"><div class="avatar">${initials(r.resp)}</div><span class="resp-name">${r.resp}</span></div>`
-      :`<span style="color:var(--text3)">—</span>`;
+  document.getElementById('count').textContent = filtered.length + ' fila' + (filtered.length !== 1 ? 's' : '');
+  const empty = document.getElementById('empty');
+  if (!filtered.length) {
+    document.getElementById('tbody').innerHTML = '';
+    document.getElementById('cards').innerHTML = '';
+    empty.style.display = 'block'; return;
+  }
+  empty.style.display = 'none';
+
+  document.getElementById('tbody').innerHTML = filtered.map(({r,i}) => {
+    const rc = respClass(r.resp);
+    const respHtml = r.resp
+      ? `<div class="person ${rc}"><div class="avatar">${initials(r.resp)}</div><span class="resp-name">${r.resp}</span></div>`
+      : `<span style="color:var(--text3)">—</span>`;
     return `<tr>
       <td>${buildDiaBadge(r)}</td>
       <td>${respHtml}</td>
@@ -562,26 +559,24 @@ function render(){
     </tr>`;
   }).join('');
 
-  document.getElementById('cards').innerHTML=filtered.map(({r,i})=>{
-    const rc=respClass(r.resp);
-    const respHtml=r.resp
-      ?`<div class="person ${rc}"><div class="avatar">${initials(r.resp)}</div><span class="resp-name">${r.resp}</span></div>`:'';
-    const diaLabel = DIAS_LABELS[r.diaNorm]||r.dia;
+  document.getElementById('cards').innerHTML = filtered.map(({r,i}) => {
+    const rc = respClass(r.resp);
+    const respHtml = r.resp
+      ? `<div class="person ${rc}"><div class="avatar">${initials(r.resp)}</div><span class="resp-name">${r.resp}</span></div>` : '';
+    const diaLabel = DIAS_LABELS[r.diaNorm] || r.dia;
     return `<div class="card">
       <div class="card-header">
         <div class="card-header-left">
-          <div class="card-dia-row">
-            <span class="card-dia">${diaLabel.toUpperCase()}</span>
-          </div>
+          <div class="card-dia-row"><span class="card-dia">${diaLabel.toUpperCase()}</span></div>
           <span class="card-esp">${r.espacio}</span>
         </div>
-        ${r.horario?`<div class="card-horario-badge"><svg width="10" height="10" viewBox="0 0 16 16" fill="none" stroke="rgba(255,255,255,.7)" stroke-width="2"><circle cx="8" cy="8" r="6.5"/><polyline points="8,4.5 8,8.5 10.5,10"/></svg><span class="card-horario-text">${r.horario}</span></div>`:''}
+        ${r.horario ? `<div class="card-horario-badge"><svg width="10" height="10" viewBox="0 0 16 16" fill="none" stroke="rgba(255,255,255,.7)" stroke-width="2"><circle cx="8" cy="8" r="6.5"/><polyline points="8,4.5 8,8.5 10.5,10"/></svg><span class="card-horario-text">${r.horario}</span></div>` : ''}
       </div>
       <div class="card-body">
         ${respHtml}
-        ${r.necesidad?`<div class="card-nec">${r.necesidad}</div>`:''}
+        ${r.necesidad ? `<div class="card-nec">${r.necesidad}</div>` : ''}
         <div>${buildInfoHtml(r)}</div>
-        ${r.notas?`<div class="card-nota">${r.notas}</div>`:''}
+        ${r.notas ? `<div class="card-nota">${r.notas}</div>` : ''}
       </div>
       <div class="card-footer">
         ${okBtnHtml(i, r.completado)}
