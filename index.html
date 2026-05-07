@@ -25,10 +25,12 @@
     --daniel-bg:  #1a2040; --daniel-fg:#8898d8;
     --nahuel-bg:  #3a2010; --nahuel-fg:#d8a868;
     --dani-bg:    #1a2040; --dani-fg:  #8898d8;
+    --facundo-bg: #3a0a14; --facundo-fg:#e8889a;
     --heber-dot:  #5aaf7a;
     --daniel-dot: #6878c8;
     --nahuel-dot: #c88848;
     --dani-dot:   #6878c8;
+    --facundo-dot:#c8283e;
     --pending-bg:     #fff8e6;
     --pending-border: #e6a817;
     --pending-header: #c8860a;
@@ -113,14 +115,16 @@
   .person { display: flex; align-items: center; gap: 8px; }
   .avatar { width: 30px; height: 30px; border-radius: 50%; display: inline-flex; align-items: center; justify-content: center; font-size: 10px; font-weight: 700; flex-shrink: 0; font-family: 'DM Mono', monospace; border: 2px solid; }
   .resp-name { font-size: 12px; font-weight: 600; }
-  .resp-heber  .avatar { background: var(--heber-bg); color: var(--heber-fg); border-color: var(--heber-dot); }
-  .resp-heber  .resp-name { color: var(--heber-dot); }
-  .resp-daniel .avatar { background: var(--daniel-bg); color: var(--daniel-fg); border-color: var(--daniel-dot); }
-  .resp-daniel .resp-name { color: var(--daniel-dot); }
-  .resp-nahuel .avatar { background: var(--nahuel-bg); color: var(--nahuel-fg); border-color: var(--nahuel-dot); }
-  .resp-nahuel .resp-name { color: var(--nahuel-dot); }
-  .resp-dani   .avatar { background: var(--dani-bg); color: var(--dani-fg); border-color: var(--dani-dot); }
-  .resp-dani   .resp-name { color: var(--dani-dot); }
+  .resp-heber   .avatar { background: var(--heber-bg);   color: var(--heber-fg);   border-color: var(--heber-dot); }
+  .resp-heber   .resp-name { color: var(--heber-dot); }
+  .resp-daniel  .avatar { background: var(--daniel-bg);  color: var(--daniel-fg);  border-color: var(--daniel-dot); }
+  .resp-daniel  .resp-name { color: var(--daniel-dot); }
+  .resp-nahuel  .avatar { background: var(--nahuel-bg);  color: var(--nahuel-fg);  border-color: var(--nahuel-dot); }
+  .resp-nahuel  .resp-name { color: var(--nahuel-dot); }
+  .resp-dani    .avatar { background: var(--dani-bg);    color: var(--dani-fg);    border-color: var(--dani-dot); }
+  .resp-dani    .resp-name { color: var(--dani-dot); }
+  .resp-facundo .avatar { background: var(--facundo-bg); color: var(--facundo-fg); border-color: var(--facundo-dot); }
+  .resp-facundo .resp-name { color: var(--facundo-dot); }
 
   .esp-name { font-weight: 600; font-size: 13px; color: var(--text); }
   .nec  { font-size: 12px; color: var(--text2); line-height: 1.55; }
@@ -299,7 +303,7 @@ let ROW_INDEX_MAP = [];
 
 const DIAS_ORDER    = ['LUNES','MARTES','MIERCOLES','JUEVES','VIERNES','SABADO','DOMINGO'];
 const DIAS_LABELS   = {'LUNES':'Lunes','MARTES':'Martes','MIERCOLES':'Miércoles','JUEVES':'Jueves','VIERNES':'Viernes','SABADO':'Sábado','DOMINGO':'Domingo'};
-const RESPS_VALIDOS = ['heber','daniel','nahuel','dani'];
+const RESPS_VALIDOS = ['heber','daniel','nahuel','dani','facundo'];
 
 function getTodayNorm(){
   const dias=['DOMINGO','LUNES','MARTES','MIERCOLES','JUEVES','VIERNES','SABADO'];
@@ -371,7 +375,6 @@ async function fetchData(){
     const todayNorm=getTodayNorm();
     document.getElementById('today-badge').textContent=(DIAS_LABELS[todayNorm]||todayNorm).toUpperCase();
     document.getElementById('today-date').textContent=formatTodayDate();
-    // Después de cargar CSV, sincronizar estados desde script
     await syncEstados();
   } catch(e){
     document.getElementById('loading').textContent='Error al cargar datos.';
@@ -401,22 +404,16 @@ async function toggleOk(dataIdx){
   const sheetRow=ROW_INDEX_MAP[dataIdx];
   const newVal=row.completado?'':'SI';
   row.completado=!row.completado;
-
   document.querySelectorAll(`[data-ok-idx="${dataIdx}"]`).forEach(btn=>{
     btn.classList.toggle('done',row.completado);
     btn.classList.add('loading');
     btn.querySelector('.ok-label').textContent=row.completado?'Completado':'Pendiente';
   });
-
   const url=`${APPS_SCRIPT_URL}?row=${sheetRow}&value=${encodeURIComponent(newVal)}`;
-  try{
-    await fetch(url,{method:'GET',mode:'no-cors'});
-  } catch(e){ console.log('fetch error:',e); }
-
+  try{ await fetch(url,{method:'GET',mode:'no-cors'}); } catch(e){ console.log('fetch error:',e); }
   setTimeout(()=>{
     document.querySelectorAll(`[data-ok-idx="${dataIdx}"]`).forEach(btn=>btn.classList.remove('loading'));
   },1000);
-
   if(row.completado){
     [`pend-row-${dataIdx}`,`pend-card-${dataIdx}`].forEach(id=>{
       const el=document.getElementById(id);
@@ -489,10 +486,11 @@ function renderPendientes(){
 
 function respClass(r){
   const k=(r||'').toLowerCase().trim();
-  if(k==='heber')  return 'resp-heber';
-  if(k==='daniel') return 'resp-daniel';
-  if(k==='nahuel') return 'resp-nahuel';
-  if(k==='dani')   return 'resp-dani';
+  if(k==='heber')   return 'resp-heber';
+  if(k==='daniel')  return 'resp-daniel';
+  if(k==='nahuel')  return 'resp-nahuel';
+  if(k==='dani')    return 'resp-dani';
+  if(k==='facundo') return 'resp-facundo';
   return '';
 }
 function initials(n){ return n?n.slice(0,2).toUpperCase():'?'; }
