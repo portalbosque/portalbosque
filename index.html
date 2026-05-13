@@ -21,16 +21,13 @@
     --text2:      #3a5040;
     --text3:      #6a8070;
     --filter-bg:  #eef3e8;
-    --heber-bg:   #1e3a2f; --heber-fg: #a8d4b8;
-    --daniel-bg:  #1a2040; --daniel-fg:#8898d8;
-    --nahuel-bg:  #3a2010; --nahuel-fg:#d8a868;
-    --dani-bg:    #1a2040; --dani-fg:  #8898d8;
-    --facundo-bg: #3a0a14; --facundo-fg:#e8889a;
-    --heber-dot:  #5aaf7a;
-    --daniel-dot: #6878c8;
-    --nahuel-dot: #c88848;
-    --dani-dot:   #6878c8;
-    --facundo-dot:#c8283e;
+    --heber-bg:   #1e3a2f; --heber-fg: #a8d4b8; --heber-dot: #5aaf7a;
+    --daniel-bg:  #1a2040; --daniel-fg:#8898d8; --daniel-dot: #6878c8;
+    --nahuel-bg:  #3a2010; --nahuel-fg:#d8a868; --nahuel-dot: #c88848;
+    --facundo-bg: #3a0a14; --facundo-fg:#e8889a; --facundo-dot:#c8283e;
+    --karim-bg:   #1a3040; --karim-fg: #80c8e8; --karim-dot:  #2898c8;
+    --joaco-bg:   #2a2010; --joaco-fg: #d0b870; --joaco-dot:  #a88830;
+    --lucas-bg:   #1e1a40; --lucas-fg: #a898e0; --lucas-dot:  #7058c0;
     --pending-bg:     #fff8e6;
     --pending-border: #e6a817;
     --pending-header: #c8860a;
@@ -115,16 +112,21 @@
   .person { display: flex; align-items: center; gap: 8px; }
   .avatar { width: 30px; height: 30px; border-radius: 50%; display: inline-flex; align-items: center; justify-content: center; font-size: 10px; font-weight: 700; flex-shrink: 0; font-family: 'DM Mono', monospace; border: 2px solid; }
   .resp-name { font-size: 12px; font-weight: 600; }
+
   .resp-heber   .avatar { background: var(--heber-bg);   color: var(--heber-fg);   border-color: var(--heber-dot); }
   .resp-heber   .resp-name { color: var(--heber-dot); }
   .resp-daniel  .avatar { background: var(--daniel-bg);  color: var(--daniel-fg);  border-color: var(--daniel-dot); }
   .resp-daniel  .resp-name { color: var(--daniel-dot); }
   .resp-nahuel  .avatar { background: var(--nahuel-bg);  color: var(--nahuel-fg);  border-color: var(--nahuel-dot); }
   .resp-nahuel  .resp-name { color: var(--nahuel-dot); }
-  .resp-dani    .avatar { background: var(--dani-bg);    color: var(--dani-fg);    border-color: var(--dani-dot); }
-  .resp-dani    .resp-name { color: var(--dani-dot); }
   .resp-facundo .avatar { background: var(--facundo-bg); color: var(--facundo-fg); border-color: var(--facundo-dot); }
   .resp-facundo .resp-name { color: var(--facundo-dot); }
+  .resp-karim   .avatar { background: var(--karim-bg);   color: var(--karim-fg);   border-color: var(--karim-dot); }
+  .resp-karim   .resp-name { color: var(--karim-dot); }
+  .resp-joaco   .avatar { background: var(--joaco-bg);   color: var(--joaco-fg);   border-color: var(--joaco-dot); }
+  .resp-joaco   .resp-name { color: var(--joaco-dot); }
+  .resp-lucas   .avatar { background: var(--lucas-bg);   color: var(--lucas-fg);   border-color: var(--lucas-dot); }
+  .resp-lucas   .resp-name { color: var(--lucas-dot); }
 
   .esp-name { font-weight: 600; font-size: 13px; color: var(--text); }
   .nec  { font-size: 12px; color: var(--text2); line-height: 1.55; }
@@ -177,7 +179,6 @@
   .card { background: var(--bg2); border-radius: 10px; border: 1px solid var(--border2); margin-bottom: .7rem; box-shadow: 0 1px 3px rgba(0,0,0,.05); overflow: hidden; }
   .card-pending { background: var(--pending-bg); border-bottom: 1px solid #f0d88a; overflow: hidden; }
   .card-pending:last-child { border-bottom: none; }
-
   .card-header { display: flex; align-items: center; justify-content: space-between; padding: .65rem 1rem; background: var(--green-btn); gap: 8px; }
   .card-pending-header { display: flex; align-items: center; justify-content: space-between; padding: .65rem 1rem; background: var(--pending-header); gap: 8px; }
   .card-header-left { display: flex; flex-direction: column; gap: 2px; flex: 1; min-width: 0; }
@@ -303,7 +304,7 @@ let ROW_INDEX_MAP = [];
 
 const DIAS_ORDER    = ['LUNES','MARTES','MIERCOLES','JUEVES','VIERNES','SABADO','DOMINGO'];
 const DIAS_LABELS   = {'LUNES':'Lunes','MARTES':'Martes','MIERCOLES':'Miércoles','JUEVES':'Jueves','VIERNES':'Viernes','SABADO':'Sábado','DOMINGO':'Domingo'};
-const RESPS_VALIDOS = ['heber','daniel','nahuel','dani','facundo'];
+const RESPS_VALIDOS = ['heber','daniel','nahuel','facundo','karim','joaco','lucas'];
 
 function getTodayNorm(){
   const dias=['DOMINGO','LUNES','MARTES','MIERCOLES','JUEVES','VIERNES','SABADO'];
@@ -365,8 +366,10 @@ async function fetchData(){
     const diasNorm=new Set(ALL_DATA.map(r=>r.diaNorm).filter(Boolean));
     const diasOpts=DIAS_ORDER.filter(d=>diasNorm.has(d)).map(d=>({val:d,label:DIAS_LABELS[d]||d}));
     populateSelect('sel-dia',diasOpts);
-    const resps=[...new Set(ALL_DATA.map(r=>r.resp).filter(r=>RESPS_VALIDOS.includes(r.toLowerCase().trim())))].sort();
-    populateSelect('sel-resp',resps);
+
+    // Dropdown responsables — siempre muestra todos los válidos
+    populateSelect('sel-resp', RESPS_VALIDOS.map(r=>r.charAt(0).toUpperCase()+r.slice(1)));
+
     document.getElementById('loading').style.display='none';
     document.getElementById('table').style.display='table';
     const now=new Date();
@@ -484,16 +487,23 @@ function renderPendientes(){
   }
 }
 
-function respClass(r){
-  const k=(r||'').toLowerCase().trim();
-  if(k==='heber')   return 'resp-heber';
-  if(k==='daniel')  return 'resp-daniel';
-  if(k==='nahuel')  return 'resp-nahuel';
-  if(k==='dani')    return 'resp-dani';
-  if(k==='facundo') return 'resp-facundo';
+function respClass(resp){
+  const k=(resp||'').toLowerCase();
+  if(k.includes('heber'))   return 'resp-heber';
+  if(k.includes('daniel'))  return 'resp-daniel';
+  if(k.includes('nahuel'))  return 'resp-nahuel';
+  if(k.includes('facundo')) return 'resp-facundo';
+  if(k.includes('karim'))   return 'resp-karim';
+  if(k.includes('joaco'))   return 'resp-joaco';
+  if(k.includes('lucas'))   return 'resp-lucas';
   return '';
 }
-function initials(n){ return n?n.slice(0,2).toUpperCase():'?'; }
+function initials(n){
+  if(!n) return '?';
+  const parts=n.trim().split(/[\s,]+/);
+  if(parts.length>=2) return (parts[0][0]+(parts[1][0]||'')).toUpperCase();
+  return n.slice(0,2).toUpperCase();
+}
 function buildInfoHtml(r){
   if((r.info||'').toLowerCase().includes('operativa')) return `<span class="op-tag">Operativa</span>`;
   const lines=r.info.split('\n'); const act=lines[0]||''; const hora=lines.slice(1).join(' ');
@@ -527,7 +537,7 @@ function render(){
   const esp=document.getElementById('inp-esp').value.toLowerCase().trim();
   const filtered=ALL_DATA.map((r,i)=>({r,i})).filter(({r})=>{
     if(dia  && r.diaNorm!==dia) return false;
-    if(resp && r.resp.toLowerCase()!==resp) return false;
+    if(resp && !r.resp.toLowerCase().includes(resp)) return false;
     if(esp  && !r.espacio.toLowerCase().includes(esp)) return false;
     return true;
   });
