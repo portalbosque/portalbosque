@@ -1894,16 +1894,17 @@ async function fetchProd(){
 
 async function syncEstados(section){
   section = section||'log';
-  const data = section==='log'?LOG_DATA:PROD_DATA;
-  const rowMap = section==='log'?LOG_ROW_MAP:PROD_ROW_MAP;
-  const sheetParam = section==='prod' ? '&sheet=produccion' : '';
+  // IMPORTANTE: el Apps Script solo sabe leer/escribir en la sheet de Logística.
+  // Para Producción NO se consulta (evita aplicar por error estados de Logística
+  // a filas de Producción que coincidan en número de fila).
+  if(section==='prod'){ renderProd(); renderPendientes('prod'); return; }
   try{
-    const res=await fetch(APPS_SCRIPT_URL+'?t='+Date.now()+sheetParam);
+    const res=await fetch(APPS_SCRIPT_URL+'?t='+Date.now());
     const resData=await res.json();
-    if(resData.ok&&resData.estados){resData.estados.forEach(e=>{const idx=rowMap.indexOf(e.row);if(idx!==-1&&data[idx])data[idx].completado=e.completado;});}
-  }catch(e){console.log(`[syncEstados:${section}] no crítico:`,e);}
-  if(section==='log'){renderLog();}else{renderProd();}
-  renderPendientes(section);
+    if(resData.ok&&resData.estados){resData.estados.forEach(e=>{const idx=LOG_ROW_MAP.indexOf(e.row);if(idx!==-1&&LOG_DATA[idx])LOG_DATA[idx].completado=e.completado;});}
+  }catch(e){console.log('[syncEstados:log] no crítico:',e);}
+  renderLog();
+  renderPendientes('log');
 }
 
 async function toggleOk(dataIdx,section){
@@ -1912,8 +1913,13 @@ async function toggleOk(dataIdx,section){
   const row=data[dataIdx];const sheetRow=rowMap[dataIdx];
   row.completado=!row.completado;const newVal=row.completado?'SI':'';
   document.querySelectorAll(`[data-ok-idx="${section}-${dataIdx}"]`).forEach(btn=>{btn.classList.toggle('done',row.completado);btn.classList.add('loading');btn.querySelector('.ok-label').textContent=row.completado?'Completado':'Pendiente';});
-  const sheetParam = section==='prod' ? '&sheet=produccion' : '';
-  try{await fetch(`${APPS_SCRIPT_URL}?row=${sheetRow}&value=${encodeURIComponent(newVal)}${sheetParam}`,{method:'GET',mode:'no-cors'});}catch(e){}
+  // IMPORTANTE: solo Logística persiste en la sheet vía Apps Script.
+  // Producción todavía no tiene un endpoint propio, así que el check
+  // queda solo a nivel visual/local (se resetea al recargar) hasta que
+  // el Apps Script sepa distinguir entre ambas sheets.
+  if(section==='log'){
+    try{await fetch(`${APPS_SCRIPT_URL}?row=${sheetRow}&value=${encodeURIComponent(newVal)}`,{method:'GET',mode:'no-cors'});}catch(e){}
+  }
   if(row.completado){
     const ids=PEND_IDS[section];
     [`${ids.rowPrefix}${dataIdx}`,`${ids.cardPrefix}${dataIdx}`].forEach(id=>{const el=document.getElementById(id);if(el){el.style.transition='opacity .3s';el.style.opacity='0';setTimeout(()=>{el.remove();refreshPendingCount(section);},300);}});
