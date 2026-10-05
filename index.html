@@ -225,6 +225,44 @@
     .nav-btn{font-size:12px;padding:12px 8px}
   }
 </style>
+<!-- INSTALACIONES:START --><style>
+/* ===== INSTALACIONES — mismas reglas que Logística, solo cambia la paleta (marrón) ===== */
+.nav-btn.active.inst-active{color:#7a4a1e;border-bottom-color:#c98a3c;background:#faf3e8}
+.section-header.instalaciones{background:#4b3321;border-bottom:2px solid #c98a3c}
+.section-pill.instalaciones{background:#c98a3c;color:#fff}
+.filters.instalaciones{background:#faf3e8;border-color:#e8d5b8}
+.filters.instalaciones .filter-label{color:var(--text)}
+.filters.instalaciones select:focus,.filters.instalaciones input:focus{border-color:#c98a3c}
+.count.instalaciones{color:var(--text3)}
+.status.instalaciones{color:var(--text3);background:var(--bg2);border-color:var(--border2)}
+.status-dot.instalaciones{background:#c98a3c}
+table.instalaciones{background:var(--bg2)}
+thead tr.instalaciones{background:#4b3321}
+tbody.instalaciones tr td{border-bottom:1px solid var(--border2)}
+tbody.instalaciones tr:last-child td{border-bottom:none}
+tbody.instalaciones tr:hover td{background:#f3e7d3!important;transition:background .12s}
+.dia-badge.instalaciones{background:#4b3321}
+.horario-badge.instalaciones{background:#f3e7d3;border:1px solid #e8d5b8}
+.horario-badge.instalaciones .horario-badge-text{color:#4b3321}
+.esp-name.instalaciones{color:var(--text)}
+.nec.instalaciones{color:var(--text2)}
+.nota.instalaciones{color:var(--text3)}
+.ok-btn.instalaciones{border-color:var(--border);color:var(--text3)}
+.ok-btn.instalaciones:hover{border-color:#c98a3c;background:#f3e7d3;color:#7a4a1e}
+.ok-btn.instalaciones.done{background:#c98a3c;border-color:#c98a3c;color:#fff}
+.card-header.instalaciones{background:#4b3321}
+.card-dia.instalaciones{color:#e8d5b8}
+.card-nec.instalaciones{color:var(--text2)}
+.card-nota.instalaciones{color:var(--text3)}
+.card-footer.instalaciones{border-color:var(--border2)}
+@media(max-width:700px){
+  /* con 4 pestañas la barra de navegación necesita menos aire lateral para entrar en el celular */
+  .nav-bar .nav-btn{padding-left:3px;padding-right:3px;gap:4px;font-size:11.5px}
+  .nav-bar .nav-btn svg{width:14px;height:14px}
+}
+@media(max-width:340px){.nav-bar .nav-btn svg{display:none}}
+</style>
+<!-- INSTALACIONES:END -->
 </head>
 <body>
 
@@ -257,6 +295,11 @@
     <svg viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="2" stroke-linejoin="round"><path d="M10 1.5l2.47 5.51 6.03.55-4.55 4.02 1.36 5.92L10 14.5l-5.31 3 1.36-5.92-4.55-4.02 6.03-.55z"/></svg>
     Producción
   </button>
+<!-- INSTALACIONES:START -->  <button class="nav-btn" id="nav-inst" onclick="showSection('inst')">
+    <svg viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12.5 3.5a4 4 0 0 0-4.9 5.2L3 13.3 6.7 17l4.6-4.6a4 4 0 0 0 5.2-4.9l-2.4 2.4-2.1-.5-.5-2.1z"/></svg>
+    Instalaciones
+  </button>
+<!-- INSTALACIONES:END -->
 </div>
 
 <div id="section-log">
@@ -373,6 +416,47 @@
 </div>
 </div>
 
+<!-- INSTALACIONES:START --><div id="section-inst" style="display:none">
+<div class="section">
+  <div class="section-header instalaciones">
+    <span class="section-title">🛠 Instalaciones</span>
+    <span class="section-pill instalaciones">Instalaciones</span>
+  </div>
+  <div class="filters instalaciones">
+    <div class="filter-group"><span class="filter-label">Día</span><select id="inst-sel-dia" onchange="renderInst()"><option value="">Hoy</option></select></div>
+    <div class="filter-group"><span class="filter-label">Responsable</span><select id="inst-sel-resp" onchange="renderInst()"><option value="">Todos</option></select></div>
+    <div class="filter-group"><span class="filter-label">Espacio</span><input id="inst-inp-esp" type="text" placeholder="Ej: Yurta" oninput="renderInst()"></div>
+    <span class="count instalaciones" id="inst-count">—</span>
+  </div>
+  <div class="status instalaciones"><div class="status-dot instalaciones"></div><span id="inst-status">Conectando...</span></div>
+  <div class="pending-section" id="inst-pending-section">
+    <div class="pending-header-bar"><span class="pending-title">⚠ Pendientes de ayer sin completar</span><span class="pending-count" id="inst-pending-count">0</span></div>
+    <table class="pending-table" id="inst-pending-table"></table>
+  </div>
+  <div class="table-wrap">
+    <div id="inst-loading" class="loading">Cargando datos...</div>
+    <table id="inst-table" class="instalaciones" style="display:none">
+      <thead><tr class="instalaciones">
+        <th>Día</th><th>Responsable</th><th>Horario</th><th>Espacio</th>
+        <th>Necesidad</th><th>Info</th><th>Notas</th><th style="text-align:center">Completado</th>
+      </tr></thead>
+      <tbody id="inst-tbody" class="instalaciones"></tbody>
+    </table>
+    <div id="inst-empty" class="empty" style="display:none">Sin resultados.</div>
+  </div>
+  <div class="cards" id="inst-cards">
+    <div class="cards-pending-section" id="inst-cards-pending-section">
+      <div class="cards-pending-header">
+        <span class="cards-pending-title">⚠ Pendientes de ayer</span>
+        <span class="cards-pending-count" id="inst-cards-pending-count">0</span>
+      </div>
+      <div class="cards-pending-list" id="inst-cards-pending-list"></div>
+    </div>
+    <div id="inst-cards-list"></div>
+  </div>
+</div>
+</div>
+<!-- INSTALACIONES:END -->
 <footer class="footer">
   <span>Portal Bosque · <a href="https://www.portalbosque.com" target="_blank">portalbosque.com</a></span>
 
@@ -2562,5 +2646,172 @@ fetchProd();
 setInterval(()=>{syncEstados('log');syncEstados('prod');},30*1000);
 setInterval(()=>{fetchLog();fetchProd();},5*60*1000);
 </script>
+<!-- INSTALACIONES:START --><script>
+/* ===== INSTALACIONES — mismo sistema que Logística: parseCSV, renderSection, okBtnHtml/pendBtnHtml,
+   filtros, pendientes de ayer, sync cada 30s y recarga cada 5 min. Todo se reutiliza sin modificarlo.
+   Lo único propio es la lectura del Sheet y el guardado del check (ver INST_APPS_SCRIPT_URL). ===== */
+
+const INST_SHEET_ID = '1LFVraur6VX7AEBARqPqhoBZQDkAcH7W-qdVGG8MMD9c';
+const INST_SHEET_TAB = 'Sheet1';
+// Opcional (igual que CSV_LOG/CSV_PROD): link "Archivo → Compartir → Publicar en la web → CSV".
+const INST_CSV_PUBLISHED = '';
+// Apps Script PROPIO de la hoja Instalaciones (ver Instalaciones_AppsScript.gs). Mientras esté vacío, el check NO se guarda
+// en la planilla (no se usa el Apps Script de Logística: escribiría en la hoja equivocada).
+const INST_APPS_SCRIPT_URL = '';
+
+let INST_DATA = [], INST_ROW_MAP = [];
+const INST_PEND = {section:'inst-pending-section',table:'inst-pending-table',count:'inst-pending-count',cardsSection:'inst-cards-pending-section',cardsCount:'inst-cards-pending-count',cardsList:'inst-cards-pending-list',rowPrefix:'inst-pend-row-',cardPrefix:'inst-pend-card-'};
+
+/* Navegación y botón de completar: se envuelven las funciones existentes SIN modificar su código.
+   Para 'log' y 'prod' todo pasa tal cual por la función original. */
+(function(){
+  var baseShow = window.showSection;
+  window.showSection = function(which){
+    if(typeof baseShow === 'function') baseShow.apply(this, arguments);
+    var sec = document.getElementById('section-inst'), nav = document.getElementById('nav-inst');
+    if(sec) sec.style.display = (which === 'inst') ? 'block' : 'none';
+    if(nav) nav.className = 'nav-btn' + (which === 'inst' ? ' active inst-active' : '');
+  };
+  var baseToggle = window.toggleOk;
+  window.toggleOk = function(dataIdx, section){
+    if(section === 'inst') return toggleOkInst(dataIdx);
+    return baseToggle.apply(this, arguments);
+  };
+})();
+
+function instCapFirst(s){ s = (s || '').trim(); return s.charAt(0).toUpperCase() + s.slice(1); }
+
+function instUrls(){
+  var base = 'https://docs.google.com/spreadsheets/d/' + INST_SHEET_ID;
+  return [INST_CSV_PUBLISHED, base + '/gviz/tq?tqx=out:csv&sheet=' + encodeURIComponent(INST_SHEET_TAB), base + '/export?format=csv&gid=0'].filter(Boolean);
+}
+async function instFetchCsv(){
+  var lastErr = null, list = instUrls();
+  for(var k = 0; k < list.length; k++){
+    var u = list[k];
+    try{
+      var res = await fetch(u + (u.indexOf('?') >= 0 ? '&' : '?') + 't=' + Date.now());
+      if(!res.ok) throw new Error('HTTP ' + res.status);
+      var text = await res.text();
+      if(/^\s*<(!doctype|html)/i.test(text)) throw new Error('la planilla no es pública (respuesta HTML)');
+      return text;
+    }catch(e){ lastErr = e; console.warn('[INSTALACIONES] falló', u, e.message); }
+  }
+  throw lastErr || new Error('sin URL configurada');
+}
+
+async function fetchInst(){
+  try{
+    const parsed = parseCSV(await instFetchCsv(), INST_ROW_MAP, 'INSTALACIONES');
+    // se descartan filas vacías (el CSV puede traer filas en blanco al final) manteniendo alineado INST_ROW_MAP
+    const rowMap = INST_ROW_MAP.slice(); const keep = [], keepMap = [];
+    parsed.forEach((r,i)=>{ if(r.necesidad||r.info||r.notas){ r.espacio=instCapFirst(r.espacio); r.necesidad=instCapFirst(r.necesidad); keep.push(r); keepMap.push(rowMap[i]); } });
+    INST_DATA = keep; INST_ROW_MAP.length = 0; keepMap.forEach(x=>INST_ROW_MAP.push(x));
+    const diasNorm=new Set(INST_DATA.map(r=>r.diaNorm).filter(Boolean));
+    populateSelect('inst-sel-dia',DIAS_ORDER.filter(d=>diasNorm.has(d)).map(d=>({val:d,label:DIAS_LABELS[d]||d})));
+    populateSelect('inst-sel-resp',RESPS_VALIDOS.map(r=>r.split(' ').map(w=>w.charAt(0).toUpperCase()+w.slice(1)).join(' ')));
+    document.getElementById('inst-loading').style.display='none';
+    document.getElementById('inst-table').style.display='table';
+    const n=new Date();
+    document.getElementById('inst-status').textContent=`Sincronizado · ${n.toLocaleDateString('es-UY')} ${n.toLocaleTimeString('es-UY',{hour:'2-digit',minute:'2-digit'})} · ${INST_DATA.length} registros` + (INST_APPS_SCRIPT_URL ? '' : ' · check sin guardado en planilla');
+    await syncEstadosInst();
+  }catch(e){
+    document.getElementById('inst-loading').textContent='Error al cargar datos. Verificá la conexión.';
+    document.getElementById('inst-status').textContent='Sin conexión con Google Sheets';
+    document.querySelector('.status-dot.instalaciones').style.background='#c05050';
+    document.querySelector('.status-dot.instalaciones').style.animation='none';
+    console.error('[INSTALACIONES] Error:',e);
+  }
+}
+
+async function syncEstadosInst(){
+  if(INST_APPS_SCRIPT_URL){
+    try{
+      const res=await fetch(INST_APPS_SCRIPT_URL+'?t='+Date.now());
+      const resData=await res.json();
+      if(resData.ok&&resData.estados){resData.estados.forEach(e=>{const idx=INST_ROW_MAP.indexOf(e.row);if(idx!==-1&&INST_DATA[idx])INST_DATA[idx].completado=e.completado;});}
+    }catch(e){console.log('[syncEstados:inst] no crítico:',e);}
+  }
+  renderInst();
+  renderPendientesInst();
+}
+
+async function toggleOkInst(dataIdx){
+  const row=INST_DATA[dataIdx];const sheetRow=INST_ROW_MAP[dataIdx];
+  row.completado=!row.completado;const newVal=row.completado?'SI':'';
+  document.querySelectorAll(`[data-ok-idx="inst-${dataIdx}"]`).forEach(btn=>{btn.classList.toggle('done',row.completado);btn.classList.add('loading');btn.querySelector('.ok-label').textContent=row.completado?'Completado':'Pendiente';});
+  if(INST_APPS_SCRIPT_URL){
+    try{await fetch(`${INST_APPS_SCRIPT_URL}?row=${sheetRow}&value=${encodeURIComponent(newVal)}`,{method:'GET',mode:'no-cors'});}catch(e){}
+  }
+  if(row.completado){
+    [`${INST_PEND.rowPrefix}${dataIdx}`,`${INST_PEND.cardPrefix}${dataIdx}`].forEach(id=>{const el=document.getElementById(id);if(el){el.style.transition='opacity .3s';el.style.opacity='0';setTimeout(()=>{el.remove();refreshPendingCountInst();},300);}});
+  }
+  setTimeout(()=>{document.querySelectorAll(`[data-ok-idx="inst-${dataIdx}"]`).forEach(btn=>btn.classList.remove('loading'));},1000);
+}
+
+function refreshPendingCountInst(){
+  const ids=INST_PEND;
+  const rows=document.getElementById(ids.table).querySelectorAll('tr');
+  if(!rows.length)document.getElementById(ids.section).classList.remove('visible');
+  else document.getElementById(ids.count).textContent=rows.length;
+  const cards=document.getElementById(ids.cardsList).querySelectorAll('.card-pending');
+  const mSec=document.getElementById(ids.cardsSection);
+  if(!cards.length)mSec.classList.remove('visible');
+  else document.getElementById(ids.cardsCount).textContent=cards.length;
+}
+
+function renderPendientesInst(){
+  const ids=INST_PEND;
+  const ayer=getYesterdayNorm();
+  let pend=INST_DATA.map((r,i)=>({r,i})).filter(({r})=>r.diaNorm===ayer&&!r.completado);
+  pend=ordenarPorDiaYHorario(pend);
+  const sec=document.getElementById(ids.section);
+  if(!pend.length){sec.classList.remove('visible');}
+  else{
+    sec.classList.add('visible');
+    document.getElementById(ids.count).textContent=pend.length;
+    document.getElementById(ids.table).innerHTML=pend.map(({r,i})=>`
+      <tr id="${ids.rowPrefix}${i}">
+        <td><span class="pend-dia">${DIAS_LABELS[r.diaNorm]||r.dia} · ${r.horario||'—'}</span></td>
+        <td><span class="pend-esp">${r.espacio}</span></td>
+        <td><span class="pend-resp">${r.resp||'—'}</span></td>
+        <td><span style="font-size:11px;color:var(--pending-text)">${r.necesidad||''}</span></td>
+        <td class="ok-cell">${pendBtnHtml(i,'inst')}</td>
+      </tr>`).join('');
+  }
+  const mSec=document.getElementById(ids.cardsSection);
+  const mList=document.getElementById(ids.cardsList);
+  if(!pend.length){mSec.classList.remove('visible');}
+  else{
+    mSec.classList.add('visible');
+    document.getElementById(ids.cardsCount).textContent=pend.length;
+    mList.innerHTML=pend.map(({r,i})=>`
+      <div class="card-pending" id="${ids.cardPrefix}${i}">
+        <div class="card-pending-header">
+          <span class="card-dia-pending">⚠ ${(DIAS_LABELS[r.diaNorm]||r.dia).toUpperCase()}</span>
+          ${r.horario?`<span style="font-size:10px;color:#ffe5a0;font-family:monospace">${r.horario}</span>`:''}
+        </div>
+        <div style="padding:.6rem 1rem;background:var(--pending-bg)">
+          <div style="font-weight:700;color:var(--pending-text);font-size:13px">${r.espacio}</div>
+          ${r.resp?`<div style="font-size:11px;color:#9a7200;margin-top:2px">${r.resp}</div>`:''}
+          ${r.necesidad?`<div class="card-nec-pending" style="margin-top:5px">${r.necesidad}</div>`:''}
+        </div>
+        <div class="card-footer-pending">${pendBtnHtml(i,'inst')}</div>
+      </div>`).join('');
+  }
+}
+
+function renderInst(){
+  const dia=document.getElementById('inst-sel-dia').value||getTodayNorm();
+  const resp=document.getElementById('inst-sel-resp').value.toLowerCase().trim();
+  const esp=document.getElementById('inst-inp-esp').value.toLowerCase().trim();
+  renderSection({data:INST_DATA,dia,resp,esp,countId:'inst-count',emptyId:'inst-empty',tbodyId:'inst-tbody',tableId:'inst-table',cardsId:'inst-cards-list',section:'inst',theme:'instalaciones'});
+}
+
+fetchInst();
+setInterval(syncEstadosInst,30*1000);
+setInterval(fetchInst,5*60*1000);
+</script>
+<!-- INSTALACIONES:END -->
 </body>
 </html>
