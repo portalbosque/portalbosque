@@ -2660,6 +2660,7 @@ const INST_CSV_PUBLISHED = '';
 const INST_APPS_SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbyaHJ4zCS-xxWT2ugGrfBwmvPYRcl83bJnEugHP7w4F5HErDgrdBsuz6503DzHqiuVbFw/exec';
 
 let INST_DATA = [], INST_ROW_MAP = [];
+let INST_BASE_STATUS = '', INST_LINK = {ok:null, msg:''};
 const INST_PEND = {section:'inst-pending-section',table:'inst-pending-table',count:'inst-pending-count',cardsSection:'inst-cards-pending-section',cardsCount:'inst-cards-pending-count',cardsList:'inst-cards-pending-list',rowPrefix:'inst-pend-row-',cardPrefix:'inst-pend-card-'};
 
 /* Navegación y botón de completar: se envuelven las funciones existentes SIN modificar su código.
@@ -2683,7 +2684,7 @@ function instCapFirst(s){ s = (s || '').trim(); return s.charAt(0).toUpperCase()
 
 function instUrls(){
   var base = 'https://docs.google.com/spreadsheets/d/' + INST_SHEET_ID;
-  return [INST_CSV_PUBLISHED, base + '/gviz/tq?tqx=out:csv&sheet=' + encodeURIComponent(INST_SHEET_TAB), base + '/export?format=csv&gid=0'].filter(Boolean);
+  return [INST_CSV_PUBLISHED, base + '/gviz/tq?tqx=out:csv&headers=1&sheet=' + encodeURIComponent(INST_SHEET_TAB), base + '/export?format=csv&gid=0'].filter(Boolean);
 }
 async function instFetchCsv(){
   var lastErr = null, list = instUrls();
@@ -2713,7 +2714,7 @@ async function fetchInst(){
     document.getElementById('inst-loading').style.display='none';
     document.getElementById('inst-table').style.display='table';
     const n=new Date();
-    document.getElementById('inst-status').textContent=`Sincronizado · ${n.toLocaleDateString('es-UY')} ${n.toLocaleTimeString('es-UY',{hour:'2-digit',minute:'2-digit'})} · ${INST_DATA.length} registros` + (INST_APPS_SCRIPT_URL ? '' : ' · check sin guardado en planilla');
+    INST_BASE_STATUS=`Sincronizado · ${n.toLocaleDateString('es-UY')} ${n.toLocaleTimeString('es-UY',{hour:'2-digit',minute:'2-digit'})} · ${INST_DATA.length} registros`;
     await syncEstadosInst();
   }catch(e){
     document.getElementById('inst-loading').textContent='Error al cargar datos. Verificá la conexión.';
@@ -2724,24 +2725,54 @@ async function fetchInst(){
   }
 }
 
+function instRenderStatus(){
+  const el=document.getElementById('inst-status'), dot=document.querySelector('.status-dot.instalaciones');
+  let t=INST_BASE_STATUS, bad=false;
+  if(!INST_APPS_SCRIPT_URL) t+=' · check sin guardado en planilla';
+  else if(INST_LINK.ok===true) t+=' · guardado en planilla activo ✓';
+  else if(INST_LINK.ok===false){ t+=' · ⚠ '+INST_LINK.msg; bad=true; }
+  el.textContent=t;
+  if(dot){ dot.style.background=bad?'#c05050':''; dot.style.animation=bad?'none':''; }
+}
+const INST_MSG_NO_CONTACT='No se pudo contactar al Apps Script (¿implementado como "Cualquier usuario"?)';
+
 async function syncEstadosInst(){
   if(INST_APPS_SCRIPT_URL){
     try{
       const res=await fetch(INST_APPS_SCRIPT_URL+'?t='+Date.now());
       const resData=await res.json();
-      if(resData.ok&&resData.estados){resData.estados.forEach(e=>{const idx=INST_ROW_MAP.indexOf(e.row);if(idx!==-1&&INST_DATA[idx])INST_DATA[idx].completado=e.completado;});}
-    }catch(e){console.log('[syncEstados:inst] no crítico:',e);}
+      if(resData.ok&&resData.estados){
+        resData.estados.forEach(e=>{const idx=INST_ROW_MAP.indexOf(e.row);if(idx!==-1&&INST_DATA[idx])INST_DATA[idx].completado=e.completado;});
+        INST_LINK={ok:true,msg:''};
+      }else INST_LINK={ok:false,msg:'El Apps Script respondió con error: '+(resData.error||'respuesta inesperada')};
+    }catch(e){ console.log('[syncEstados:inst]',e); INST_LINK={ok:false,msg:INST_MSG_NO_CONTACT}; }
   }
   renderInst();
   renderPendientesInst();
+  instRenderStatus();
 }
 
 async function toggleOkInst(dataIdx){
   const row=INST_DATA[dataIdx];const sheetRow=INST_ROW_MAP[dataIdx];
-  row.completado=!row.completado;const newVal=row.completado?'SI':'';
+  const prev=row.completado;
+  row.completado=!prev;const newVal=row.completado?'SI':'';
   document.querySelectorAll(`[data-ok-idx="inst-${dataIdx}"]`).forEach(btn=>{btn.classList.toggle('done',row.completado);btn.classList.add('loading');btn.querySelector('.ok-label').textContent=row.completado?'Completado':'Pendiente';});
   if(INST_APPS_SCRIPT_URL){
-    try{await fetch(`${INST_APPS_SCRIPT_URL}?row=${sheetRow}&value=${encodeURIComponent(newVal)}`,{method:'GET',mode:'no-cors'});}catch(e){}
+    let saved=false, msg='';
+    try{
+      const res=await fetch(`${INST_APPS_SCRIPT_URL}?row=${sheetRow}&value=${encodeURIComponent(newVal)}&t=${Date.now()}`);
+      const j=await res.json();
+      saved=(j&&j.ok===true);
+      if(!saved) msg='El Apps Script respondió con error: '+((j&&j.error)||'respuesta inesperada');
+    }catch(e){ msg=INST_MSG_NO_CONTACT; }
+    if(!saved){
+      // no se guardó en la planilla: se revierte para que no parezca completada
+      row.completado=prev;
+      INST_LINK={ok:false,msg:'No se guardó: '+msg};
+      renderInst(); renderPendientesInst(); instRenderStatus();
+      return;
+    }
+    INST_LINK={ok:true,msg:''}; instRenderStatus();
   }
   if(row.completado){
     [`${INST_PEND.rowPrefix}${dataIdx}`,`${INST_PEND.cardPrefix}${dataIdx}`].forEach(id=>{const el=document.getElementById(id);if(el){el.style.transition='opacity .3s';el.style.opacity='0';setTimeout(()=>{el.remove();refreshPendingCountInst();},300);}});
