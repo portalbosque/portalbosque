@@ -263,6 +263,45 @@ tbody.instalaciones tr:hover td{background:#f3e7d3!important;transition:backgrou
 @media(max-width:340px){.nav-bar .nav-btn svg{display:none}}
 </style>
 <!-- INSTALACIONES:END -->
+<!-- INFRAESTRUCTURA:START --><style>
+/* ===== INFRAESTRUCTURA — mismas reglas que Logística, solo cambia la paleta (marrón) ===== */
+.nav-btn.active.infra-active{color:#1f5f80;border-bottom-color:#3d8fb5;background:#eef5fa}
+.section-header.infraestructura{background:#1f3a4d;border-bottom:2px solid #3d8fb5}
+.section-pill.infraestructura{background:#3d8fb5;color:#fff}
+.filters.infraestructura{background:#eef5fa;border-color:#cfe1ec}
+.filters.infraestructura .filter-label{color:var(--text)}
+.filters.infraestructura select:focus,.filters.infraestructura input:focus{border-color:#3d8fb5}
+.count.infraestructura{color:var(--text3)}
+.status.infraestructura{color:var(--text3);background:var(--bg2);border-color:var(--border2)}
+.status-dot.infraestructura{background:#3d8fb5}
+table.infraestructura{background:var(--bg2)}
+thead tr.infraestructura{background:#1f3a4d}
+tbody.infraestructura tr td{border-bottom:1px solid var(--border2)}
+tbody.infraestructura tr:last-child td{border-bottom:none}
+tbody.infraestructura tr:hover td{background:#e0edf5!important;transition:background .12s}
+.dia-badge.infraestructura{background:#1f3a4d}
+.horario-badge.infraestructura{background:#e0edf5;border:1px solid #cfe1ec}
+.horario-badge.infraestructura .horario-badge-text{color:#1f3a4d}
+.esp-name.infraestructura{color:var(--text)}
+.nec.infraestructura{color:var(--text2)}
+.nota.infraestructura{color:var(--text3)}
+.ok-btn.infraestructura{border-color:var(--border);color:var(--text3)}
+.ok-btn.infraestructura:hover{border-color:#3d8fb5;background:#e0edf5;color:#1f5f80}
+.ok-btn.infraestructura.done{background:#3d8fb5;border-color:#3d8fb5;color:#fff}
+.card-header.infraestructura{background:#1f3a4d}
+.card-dia.infraestructura{color:#cfe1ec}
+.card-nec.infraestructura{color:var(--text2)}
+.card-nota.infraestructura{color:var(--text3)}
+.card-footer.infraestructura{border-color:var(--border2)}
+@media(max-width:700px){
+  /* con 5 pestañas la barra de navegación necesita menos aire lateral; si aun así no entra, se desplaza */
+  .nav-bar{overflow-x:auto;scrollbar-width:none}
+  .nav-bar::-webkit-scrollbar{display:none}
+  .nav-bar .nav-btn{flex:1 0 auto;white-space:nowrap;padding-left:3px;padding-right:3px;gap:4px;font-size:11.5px}
+}
+@media(max-width:480px){.nav-bar .nav-btn svg{display:none}}
+</style>
+<!-- INFRAESTRUCTURA:END -->
 </head>
 <body>
 
@@ -300,6 +339,11 @@ tbody.instalaciones tr:hover td{background:#f3e7d3!important;transition:backgrou
     Instalaciones
   </button>
 <!-- INSTALACIONES:END -->
+<!-- INFRAESTRUCTURA:START -->  <button class="nav-btn" id="nav-infra" onclick="showSection('infra')">
+    <svg viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 17.5h14M5 17.5V4.5h7v13M12 8.5h3v9M7.5 7.5h2M7.5 10.5h2M7.5 13.5h2"/></svg>
+    Infraestructura
+  </button>
+<!-- INFRAESTRUCTURA:END -->
 </div>
 
 <div id="section-log">
@@ -457,6 +501,47 @@ tbody.instalaciones tr:hover td{background:#f3e7d3!important;transition:backgrou
 </div>
 </div>
 <!-- INSTALACIONES:END -->
+<!-- INFRAESTRUCTURA:START --><div id="section-infra" style="display:none">
+<div class="section">
+  <div class="section-header infraestructura">
+    <span class="section-title">🏗 Infraestructura</span>
+    <span class="section-pill infraestructura">Infraestructura</span>
+  </div>
+  <div class="filters infraestructura">
+    <div class="filter-group"><span class="filter-label">Día</span><select id="infra-sel-dia" onchange="renderInfra()"><option value="">Hoy</option></select></div>
+    <div class="filter-group"><span class="filter-label">Responsable</span><select id="infra-sel-resp" onchange="renderInfra()"><option value="">Todos</option></select></div>
+    <div class="filter-group"><span class="filter-label">Espacio</span><input id="infra-inp-esp" type="text" placeholder="Ej: Yurta" oninput="renderInfra()"></div>
+    <span class="count infraestructura" id="infra-count">—</span>
+  </div>
+  <div class="status infraestructura"><div class="status-dot infraestructura"></div><span id="infra-status">Conectando...</span></div>
+  <div class="pending-section" id="infra-pending-section">
+    <div class="pending-header-bar"><span class="pending-title">⚠ Pendientes de ayer sin completar</span><span class="pending-count" id="infra-pending-count">0</span></div>
+    <table class="pending-table" id="infra-pending-table"></table>
+  </div>
+  <div class="table-wrap">
+    <div id="infra-loading" class="loading">Cargando datos...</div>
+    <table id="infra-table" class="infraestructura" style="display:none">
+      <thead><tr class="infraestructura">
+        <th>Día</th><th>Responsable</th><th>Horario</th><th>Espacio</th>
+        <th>Necesidad</th><th>Info</th><th>Notas</th><th style="text-align:center">Completado</th>
+      </tr></thead>
+      <tbody id="infra-tbody" class="infraestructura"></tbody>
+    </table>
+    <div id="infra-empty" class="empty" style="display:none">Sin resultados.</div>
+  </div>
+  <div class="cards" id="infra-cards">
+    <div class="cards-pending-section" id="infra-cards-pending-section">
+      <div class="cards-pending-header">
+        <span class="cards-pending-title">⚠ Pendientes de ayer</span>
+        <span class="cards-pending-count" id="infra-cards-pending-count">0</span>
+      </div>
+      <div class="cards-pending-list" id="infra-cards-pending-list"></div>
+    </div>
+    <div id="infra-cards-list"></div>
+  </div>
+</div>
+</div>
+<!-- INFRAESTRUCTURA:END -->
 <footer class="footer">
   <span>Portal Bosque · <a href="https://www.portalbosque.com" target="_blank">portalbosque.com</a></span>
 
@@ -2844,5 +2929,204 @@ setInterval(syncEstadosInst,30*1000);
 setInterval(fetchInst,5*60*1000);
 </script>
 <!-- INSTALACIONES:END -->
+<!-- INFRAESTRUCTURA:START --><script>
+/* ===== INFRAESTRUCTURA — mismo sistema que Logística: parseCSV, renderSection, okBtnHtml/pendBtnHtml,
+   filtros, pendientes de ayer, sync cada 30s y recarga cada 5 min. Todo se reutiliza sin modificarlo.
+   Lo único propio es la lectura del Sheet y el guardado del check (ver INFRA_APPS_SCRIPT_URL). ===== */
+
+const INFRA_SHEET_ID = '1JkXBimDpjNu_9fbjngIpPvfNycSlcOaNpMTSgAk_QOg';
+const INFRA_SHEET_TAB = 'Sheet1';
+// Opcional (igual que CSV_LOG/CSV_PROD): link "Archivo → Compartir → Publicar en la web → CSV".
+const INFRA_CSV_PUBLISHED = '';
+// Apps Script PROPIO de la hoja Infraestructura (ver Infraestructura_AppsScript.gs). Mientras esté vacío, el check NO se guarda
+// en la planilla (no se usa el Apps Script de Logística: escribiría en la hoja equivocada).
+const INFRA_APPS_SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbxv2DtkLEOINeDdQy18JesLrmiVBQrD5xDmK2PqqxBNqKYmZ--Ve7DZRD6JAdyC9WQ-/exec';
+
+let INFRA_DATA = [], INFRA_ROW_MAP = [];
+let INFRA_BASE_STATUS = '', INFRA_LINK = {ok:null, msg:''};
+const INFRA_PEND = {section:'infra-pending-section',table:'infra-pending-table',count:'infra-pending-count',cardsSection:'infra-cards-pending-section',cardsCount:'infra-cards-pending-count',cardsList:'infra-cards-pending-list',rowPrefix:'infra-pend-row-',cardPrefix:'infra-pend-card-'};
+
+/* Navegación y botón de completar: se envuelven las funciones existentes SIN modificar su código.
+   Para 'log' y 'prod' todo pasa tal cual por la función original. */
+(function(){
+  var baseShow = window.showSection;
+  window.showSection = function(which){
+    if(typeof baseShow === 'function') baseShow.apply(this, arguments);
+    var sec = document.getElementById('section-infra'), nav = document.getElementById('nav-infra');
+    if(sec) sec.style.display = (which === 'infra') ? 'block' : 'none';
+    if(nav) nav.className = 'nav-btn' + (which === 'infra' ? ' active infra-active' : '');
+    try{ var bar = document.querySelector('.nav-bar'), act = bar && bar.querySelector('.nav-btn.active, .nav-btn[class*="-active"]'); if(act) bar.scrollLeft = act.offsetLeft - (bar.clientWidth - act.offsetWidth) / 2; }catch(e){}
+  };
+  var baseToggle = window.toggleOk;
+  window.toggleOk = function(dataIdx, section){
+    if(section === 'infra') return toggleOkInfra(dataIdx);
+    return baseToggle.apply(this, arguments);
+  };
+})();
+
+function infraCapFirst(s){ s = (s || '').trim(); return s.charAt(0).toUpperCase() + s.slice(1); }
+
+function infraUrls(){
+  var base = 'https://docs.google.com/spreadsheets/d/' + INFRA_SHEET_ID;
+  return [INFRA_CSV_PUBLISHED, base + '/gviz/tq?tqx=out:csv&headers=1&sheet=' + encodeURIComponent(INFRA_SHEET_TAB), base + '/export?format=csv&gid=0'].filter(Boolean);
+}
+async function infraFetchCsv(){
+  var lastErr = null, list = infraUrls();
+  for(var k = 0; k < list.length; k++){
+    var u = list[k];
+    try{
+      var res = await fetch(u + (u.indexOf('?') >= 0 ? '&' : '?') + 't=' + Date.now());
+      if(!res.ok) throw new Error('HTTP ' + res.status);
+      var text = await res.text();
+      if(/^\s*<(!doctype|html)/i.test(text)) throw new Error('la planilla no es pública (respuesta HTML)');
+      return text;
+    }catch(e){ lastErr = e; console.warn('[INFRAESTRUCTURA] falló', u, e.message); }
+  }
+  throw lastErr || new Error('sin URL configurada');
+}
+
+async function fetchInfra(){
+  try{
+    const parsed = parseCSV(await infraFetchCsv(), INFRA_ROW_MAP, 'INFRAESTRUCTURA');
+    // se descartan filas vacías (el CSV puede traer filas en blanco al final) manteniendo alineado INFRA_ROW_MAP
+    const rowMap = INFRA_ROW_MAP.slice(); const keep = [], keepMap = [];
+    parsed.forEach((r,i)=>{ if(r.necesidad||r.info||r.notas){ r.espacio=infraCapFirst(r.espacio); r.necesidad=infraCapFirst(r.necesidad); keep.push(r); keepMap.push(rowMap[i]); } });
+    INFRA_DATA = keep; INFRA_ROW_MAP.length = 0; keepMap.forEach(x=>INFRA_ROW_MAP.push(x));
+    const diasNorm=new Set(INFRA_DATA.map(r=>r.diaNorm).filter(Boolean));
+    populateSelect('infra-sel-dia',DIAS_ORDER.filter(d=>diasNorm.has(d)).map(d=>({val:d,label:DIAS_LABELS[d]||d})));
+    populateSelect('infra-sel-resp',RESPS_VALIDOS.map(r=>r.split(' ').map(w=>w.charAt(0).toUpperCase()+w.slice(1)).join(' ')));
+    document.getElementById('infra-loading').style.display='none';
+    document.getElementById('infra-table').style.display='table';
+    const n=new Date();
+    INFRA_BASE_STATUS=`Sincronizado · ${n.toLocaleDateString('es-UY')} ${n.toLocaleTimeString('es-UY',{hour:'2-digit',minute:'2-digit'})} · ${INFRA_DATA.length} registros`;
+    await syncEstadosInfra();
+  }catch(e){
+    document.getElementById('infra-loading').textContent='Error al cargar datos. Verificá la conexión.';
+    document.getElementById('infra-status').textContent='Sin conexión con Google Sheets';
+    document.querySelector('.status-dot.infraestructura').style.background='#c05050';
+    document.querySelector('.status-dot.infraestructura').style.animation='none';
+    console.error('[INFRAESTRUCTURA] Error:',e);
+  }
+}
+
+function infraRenderStatus(){
+  const el=document.getElementById('infra-status'), dot=document.querySelector('.status-dot.infraestructura');
+  let t=INFRA_BASE_STATUS, bad=false;
+  if(!INFRA_APPS_SCRIPT_URL) t+=' · check sin guardado en planilla';
+  else if(INFRA_LINK.ok===true) t+=' · guardado en planilla activo ✓';
+  else if(INFRA_LINK.ok===false){ t+=' · ⚠ '+INFRA_LINK.msg; bad=true; }
+  el.textContent=t;
+  if(dot){ dot.style.background=bad?'#c05050':''; dot.style.animation=bad?'none':''; }
+}
+const INFRA_MSG_NO_CONTACT='No se pudo contactar al Apps Script (¿implementado como "Cualquier usuario"?)';
+
+async function syncEstadosInfra(){
+  if(INFRA_APPS_SCRIPT_URL){
+    try{
+      const res=await fetch(INFRA_APPS_SCRIPT_URL+'?t='+Date.now());
+      const resData=await res.json();
+      if(resData.ok&&resData.estados){
+        resData.estados.forEach(e=>{const idx=INFRA_ROW_MAP.indexOf(e.row);if(idx!==-1&&INFRA_DATA[idx])INFRA_DATA[idx].completado=e.completado;});
+        INFRA_LINK={ok:true,msg:''};
+      }else INFRA_LINK={ok:false,msg:'El Apps Script respondió con error: '+(resData.error||'respuesta inesperada')};
+    }catch(e){ console.log('[syncEstados:infra]',e); INFRA_LINK={ok:false,msg:INFRA_MSG_NO_CONTACT}; }
+  }
+  renderInfra();
+  renderPendientesInfra();
+  infraRenderStatus();
+}
+
+async function toggleOkInfra(dataIdx){
+  const row=INFRA_DATA[dataIdx];const sheetRow=INFRA_ROW_MAP[dataIdx];
+  const prev=row.completado;
+  row.completado=!prev;const newVal=row.completado?'SI':'';
+  document.querySelectorAll(`[data-ok-idx="infra-${dataIdx}"]`).forEach(btn=>{btn.classList.toggle('done',row.completado);btn.classList.add('loading');btn.querySelector('.ok-label').textContent=row.completado?'Completado':'Pendiente';});
+  if(INFRA_APPS_SCRIPT_URL){
+    let saved=false, msg='';
+    try{
+      const res=await fetch(`${INFRA_APPS_SCRIPT_URL}?row=${sheetRow}&value=${encodeURIComponent(newVal)}&t=${Date.now()}`);
+      const j=await res.json();
+      saved=(j&&j.ok===true);
+      if(!saved) msg='El Apps Script respondió con error: '+((j&&j.error)||'respuesta inesperada');
+    }catch(e){ msg=INFRA_MSG_NO_CONTACT; }
+    if(!saved){
+      // no se guardó en la planilla: se revierte para que no parezca completada
+      row.completado=prev;
+      INFRA_LINK={ok:false,msg:'No se guardó: '+msg};
+      renderInfra(); renderPendientesInfra(); infraRenderStatus();
+      return;
+    }
+    INFRA_LINK={ok:true,msg:''}; infraRenderStatus();
+  }
+  if(row.completado){
+    [`${INFRA_PEND.rowPrefix}${dataIdx}`,`${INFRA_PEND.cardPrefix}${dataIdx}`].forEach(id=>{const el=document.getElementById(id);if(el){el.style.transition='opacity .3s';el.style.opacity='0';setTimeout(()=>{el.remove();refreshPendingCountInfra();},300);}});
+  }
+  setTimeout(()=>{document.querySelectorAll(`[data-ok-idx="infra-${dataIdx}"]`).forEach(btn=>btn.classList.remove('loading'));},1000);
+}
+
+function refreshPendingCountInfra(){
+  const ids=INFRA_PEND;
+  const rows=document.getElementById(ids.table).querySelectorAll('tr');
+  if(!rows.length)document.getElementById(ids.section).classList.remove('visible');
+  else document.getElementById(ids.count).textContent=rows.length;
+  const cards=document.getElementById(ids.cardsList).querySelectorAll('.card-pending');
+  const mSec=document.getElementById(ids.cardsSection);
+  if(!cards.length)mSec.classList.remove('visible');
+  else document.getElementById(ids.cardsCount).textContent=cards.length;
+}
+
+function renderPendientesInfra(){
+  const ids=INFRA_PEND;
+  const ayer=getYesterdayNorm();
+  let pend=INFRA_DATA.map((r,i)=>({r,i})).filter(({r})=>r.diaNorm===ayer&&!r.completado);
+  pend=ordenarPorDiaYHorario(pend);
+  const sec=document.getElementById(ids.section);
+  if(!pend.length){sec.classList.remove('visible');}
+  else{
+    sec.classList.add('visible');
+    document.getElementById(ids.count).textContent=pend.length;
+    document.getElementById(ids.table).innerHTML=pend.map(({r,i})=>`
+      <tr id="${ids.rowPrefix}${i}">
+        <td><span class="pend-dia">${DIAS_LABELS[r.diaNorm]||r.dia} · ${r.horario||'—'}</span></td>
+        <td><span class="pend-esp">${r.espacio}</span></td>
+        <td><span class="pend-resp">${r.resp||'—'}</span></td>
+        <td><span style="font-size:11px;color:var(--pending-text)">${r.necesidad||''}</span></td>
+        <td class="ok-cell">${pendBtnHtml(i,'infra')}</td>
+      </tr>`).join('');
+  }
+  const mSec=document.getElementById(ids.cardsSection);
+  const mList=document.getElementById(ids.cardsList);
+  if(!pend.length){mSec.classList.remove('visible');}
+  else{
+    mSec.classList.add('visible');
+    document.getElementById(ids.cardsCount).textContent=pend.length;
+    mList.innerHTML=pend.map(({r,i})=>`
+      <div class="card-pending" id="${ids.cardPrefix}${i}">
+        <div class="card-pending-header">
+          <span class="card-dia-pending">⚠ ${(DIAS_LABELS[r.diaNorm]||r.dia).toUpperCase()}</span>
+          ${r.horario?`<span style="font-size:10px;color:#ffe5a0;font-family:monospace">${r.horario}</span>`:''}
+        </div>
+        <div style="padding:.6rem 1rem;background:var(--pending-bg)">
+          <div style="font-weight:700;color:var(--pending-text);font-size:13px">${r.espacio}</div>
+          ${r.resp?`<div style="font-size:11px;color:#9a7200;margin-top:2px">${r.resp}</div>`:''}
+          ${r.necesidad?`<div class="card-nec-pending" style="margin-top:5px">${r.necesidad}</div>`:''}
+        </div>
+        <div class="card-footer-pending">${pendBtnHtml(i,'infra')}</div>
+      </div>`).join('');
+  }
+}
+
+function renderInfra(){
+  const dia=document.getElementById('infra-sel-dia').value||getTodayNorm();
+  const resp=document.getElementById('infra-sel-resp').value.toLowerCase().trim();
+  const esp=document.getElementById('infra-inp-esp').value.toLowerCase().trim();
+  renderSection({data:INFRA_DATA,dia,resp,esp,countId:'infra-count',emptyId:'infra-empty',tbodyId:'infra-tbody',tableId:'infra-table',cardsId:'infra-cards-list',section:'infra',theme:'infraestructura'});
+}
+
+fetchInfra();
+setInterval(syncEstadosInfra,30*1000);
+setInterval(fetchInfra,5*60*1000);
+</script>
+<!-- INFRAESTRUCTURA:END -->
 </body>
 </html>
