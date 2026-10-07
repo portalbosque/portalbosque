@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Núcleo — Portal Bosque</title>
+<title>Núcleo 2.0 — Portal Bosque</title>
 <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@600;700&family=DM+Sans:wght@300;400;500;600&family=DM+Mono:wght@400;500&display=swap" rel="stylesheet">
 <style>
   :root {
@@ -379,8 +379,8 @@ tbody.infraestructura tr:hover td{background:#e0edf5!important;transition:backgr
        onerror="this.style.display='none';document.getElementById('logo-text').style.display='block'">
   <span id="logo-text" class="header-logo-text">Portal Bosque</span>
   <div class="header-right">
-    <div class="header-title">Núcleo</div>
-    <div class="header-cycle">Ciclo Invierno 2026</div>
+    <div class="header-title">Núcleo 2.0</div>
+    <div class="header-cycle">Ciclo Primavera 2026</div>
   </div>
 </header>
 
@@ -397,7 +397,7 @@ tbody.infraestructura tr:hover td{background:#e0edf5!important;transition:backgr
   </button>
   <button class="nav-btn" id="nav-agenda" onclick="showSection('agenda')">
     <svg viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="4" width="14" height="13" rx="1.5"/><path d="M3 8h14M7 2v4M13 2v4"/></svg>
-    Semana Tipo
+    Agenda
   </button>
   <button class="nav-btn" id="nav-prod" onclick="showSection('prod')">
     <svg viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="2" stroke-linejoin="round"><path d="M10 1.5l2.47 5.51 6.03.55-4.55 4.02 1.36 5.92L10 14.5l-5.31 3 1.36-5.92-4.55-4.02 6.03-.55z"/></svg>
@@ -3243,7 +3243,7 @@ var DEFAULT_COLORS = {'EVENTO':'#9fc5e8','RETIRO':'#d5b4d7','AGENDA REGULAR':'#f
 var PALETTE = ['#b6d7a8','#f9cb9c','#ea9999','#a2c4c9','#b4a7d6','#d9d2e9','#fce5cd','#c9daf8'];
 var DAY = 86400000;
 
-var EVENTS = [], CATS = {}, FILTER = '', VIEW = null, LOADED = false, LAST_OK = null;
+var SKIPPED = 0, EVENTS = [], CATS = {}, FILTER = '', VIEW = null, LOADED = false, LAST_OK = null;
 
 function esc(s){ return String(s == null ? '' : s).replace(/[&<>"']/g, function(c){ return {'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]; }); }
 function norm(s){ return String(s == null ? '' : s).normalize('NFD').replace(/[̀-ͯ]/g,'').replace(/\s+/g,' ').trim().toUpperCase(); }
@@ -3274,8 +3274,10 @@ function urls(tab, gid){
   var base = 'https://docs.google.com/spreadsheets/d/' + SHEET_ID;
   var l = [];
   if(tab === EVENTS_TAB && PUBLISHED_CSV) l.push(PUBLISHED_CSV);
-  l.push(base + '/gviz/tq?tqx=out:csv&headers=1&sheet=' + encodeURIComponent(tab));
+  // /export devuelve los valores tal como se ven en la celda. gviz descarta las celdas que no son del tipo
+  // dominante de la columna (ej.: "13-18" en una columna de números), por eso va primero /export.
   if(gid != null) l.push(base + '/export?format=csv&gid=' + gid);
+  l.push(base + '/gviz/tq?tqx=out:csv&headers=1&sheet=' + encodeURIComponent(tab));
   return l;
 }
 async function fetchCsv(tab, gid){
@@ -3344,7 +3346,7 @@ function parseEvents(text){
   var iResp = colIndex(h, ['RESPONSABLE','RESPONSABLES']), iHora = colIndex(h, ['HORARIO','HORA']);
   if(iNom < 0) throw new Error('no se encontró la columna "NOMBRE DEL EVENTO"');
   if(iIni < 0 && (iDia < 0 || iMes < 0)) throw new Error('faltan las columnas DIA / MES / AÑO (o FECHA INICIO)');
-  var out = [];
+  var out = []; SKIPPED = 0;
   rows.slice(1).forEach(function(r, idx){
     var g = function(i){ return i >= 0 && r[i] != null ? String(r[i]).trim() : ''; };
     var name = g(iNom); if(!name) return;
@@ -3353,7 +3355,7 @@ function parseEvents(text){
     var ini = iIni >= 0 ? parseFullDate(g(iIni)) : null;
     if(ini != null){ var fin = iFin >= 0 ? parseFullDate(g(iFin)) : null; if(fin == null || fin < ini) fin = ini; ranges = [{s:ini, e:fin}]; }
     else ranges = rangesFromDia(g(iDia), g(iMes), g(iAno));
-    if(!ranges.length){ console.warn('[CALENDARIO] fila ' + (idx + 2) + ' ignorada: fecha no interpretable', r); return; }
+    if(!ranges.length){ SKIPPED++; console.warn('[CALENDARIO] fila ' + (idx + 2) + ' ignorada: fecha no interpretable', r); return; }
     var est = norm(g(iEst)), kind = 'ok';
     if(/CANCEL/.test(est)) kind = 'canc'; else if(/CONFIRMAR|PENDIENTE|TENTATIV/.test(est) ) kind = 'conf';
     ranges.forEach(function(rg){
@@ -3386,7 +3388,7 @@ async function calFetch(manual){
     var ev = parseEvents(await fetchCsv(EVENTS_TAB, 0));
     try{ var c = parseCats(await fetchCsv(CATS_TAB)); CATS = c || {}; }catch(e){ CATS = {}; }
     EVENTS = ev; LOADED = true; LAST_OK = new Date();
-    if(st) st.textContent = 'Conectado al Sheet · ' + EVENTS.length + ' eventos · ' + pad(LAST_OK.getHours()) + ':' + pad(LAST_OK.getMinutes());
+    if(st) st.textContent = 'Conectado al Sheet · ' + EVENTS.length + ' eventos · ' + pad(LAST_OK.getHours()) + ':' + pad(LAST_OK.getMinutes()) + (SKIPPED ? ' · ⚠ ' + SKIPPED + (SKIPPED === 1 ? ' fila sin fecha válida' : ' filas sin fecha válida') : '');
   }catch(e){
     console.error('[CALENDARIO]', e);
     if(st) st.textContent = 'No se pudo leer el Sheet: ' + e.message + (LOADED ? ' (se muestran los últimos datos)' : '');
