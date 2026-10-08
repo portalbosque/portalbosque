@@ -3384,7 +3384,7 @@ function parseEvents(text){
     var est = norm(g(iEst)), kind = 'ok';
     if(/CANCEL/.test(est)) kind = 'canc'; else if(/CONFIRMAR|PENDIENTE|TENTATIV/.test(est) ) kind = 'conf';
     ranges.forEach(function(rg){
-      out.push({s:rg.s, e:rg.e, name:name, cat:norm(g(iCat)), catLabel:g(iCat), est:g(iEst), kind:kind,
+      out.push({s:rg.s, e:rg.e, name:name, cat:fixCat(norm(g(iCat))), catLabel:fixCat(norm(g(iCat))) === norm(g(iCat)) ? g(iCat) : fixCat(norm(g(iCat))), est:g(iEst), kind:kind,
         desc:g(iDesc), lugar:g(iLug), resp:g(iResp), hora:g(iHora)});
     });
   });
@@ -3398,6 +3398,8 @@ function parseCats(text){
   rows.slice(1).forEach(function(r){ var k = norm(r[iC]), c = String(r[iCol] || '').trim(); if(k && /^#?[0-9a-f]{3,8}$/i.test(c)) m[k] = c[0] === '#' ? c : '#' + c; });
   return m;
 }
+var CAT_ALIASES = {'TIBUS':'TRIBUS'};   // errores de tipeo frecuentes en el Sheet
+function fixCat(k){ return CAT_ALIASES[k] || k; }
 function catFg(cat){ return (!CATS[cat] && DEFAULT_COLORS[cat]) ? DEFAULT_COLORS[cat][1] : '#1f2d2d'; }
 function catColor(cat){
   if(!cat) return '#e3e8ee';
