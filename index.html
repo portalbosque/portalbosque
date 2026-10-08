@@ -358,7 +358,23 @@ tbody.infraestructura tr:hover td{background:#e0edf5!important;transition:backgr
 .cal-li{margin:.4rem 0;padding:.5rem .7rem;border-radius:8px;border:1px solid rgba(0,0,0,.18);color:#1f2d2d;font-size:13.5px;overflow-wrap:anywhere}
 .cal-li b{display:block;font-weight:700}
 .cal-li small{display:block;font-size:12px;opacity:.85}
+.cal-burger{display:none}
 @media(max-width:700px){
+  /* menú de secciones plegado (☰) solo mientras se ve Calendario en celular */
+  .nav-bar.cal-mode{overflow:visible;flex-wrap:wrap;top:var(--cal-nav-top,74px)}
+  .nav-bar.cal-mode .nav-btn:not(#nav-cal){display:none}
+  .nav-bar.cal-mode .cal-burger{display:flex;order:0;flex:0 0 54px;align-items:center;justify-content:center;background:#fff;border:none;border-right:1px solid #e0e0e0;color:#2f4546;cursor:pointer;padding:0}
+  .nav-bar.cal-mode #nav-cal{order:1;flex:1 1 auto;justify-content:center;font-size:14px}
+  .nav-bar.cal-mode #nav-cal svg{display:block}
+  .nav-bar.cal-mode.cal-open .nav-btn:not(#nav-cal){display:flex;order:2;flex:1 0 100%;justify-content:flex-start;padding:.85rem 1.1rem;font-size:14px;border-top:1px solid #eceff1;background:#fff}
+  .nav-bar.cal-mode.cal-open .nav-btn:not(#nav-cal) svg{display:block;width:16px;height:16px}
+  /* mes, estación y filtros fijos al hacer scroll */
+  .cal-sticky{position:-webkit-sticky;position:sticky;top:var(--cal-top,120px);z-index:50;background:#fff;margin:0 -.7rem;padding:.35rem .7rem .5rem;border-bottom:1px solid #dbe4ee;box-shadow:0 3px 6px -4px rgba(0,0,0,.25)}
+  .cal-head{margin:0 0 .4rem}
+  .cal-title{font-size:24px;letter-spacing:.12em}
+  .cal-sub{font-size:11px;margin-top:.1rem}
+  .cal-pills{gap:.3rem;margin-bottom:0}
+  .cal-pill{white-space:nowrap;font-size:11px;padding:.2rem .6rem}
   .cal-wrap{padding:.7rem .7rem 1.2rem}
   .cal-dow,.cal-grid{display:none}
   .cal-list{display:block}
@@ -397,7 +413,7 @@ tbody.infraestructura tr:hover td{background:#e0edf5!important;transition:backgr
   </button>
   <button class="nav-btn" id="nav-agenda" onclick="showSection('agenda')">
     <svg viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="4" width="14" height="13" rx="1.5"/><path d="M3 8h14M7 2v4M13 2v4"/></svg>
-    Agenda
+    Semana Tipo
   </button>
   <button class="nav-btn" id="nav-prod" onclick="showSection('prod')">
     <svg viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="2" stroke-linejoin="round"><path d="M10 1.5l2.47 5.51 6.03.55-4.55 4.02 1.36 5.92L10 14.5l-5.31 3 1.36-5.92-4.55-4.02 6.03-.55z"/></svg>
@@ -413,7 +429,8 @@ tbody.infraestructura tr:hover td{background:#e0edf5!important;transition:backgr
     Infraestructura
   </button>
 <!-- INFRAESTRUCTURA:END -->
-<!-- CALENDARIO:START -->  <button class="nav-btn" id="nav-cal" onclick="showSection('cal')">
+<!-- CALENDARIO:START -->  <button class="cal-burger" id="cal-burger" type="button" aria-label="Menú de secciones" aria-expanded="false" onclick="calToggleMenu()"><svg viewBox="0 0 20 20" width="22" height="22" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"><path d="M3 5h14M3 10h14M3 15h14"/></svg></button>
+  <button class="nav-btn" id="nav-cal" onclick="showSection('cal')">
     <svg viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="14" height="13" rx="1.5"/><path d="M3 8h14M7 2v4M13 2v4M7 11.5h2M11 11.5h2M7 14.5h2"/></svg>
     Calendario
   </button>
@@ -465,7 +482,7 @@ tbody.infraestructura tr:hover td{background:#e0edf5!important;transition:backgr
 <div class="section">
   <div class="section-header agenda">
     <span class="section-title">📅 Semana Tipo</span>
-    <span class="section-pill agenda">Agenda</span>
+    <span class="section-pill agenda">Semana Tipo</span>
   </div>
   <div class="filters agenda" id="agenda-daybar">
     <div class="filter-group" style="flex:1"><span class="filter-label">Día</span>
@@ -631,8 +648,10 @@ tbody.infraestructura tr:hover td{background:#e0edf5!important;transition:backgr
       <span class="cal-spacer"></span>
       <span class="cal-count" id="cal-count"></span>
     </div>
+    <div class="cal-sticky" id="cal-sticky">
     <div class="cal-head"><div class="cal-title" id="cal-title">—</div><div class="cal-sub" id="cal-sub"></div></div>
     <div class="cal-pills" id="cal-pills"></div>
+    </div>
     <div class="cal-dow"><div>LUN</div><div>MAR</div><div>MIÉ</div><div>JUE</div><div>VIE</div><div>SÁB</div><div>DOM</div></div>
     <div class="cal-grid" id="cal-grid"></div>
     <div class="cal-list" id="cal-list"></div>
@@ -3239,7 +3258,13 @@ var CATS_TAB = 'CATEGORIAS';        // pestaña opcional: CATEGORIA | COLOR (hex
 var PUBLISHED_CSV = '';             // opcional: link "Publicar en la web → CSV"
 var MONTHS = ['ENERO','FEBRERO','MARZO','ABRIL','MAYO','JUNIO','JULIO','AGOSTO','SEPTIEMBRE','OCTUBRE','NOVIEMBRE','DICIEMBRE'];
 var SEASON_BY_MONTH = ['VERANO','VERANO','OTOÑO','OTOÑO','OTOÑO','INVIERNO','INVIERNO','INVIERNO','PRIMAVERA','PRIMAVERA','PRIMAVERA','VERANO'];
-var DEFAULT_COLORS = {'EVENTO':'#9fc5e8','RETIRO':'#d5b4d7','AGENDA REGULAR':'#ffe599'};
+// colores de las etiquetas del Sheet: [fondo, texto]
+var DEFAULT_COLORS = {'EVENTO':['#c5e0f4','#2254a3'],'WORKSHOP':['#553682','#e2d0f0'],'CAPACITACION':['#cadbe0','#30596a'],'CHARLA':['#a42116','#f8d1cb'],
+  'RETIRO':['#e3d0f0','#553682'],'AGENDA REGULAR':['#fbe5a9','#453924'],'TRIBUS':['#d9ecc1','#33714e'],'ESPECIAL':['#e9e8e8','#1f1f1f']};
+var LABELS = {'CAPACITACION':'CAPACITACIÓN'};
+// Categorías que SIEMPRE muestran su filtro (aunque no tengan eventos). Si agregás una categoría nueva al desplegable
+// del Sheet, sumala acá o en una pestaña "CATEGORIAS" (columnas CATEGORIA | COLOR) y aparece sola.
+var ALL_CATEGORIES = ['EVENTO','WORKSHOP','CAPACITACION','CHARLA','RETIRO','AGENDA REGULAR','TRIBUS','ESPECIAL'];
 var PALETTE = ['#b6d7a8','#f9cb9c','#ea9999','#a2c4c9','#b4a7d6','#d9d2e9','#fce5cd','#c9daf8'];
 var DAY = 86400000;
 
@@ -3373,10 +3398,11 @@ function parseCats(text){
   rows.slice(1).forEach(function(r){ var k = norm(r[iC]), c = String(r[iCol] || '').trim(); if(k && /^#?[0-9a-f]{3,8}$/i.test(c)) m[k] = c[0] === '#' ? c : '#' + c; });
   return m;
 }
+function catFg(cat){ return (!CATS[cat] && DEFAULT_COLORS[cat]) ? DEFAULT_COLORS[cat][1] : '#1f2d2d'; }
 function catColor(cat){
   if(!cat) return '#e3e8ee';
   if(CATS[cat]) return CATS[cat];
-  if(DEFAULT_COLORS[cat]) return DEFAULT_COLORS[cat];
+  if(DEFAULT_COLORS[cat]) return DEFAULT_COLORS[cat][0];
   var h = 0; for(var i = 0; i < cat.length; i++) h = (h * 31 + cat.charCodeAt(i)) >>> 0;
   return PALETTE[h % PALETTE.length];
 }
@@ -3401,8 +3427,9 @@ async function calFetch(manual){
 function monthNow(){ var t = fromSer(todaySer()); return {y:t.y, m:t.m}; }
 function categoriesInUse(){
   var seen = {}, list = [];
+  // orden fijo: primero las categorías base (siempre visibles, tengan o no eventos), luego las de la pestaña CATEGORIAS y por último las que aparezcan en eventos
+  ALL_CATEGORIES.concat(Object.keys(CATS)).forEach(function(k){ k = norm(k); if(k && !seen[k]){ seen[k] = 1; list.push({k:k, label:LABELS[k] || k}); } });
   EVENTS.forEach(function(e){ if(e.cat && !seen[e.cat]){ seen[e.cat] = 1; list.push({k:e.cat, label:e.catLabel}); } });
-  Object.keys(CATS).concat(Object.keys(DEFAULT_COLORS)).forEach(function(k){ if(!seen[k]){ seen[k] = 1; list.push({k:k, label:k}); } });
   return list;
 }
 function metaLines(e, first){
@@ -3461,7 +3488,7 @@ function render(){
       lanes[lane] = ce;
       var cl = e.s < ws, cr = e.e > we;
       segs += '<div class="cal-ev ' + (e.kind === 'canc' ? 'canc ' : e.kind === 'conf' ? 'conf ' : '') + (cl ? 'cl ' : '') + (cr ? 'cr' : '') +
-        '" style="grid-column:' + (cs - ws + 1) + ' / span ' + (ce - cs + 1) + ';grid-row:' + (lane + 2) + ';background:' + catColor(e.cat) + '" title="' + esc(e.name + ' · ' + fmt(e.s) + (e.e > e.s ? ' – ' + fmt(e.e) : '')) + '">' +
+        '" style="grid-column:' + (cs - ws + 1) + ' / span ' + (ce - cs + 1) + ';grid-row:' + (lane + 2) + ';background:' + catColor(e.cat) + ';color:' + catFg(e.cat) + '" title="' + esc(e.name + ' · ' + fmt(e.s) + (e.e > e.s ? ' – ' + fmt(e.e) : '')) + '">' +
         '<b>' + (cl ? '◂ ' : '') + esc(e.name) + tagHtml(e) + (cr ? ' ▸' : '') + '</b>' + metaLines(e, !cl) + '</div>';
     });
     html += '<div class="cal-week"><div class="cal-bg">' + bg + '</div><div class="cal-fg">' + nums + segs + '</div></div>';
@@ -3476,7 +3503,7 @@ function render(){
     lh += '<div class="cal-li-day' + (dd === today ? ' today' : '') + '">' + names[dowMon(dd)] + ' ' + od.d + (dd === today ? ' <em>HOY</em>' : '') + '</div>';
     todays.forEach(function(e){
       var multi = e.e > e.s ? '<small>Día ' + (dd - e.s + 1) + ' de ' + (e.e - e.s + 1) + ' · ' + fmtShort(e.s) + ' al ' + fmtShort(e.e) + '</small>' : '';
-      lh += '<div class="cal-li ' + (e.kind === 'canc' ? 'canc' : e.kind === 'conf' ? 'conf' : '') + '" style="background:' + catColor(e.cat) + '"><b>' + esc(e.name) + tagHtml(e) + '</b>' + multi + metaLines({e:e.s, s:e.s, hora:e.hora, lugar:e.lugar, resp:e.resp, desc:e.desc}, false) + '</div>';
+      lh += '<div class="cal-li ' + (e.kind === 'canc' ? 'canc' : e.kind === 'conf' ? 'conf' : '') + '" style="background:' + catColor(e.cat) + ';color:' + catFg(e.cat) + '"><b>' + esc(e.name) + tagHtml(e) + '</b>' + multi + metaLines({e:e.s, s:e.s, hora:e.hora, lugar:e.lugar, resp:e.resp, desc:e.desc}, false) + '</div>';
     });
   }
   el('cal-list').innerHTML = lh;
@@ -3485,6 +3512,28 @@ function render(){
 window.calMove = function(delta){ if(!VIEW) VIEW = monthNow(); var t = new Date(Date.UTC(VIEW.y, VIEW.m + delta, 1)); VIEW = {y:t.getUTCFullYear(), m:t.getUTCMonth()}; render(); };
 window.calGoToday = function(){ VIEW = monthNow(); render(); };
 window.calFetch = calFetch;
+function stickyTop(){
+  var n = document.querySelector('.nav-bar');
+  var h = document.querySelector('.header'), mob = window.matchMedia('(max-width:700px)').matches;
+  if(h) document.documentElement.style.setProperty('--cal-nav-top', h.offsetHeight + 'px');   // en celular la barra se pega justo bajo el encabezado, sin hueco
+  var navTop = (mob && h) ? h.offsetHeight : (n ? parseFloat(getComputedStyle(n).top) || 0 : 0);
+  var top = n ? navTop + n.offsetHeight : 0;           // el bloque fijo del calendario se ancla justo debajo de la barra
+  var s = document.getElementById('cal-sticky'); if(s) s.style.setProperty('--cal-top', top + 'px');
+}
+window.calToggleMenu = function(){
+  var bar = document.querySelector('.nav-bar'); if(!bar) return;
+  var open = bar.classList.toggle('cal-open');
+  var b = document.getElementById('cal-burger'); if(b) b.setAttribute('aria-expanded', open ? 'true' : 'false');
+  stickyTop();
+};
+window.addEventListener('resize', stickyTop);
+window.addEventListener('orientationchange', stickyTop);
+window.addEventListener('load', stickyTop);
+// se recalcula al hacer scroll para que el bloque fijo siempre quede justo bajo la barra, aunque cambie el alto del encabezado (fuentes, iPhone, etc.)
+var tick = false;
+window.addEventListener('scroll', function(){ if(tick) return; tick = true; requestAnimationFrame(function(){ tick = false; var n = document.querySelector('.nav-bar'), s = document.getElementById('cal-sticky'); if(n && s && n.classList.contains('cal-mode')){ var b = Math.round(n.getBoundingClientRect().bottom); if(b > 0) s.style.setProperty('--cal-top', b + 'px'); } }); }, {passive:true});
+try{ if(document.fonts && document.fonts.ready) document.fonts.ready.then(stickyTop); }catch(e){}
+try{ if(window.ResizeObserver){ var ro = new ResizeObserver(stickyTop); var h0 = document.querySelector('.header'), n0 = document.querySelector('.nav-bar'); if(h0) ro.observe(h0); if(n0) ro.observe(n0); } }catch(e){}
 window.__calTest = {parseEvents:parseEvents, rangesFromDia:rangesFromDia};
 
 document.addEventListener('click', function(ev){
@@ -3498,7 +3547,9 @@ window.showSection = function(which){
   var sec = document.getElementById('section-cal'), nav = document.getElementById('nav-cal');
   if(sec) sec.style.display = (which === 'cal') ? 'block' : 'none';
   if(nav) nav.className = 'nav-btn' + (which === 'cal' ? ' active cal-active' : '');
-  if(which === 'cal'){ render(); try{ var bar = document.querySelector('.nav-bar'); if(bar && nav) bar.scrollLeft = nav.offsetLeft - (bar.clientWidth - nav.offsetWidth) / 2; }catch(e){} }
+  var navBar = document.querySelector('.nav-bar');
+  if(navBar){ navBar.classList.toggle('cal-mode', which === 'cal'); navBar.classList.remove('cal-open'); }
+  if(which === 'cal'){ render(); stickyTop(); }
 };
 
 calFetch();
