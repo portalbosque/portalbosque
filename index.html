@@ -360,14 +360,14 @@ tbody.infraestructura tr:hover td{background:#e0edf5!important;transition:backgr
 .cal-li small{display:block;font-size:12px;opacity:.85}
 .cal-burger{display:none}
 @media(max-width:700px){
-  /* menú de secciones plegado (☰) solo mientras se ve Calendario en celular */
-  .nav-bar.cal-mode{overflow:visible;flex-wrap:wrap;top:var(--cal-nav-top,74px)}
-  .nav-bar.cal-mode .nav-btn:not(#nav-cal){display:none}
-  .nav-bar.cal-mode .cal-burger{display:flex;order:0;flex:0 0 54px;align-items:center;justify-content:center;background:#fff;border:none;border-right:1px solid #e0e0e0;color:#2f4546;cursor:pointer;padding:0}
-  .nav-bar.cal-mode #nav-cal{order:1;flex:1 1 auto;justify-content:center;font-size:14px}
-  .nav-bar.cal-mode #nav-cal svg{display:block}
-  .nav-bar.cal-mode.cal-open .nav-btn:not(#nav-cal){display:flex;order:2;flex:1 0 100%;justify-content:flex-start;padding:.85rem 1.1rem;font-size:14px;border-top:1px solid #eceff1;background:#fff}
-  .nav-bar.cal-mode.cal-open .nav-btn:not(#nav-cal) svg{display:block;width:16px;height:16px}
+  /* menú de secciones plegado (☰) en celular, en todas las secciones: solo se ve la sección activa */
+  .nav-bar.nav-collapsed{overflow:visible;flex-wrap:wrap;top:var(--cal-nav-top,74px)}
+  .nav-bar.nav-collapsed .nav-btn:not(.active){display:none}
+  .nav-bar.nav-collapsed .cal-burger{display:flex;order:0;flex:0 0 54px;align-items:center;justify-content:center;background:#fff;border:none;border-right:1px solid #e0e0e0;color:#2f4546;cursor:pointer;padding:0}
+  .nav-bar.nav-collapsed .nav-btn.active{order:1;flex:1 1 auto;justify-content:center;font-size:14px}
+  .nav-bar.nav-collapsed .nav-btn.active svg{display:block}
+  .nav-bar.nav-collapsed.nav-open .nav-btn:not(.active){display:flex;order:2;flex:1 0 100%;justify-content:flex-start;padding:.85rem 1.1rem;font-size:14px;border-top:1px solid #eceff1;background:#fff}
+  .nav-bar.nav-collapsed.nav-open .nav-btn:not(.active) svg{display:block;width:16px;height:16px}
   /* mes, estación y filtros fijos al hacer scroll */
   .cal-sticky{position:-webkit-sticky;position:sticky;top:var(--cal-top,120px);z-index:50;background:#fff;margin:0 -.7rem;padding:.35rem .7rem .5rem;border-bottom:1px solid #dbe4ee;box-shadow:0 3px 6px -4px rgba(0,0,0,.25)}
   .cal-head{margin:0 0 .4rem}
@@ -3524,7 +3524,7 @@ function stickyTop(){
 }
 window.calToggleMenu = function(){
   var bar = document.querySelector('.nav-bar'); if(!bar) return;
-  var open = bar.classList.toggle('cal-open');
+  var open = bar.classList.toggle('nav-open');
   var b = document.getElementById('cal-burger'); if(b) b.setAttribute('aria-expanded', open ? 'true' : 'false');
   stickyTop();
 };
@@ -3533,7 +3533,7 @@ window.addEventListener('orientationchange', stickyTop);
 window.addEventListener('load', stickyTop);
 // se recalcula al hacer scroll para que el bloque fijo siempre quede justo bajo la barra, aunque cambie el alto del encabezado (fuentes, iPhone, etc.)
 var tick = false;
-window.addEventListener('scroll', function(){ if(tick) return; tick = true; requestAnimationFrame(function(){ tick = false; var n = document.querySelector('.nav-bar'), s = document.getElementById('cal-sticky'); if(n && s && n.classList.contains('cal-mode')){ var b = Math.round(n.getBoundingClientRect().bottom); if(b > 0) s.style.setProperty('--cal-top', b + 'px'); } }); }, {passive:true});
+window.addEventListener('scroll', function(){ if(tick) return; tick = true; requestAnimationFrame(function(){ tick = false; var n = document.querySelector('.nav-bar'), s = document.getElementById('cal-sticky'); if(n && s && n.classList.contains('nav-collapsed')){ var b = Math.round(n.getBoundingClientRect().bottom); if(b > 0) s.style.setProperty('--cal-top', b + 'px'); } }); }, {passive:true});
 try{ if(document.fonts && document.fonts.ready) document.fonts.ready.then(stickyTop); }catch(e){}
 try{ if(window.ResizeObserver){ var ro = new ResizeObserver(stickyTop); var h0 = document.querySelector('.header'), n0 = document.querySelector('.nav-bar'); if(h0) ro.observe(h0); if(n0) ro.observe(n0); } }catch(e){}
 window.__calTest = {parseEvents:parseEvents, rangesFromDia:rangesFromDia};
@@ -3550,10 +3550,11 @@ window.showSection = function(which){
   if(sec) sec.style.display = (which === 'cal') ? 'block' : 'none';
   if(nav) nav.className = 'nav-btn' + (which === 'cal' ? ' active cal-active' : '');
   var navBar = document.querySelector('.nav-bar');
-  if(navBar){ navBar.classList.toggle('cal-mode', which === 'cal'); navBar.classList.remove('cal-open'); }
+  if(navBar){ navBar.classList.add('nav-collapsed'); navBar.classList.remove('nav-open'); stickyTop(); }
   if(which === 'cal'){ render(); stickyTop(); }
 };
 
+(function(){ var nb = document.querySelector('.nav-bar'); if(nb) nb.classList.add('nav-collapsed'); stickyTop(); })();
 calFetch();
 setInterval(calFetch, 5 * 60 * 1000);
 })();
