@@ -2983,6 +2983,13 @@ async function instFetchCsv(){
   throw lastErr || new Error('sin URL configurada');
 }
 
+/* Responsables = los que aparecen en la hoja de esta sección (se actualiza solo cuando se agregan filas nuevas). */
+function instRespOptions(data){
+  const seen=new Map();
+  (data||[]).forEach(r=>{ String(r.resp||'').split(/\s+-\s+|\s*[\/,;&+]\s*|\s+y\s+/i).forEach(p=>{ p=p.replace(/\s+/g,' ').trim(); if(!p) return; const key=p.toLowerCase(); if(!seen.has(key)) seen.set(key,p.split(' ').map(w=>w.charAt(0).toUpperCase()+w.slice(1).toLowerCase()).join(' ')); }); });
+  return Array.from(seen.values()).sort((a,b)=>a.localeCompare(b,'es'));
+}
+
 async function fetchInst(){
   try{
     const parsed = parseCSV(await instFetchCsv(), INST_ROW_MAP, 'INSTALACIONES');
@@ -2992,7 +2999,7 @@ async function fetchInst(){
     INST_DATA = keep; INST_ROW_MAP.length = 0; keepMap.forEach(x=>INST_ROW_MAP.push(x));
     const diasNorm=new Set(INST_DATA.map(r=>r.diaNorm).filter(Boolean));
     populateSelect('inst-sel-dia',DIAS_ORDER.filter(d=>diasNorm.has(d)).map(d=>({val:d,label:DIAS_LABELS[d]||d})));
-    populateSelect('inst-sel-resp',RESPS_VALIDOS.map(r=>r.split(' ').map(w=>w.charAt(0).toUpperCase()+w.slice(1)).join(' ')));
+    { const _sel=document.getElementById('inst-sel-resp'), _prev=_sel.value; populateSelect('inst-sel-resp',instRespOptions(INST_DATA)); if(_prev && Array.from(_sel.options).some(op=>op.value===_prev)) _sel.value=_prev; }
     document.getElementById('inst-loading').style.display='none';
     document.getElementById('inst-table').style.display='table';
     const n=new Date();
@@ -3182,6 +3189,13 @@ async function infraFetchCsv(){
   throw lastErr || new Error('sin URL configurada');
 }
 
+/* Responsables = los que aparecen en la hoja de esta sección (se actualiza solo cuando se agregan filas nuevas). */
+function infraRespOptions(data){
+  const seen=new Map();
+  (data||[]).forEach(r=>{ String(r.resp||'').split(/\s+-\s+|\s*[\/,;&+]\s*|\s+y\s+/i).forEach(p=>{ p=p.replace(/\s+/g,' ').trim(); if(!p) return; const key=p.toLowerCase(); if(!seen.has(key)) seen.set(key,p.split(' ').map(w=>w.charAt(0).toUpperCase()+w.slice(1).toLowerCase()).join(' ')); }); });
+  return Array.from(seen.values()).sort((a,b)=>a.localeCompare(b,'es'));
+}
+
 async function fetchInfra(){
   try{
     const parsed = parseCSV(await infraFetchCsv(), INFRA_ROW_MAP, 'INFRAESTRUCTURA');
@@ -3191,7 +3205,7 @@ async function fetchInfra(){
     INFRA_DATA = keep; INFRA_ROW_MAP.length = 0; keepMap.forEach(x=>INFRA_ROW_MAP.push(x));
     const diasNorm=new Set(INFRA_DATA.map(r=>r.diaNorm).filter(Boolean));
     populateSelect('infra-sel-dia',DIAS_ORDER.filter(d=>diasNorm.has(d)).map(d=>({val:d,label:DIAS_LABELS[d]||d})));
-    populateSelect('infra-sel-resp',RESPS_VALIDOS.map(r=>r.split(' ').map(w=>w.charAt(0).toUpperCase()+w.slice(1)).join(' ')));
+    { const _sel=document.getElementById('infra-sel-resp'), _prev=_sel.value; populateSelect('infra-sel-resp',infraRespOptions(INFRA_DATA)); if(_prev && Array.from(_sel.options).some(op=>op.value===_prev)) _sel.value=_prev; }
     document.getElementById('infra-loading').style.display='none';
     document.getElementById('infra-table').style.display='table';
     const n=new Date();
@@ -3695,6 +3709,13 @@ async function mktFetchCsv(){
   throw lastErr || new Error('sin URL configurada');
 }
 
+/* Responsables = los que aparecen en la hoja de esta sección (se actualiza solo cuando se agregan filas nuevas). */
+function mktRespOptions(data){
+  const seen=new Map();
+  (data||[]).forEach(r=>{ String(r.resp||'').split(/\s+-\s+|\s*[\/,;&+]\s*|\s+y\s+/i).forEach(p=>{ p=p.replace(/\s+/g,' ').trim(); if(!p) return; const key=p.toLowerCase(); if(!seen.has(key)) seen.set(key,p.split(' ').map(w=>w.charAt(0).toUpperCase()+w.slice(1).toLowerCase()).join(' ')); }); });
+  return Array.from(seen.values()).sort((a,b)=>a.localeCompare(b,'es'));
+}
+
 async function fetchMkt(){
   try{
     const parsed = parseCSV(await mktFetchCsv(), MKT_ROW_MAP, 'MKT');
@@ -3704,7 +3725,7 @@ async function fetchMkt(){
     MKT_DATA = keep; MKT_ROW_MAP.length = 0; keepMap.forEach(x=>MKT_ROW_MAP.push(x));
     const diasNorm=new Set(MKT_DATA.map(r=>r.diaNorm).filter(Boolean));
     populateSelect('mkt-sel-dia',DIAS_ORDER.filter(d=>diasNorm.has(d)).map(d=>({val:d,label:DIAS_LABELS[d]||d})));
-    populateSelect('mkt-sel-resp',RESPS_VALIDOS.map(r=>r.split(' ').map(w=>w.charAt(0).toUpperCase()+w.slice(1)).join(' ')));
+    { const _sel=document.getElementById('mkt-sel-resp'), _prev=_sel.value; populateSelect('mkt-sel-resp',mktRespOptions(MKT_DATA)); if(_prev && Array.from(_sel.options).some(op=>op.value===_prev)) _sel.value=_prev; }
     document.getElementById('mkt-loading').style.display='none';
     document.getElementById('mkt-table').style.display='table';
     const n=new Date();
