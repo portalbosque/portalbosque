@@ -417,6 +417,52 @@ tbody.mkt tr:hover td{background:#f6dde5!important;transition:background .12s}
 .card-nec.mkt{color:var(--text2)}
 .card-nota.mkt{color:var(--text3)}
 .card-footer.mkt{border-color:var(--border2)}
+.mkt-viewbar{display:flex;align-items:center;gap:.8rem;flex-wrap:wrap;padding:.9rem 1.5rem 0}
+.mkt-seg{display:inline-flex;border:1.5px solid #c2476b;border-radius:10px;overflow:hidden}
+.mkt-seg button{font:inherit;font-size:12px;font-weight:700;letter-spacing:.05em;text-transform:uppercase;border:none;background:#fff;color:#8f2a4a;padding:.5rem 1.2rem;cursor:pointer}
+.mkt-seg button.on{background:#c2476b;color:#fff}
+.mkt-viewhint{font-size:12px;color:var(--text3)}
+.mkt-month{padding:1rem 1.5rem 1.5rem}
+.mkt-mtool{display:flex;gap:.5rem;flex-wrap:wrap;margin-bottom:.8rem}
+.mkt-btn{font:inherit;font-size:12px;font-weight:700;letter-spacing:.04em;text-transform:uppercase;border:1.5px solid #c2476b;background:#fff;color:#4a2233;border-radius:8px;padding:.45rem .8rem;cursor:pointer}
+.mkt-btn:hover{background:#fbeef2}
+.mkt-btn-hoy{background:#c2476b;color:#fff}
+.mkt-btn-hoy:hover{background:#c2476b;filter:brightness(.95)}
+.mkt-mhead{text-align:center;margin:.2rem 0 .9rem}
+.mkt-mtitle{font-size:clamp(24px,4.5vw,40px);font-weight:800;letter-spacing:.14em;color:#4a2233;text-transform:uppercase}
+.mkt-dow,.mkt-wk{display:grid;grid-template-columns:repeat(7,minmax(0,1fr))}
+.mkt-dow div{text-align:center;font-size:12px;font-weight:800;letter-spacing:.08em;color:#4a2233;padding:.4rem 0;border:1px solid #d9a3b5;border-left:none;background:#fbeef2}
+.mkt-dow div:first-child{border-left:1px solid #d9a3b5}
+.mkt-wk{border-left:1px solid #d9a3b5;border-bottom:1px solid #d9a3b5}
+.mkt-day{border-right:1px solid #d9a3b5;min-height:96px;padding:4px;min-width:0}
+.mkt-day.out{background:#f8f4f5}
+.mkt-day.today{background:#fff8d6;box-shadow:inset 0 0 0 2px #e0a800}
+.mkt-dn{font-size:13px;font-weight:700;color:#4a2233;padding:0 2px 3px}
+.mkt-day.out .mkt-dn{color:#a99aa0;font-weight:500}
+.mkt-day.today .mkt-dn span{background:#e0a800;color:#fff;border-radius:11px;padding:0 6px;display:inline-block}
+.mkt-t{border:1px solid #f0d3dc;border-left:4px solid #c2476b;background:#fbeef2;border-radius:6px;padding:5px 7px;margin-bottom:4px;font-size:12px;line-height:1.3;color:#2b1d22;overflow-wrap:anywhere;min-width:0}
+.mkt-t-top{font-size:11px;font-weight:700;color:#8f2a4a;margin-bottom:2px}
+.mkt-t-nec{font-weight:600}
+.mkt-t small{display:block;font-size:11px;color:#6b5560}
+.mkt-t-resp{display:flex;align-items:center;gap:5px;margin-top:3px;font-size:11px;color:#4a2233}
+.mkt-av{width:18px;height:18px;border-radius:50%;border:1.5px solid #4a2233;font-size:8px;font-weight:800;display:inline-flex;align-items:center;justify-content:center;flex:0 0 auto}
+.mkt-t .ok-btn{padding:2px 9px;font-size:11px;margin-top:5px;min-height:0}
+.mkt-t.done{background:#eef7f0;border-color:#cfe6d6;border-left-color:#3d8f5a;opacity:.78}
+.mkt-t.done .mkt-t-nec{text-decoration:line-through}
+.mkt-mlist{display:none}
+.mkt-lday{font-size:13px;font-weight:800;color:#4a2233;text-transform:uppercase;letter-spacing:.06em;padding:.5rem .2rem .25rem;border-bottom:2px solid #c2476b;margin-top:.7rem;display:flex;gap:.5rem;align-items:center}
+.mkt-lday em{font-style:normal;font-size:10px;background:#e0a800;color:#fff;border-radius:4px;padding:1px 6px}
+.mkt-mlist .mkt-t{font-size:13.5px;margin:.4rem 0;padding:.55rem .75rem}
+.mkt-mempty{text-align:center;color:var(--text3);padding:1.2rem;font-size:13px}
+@media(max-width:700px){
+  .mkt-viewbar{padding:.8rem 1rem 0}
+  .mkt-month{padding:.8rem 1rem 1.2rem}
+  .mkt-dow,.mkt-mgrid{display:none}
+  .mkt-mlist{display:block}
+  .mkt-btn{padding:.45rem .6rem;font-size:11px}
+  .filters.mkt select{min-width:130px}
+}
+@media(min-width:701px) and (max-width:1000px){ .mkt-t{font-size:11px;padding:4px 5px} }
 </style>
 <!-- MKT:END -->
 </head>
@@ -704,13 +750,21 @@ tbody.mkt tr:hover td{background:#f6dde5!important;transition:background .12s}
     <span class="section-title">📣 MKT &amp; Comunicación</span>
     <span class="section-pill mkt">MKT</span>
   </div>
+  <div class="mkt-viewbar">
+    <div class="mkt-seg" role="tablist" aria-label="Vista">
+      <button type="button" id="mkt-vw-sem" class="on" onclick="mktSetView('sem')">Semana</button>
+      <button type="button" id="mkt-vw-mes" onclick="mktSetView('mes')">Mes</button>
+    </div>
+    <span class="mkt-viewhint" id="mkt-viewhint"></span>
+  </div>
   <div class="filters mkt">
-    <div class="filter-group"><span class="filter-label">Día</span><select id="mkt-sel-dia" onchange="renderMkt()"><option value="">Hoy</option></select></div>
+    <div class="filter-group" id="mkt-g-dia"><span class="filter-label">Día</span><select id="mkt-sel-dia" onchange="renderMkt()"><option value="">Hoy</option></select></div>
     <div class="filter-group"><span class="filter-label">Responsable</span><select id="mkt-sel-resp" onchange="renderMkt()"><option value="">Todos</option></select></div>
     <div class="filter-group"><span class="filter-label">Espacio</span><input id="mkt-inp-esp" type="text" placeholder="Ej: Yurta" oninput="renderMkt()"></div>
     <span class="count mkt" id="mkt-count">—</span>
   </div>
   <div class="status mkt"><div class="status-dot mkt"></div><span id="mkt-status">Conectando...</span></div>
+  <div id="mkt-week-view">
   <div class="pending-section" id="mkt-pending-section">
     <div class="pending-header-bar"><span class="pending-title">⚠ Pendientes de ayer sin completar</span><span class="pending-count" id="mkt-pending-count">0</span></div>
     <table class="pending-table" id="mkt-pending-table"></table>
@@ -735,6 +789,19 @@ tbody.mkt tr:hover td{background:#f6dde5!important;transition:background .12s}
       <div class="cards-pending-list" id="mkt-cards-pending-list"></div>
     </div>
     <div id="mkt-cards-list"></div>
+  </div>
+  </div>
+  <div id="mkt-month-view" class="mkt-month" style="display:none">
+    <div class="mkt-mtool">
+      <button type="button" class="mkt-btn" onclick="mktMove(-1)">← Mes anterior</button>
+      <button type="button" class="mkt-btn mkt-btn-hoy" onclick="mktGoToday()">Hoy</button>
+      <button type="button" class="mkt-btn" onclick="mktMove(1)">Mes siguiente →</button>
+    </div>
+    <div class="mkt-mhead"><div class="mkt-mtitle" id="mkt-m-title">—</div></div>
+    <div class="mkt-dow"><div>LUN</div><div>MAR</div><div>MIÉ</div><div>JUE</div><div>VIE</div><div>SÁB</div><div>DOM</div></div>
+    <div id="mkt-m-grid" class="mkt-mgrid"></div>
+    <div id="mkt-m-list" class="mkt-mlist"></div>
+    <div id="mkt-m-empty" class="mkt-mempty" style="display:none">No hay tareas con fecha este mes.</div>
   </div>
 </div>
 </div>
@@ -3682,7 +3749,7 @@ const MKT_PEND = {section:'mkt-pending-section',table:'mkt-pending-table',count:
   };
   var baseToggle = window.toggleOk;
   window.toggleOk = function(dataIdx, section){
-    if(section === 'mkt') return toggleOkMkt(dataIdx);
+    if(section === 'mkt'){ const p = toggleOkMkt(dataIdx); mktSyncChips(); p.then(mktSyncChips, mktSyncChips); return p; }
     return baseToggle.apply(this, arguments);
   };
 })();
@@ -3718,7 +3785,7 @@ function mktRespOptions(data){
 
 async function fetchMkt(){
   try{
-    const parsed = parseCSV(await mktFetchCsv(), MKT_ROW_MAP, 'MKT');
+    const parsed = mktParse(await mktFetchCsv());
     // se descartan filas vacías (el CSV puede traer filas en blanco al final) manteniendo alineado MKT_ROW_MAP
     const rowMap = MKT_ROW_MAP.slice(); const keep = [], keepMap = [];
     parsed.forEach((r,i)=>{ if(r.necesidad||r.info||r.notas){ r.espacio=mktCapFirst(r.espacio); r.necesidad=mktCapFirst(r.necesidad); keep.push(r); keepMap.push(rowMap[i]); } });
@@ -3729,7 +3796,7 @@ async function fetchMkt(){
     document.getElementById('mkt-loading').style.display='none';
     document.getElementById('mkt-table').style.display='table';
     const n=new Date();
-    MKT_BASE_STATUS=`Sincronizado · ${n.toLocaleDateString('es-UY')} ${n.toLocaleTimeString('es-UY',{hour:'2-digit',minute:'2-digit'})} · ${MKT_DATA.length} registros`;
+    MKT_BASE_STATUS=`Sincronizado · ${n.toLocaleDateString('es-UY')} ${n.toLocaleTimeString('es-UY',{hour:'2-digit',minute:'2-digit'})} · ${MKT_DATA.length} registros${MKT_DATA.some(r=>r.fechaSer!=null)?' ('+MKT_DATA.filter(r=>r.fechaSer!=null).length+' con fecha)':''}${MKT_INVALID?' · ⚠ '+MKT_INVALID+(MKT_INVALID===1?' fila con FECHA inválida (no se muestra)':' filas con FECHA inválida (no se muestran)'):''}`;
     await syncEstadosMkt();
   }catch(e){
     document.getElementById('mkt-loading').textContent='Error al cargar datos. Verificá la conexión.';
@@ -3809,7 +3876,7 @@ function refreshPendingCountMkt(){
 function renderPendientesMkt(){
   const ids=MKT_PEND;
   const ayer=getYesterdayNorm();
-  let pend=MKT_DATA.map((r,i)=>({r,i})).filter(({r})=>r.diaNorm===ayer&&!r.completado);
+  let pend=MKT_DATA.map((r,i)=>({r,i})).filter(({r})=>(r.fechaSer!=null?r.fechaSer===mktTodaySer()-1:r.diaNorm===ayer)&&!r.completado);
   pend=ordenarPorDiaYHorario(pend);
   const sec=document.getElementById(ids.section);
   if(!pend.length){sec.classList.remove('visible');}
@@ -3847,13 +3914,156 @@ function renderPendientesMkt(){
   }
 }
 
+/* ===== Tareas con fecha (columna FECHA de la hoja) + vista Mes =====
+   Filas SIN fecha: se comportan igual que siempre (semanales, por DIA).
+   Filas CON fecha (DD/MM/YYYY): aparecen solo en esa fecha, en la vista Mes y en la vista Semana de la semana en curso. */
+let MKT_INVALID = 0, MKT_VIEW = 'sem', MKT_VM = null;
+const MKT_MONTHS = ['ENERO','FEBRERO','MARZO','ABRIL','MAYO','JUNIO','JULIO','AGOSTO','SEPTIEMBRE','OCTUBRE','NOVIEMBRE','DICIEMBRE'];
+const MKT_WEEKDAYS = ['DOMINGO','LUNES','MARTES','MIERCOLES','JUEVES','VIERNES','SABADO'];
+function mktEsc(s){ return String(s==null?'':s).replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c])); }
+function mktSer(y,m,d){ return Date.UTC(y,m,d)/86400000; }
+function mktFromSer(n){ const d=new Date(n*86400000); return {y:d.getUTCFullYear(),m:d.getUTCMonth(),d:d.getUTCDate()}; }
+function mktTodaySer(){ const t=new Date(); return mktSer(t.getFullYear(),t.getMonth(),t.getDate()); }
+function mktDowMon(n){ return (new Date(n*86400000).getUTCDay()+6)%7; }
+function mktValidDate(y,m,d){ const t=new Date(Date.UTC(y,m,d)); return t.getUTCFullYear()===y&&t.getUTCMonth()===m&&t.getUTCDate()===d; }
+// Acepta 26/10/2026, 26-10-2026, 26/10/26, 26/10 (año actual), 2026-10-26 y "26 de octubre de 2026"
+function mktParseDate(s){
+  s=String(s||'').trim(); if(!s) return null;
+  const cy=new Date().getFullYear(); let m, y, mo, d;
+  if((m=s.match(/^(\d{4})-(\d{1,2})-(\d{1,2})/))){ y=+m[1]; mo=+m[2]-1; d=+m[3]; }
+  else if((m=s.match(/^(\d{1,2})[\/\-.](\d{1,2})(?:[\/\-.](\d{2,4}))?$/))){ d=+m[1]; mo=+m[2]-1; y=m[3]?+m[3]:cy; if(y<100) y+=2000; }
+  else if((m=s.match(/^(\d{1,2})\s+(?:de\s+)?([A-Za-zÁÉÍÓÚáéíóú]+)(?:\s+(?:de\s+)?(\d{4}))?$/))){
+    const nm=norm(m[2]); mo=MKT_MONTHS.findIndex(x=>x===nm||x.slice(0,3)===nm.slice(0,3)); d=+m[1]; y=m[3]?+m[3]:cy; if(mo<0) return null;
+  } else return null;
+  return mktValidDate(y,mo,d)?mktSer(y,mo,d):null;
+}
+function mktFmt(n){ const o=mktFromSer(n); return String(o.d).padStart(2,'0')+'/'+String(o.m+1).padStart(2,'0'); }
+
+/* Igual que parseCSV (mismos encabezados y relleno hacia abajo de DIA/HORARIO/ESPACIO para filas sin fecha),
+   pero las filas con FECHA no heredan nada de la fila anterior y su día sale de la fecha. */
+function mktParse(text){
+  const rows=[]; MKT_INVALID=0; MKT_ROW_MAP.length=0;
+  const raw=text.replace(/\r\n/g,'\n').replace(/\r/g,'\n');
+  const lines=[]; let current='',inQuote=false;
+  for(let i=0;i<raw.length;i++){ const ch=raw[i]; if(ch==='"')inQuote=!inQuote; if(ch==='\n'&&!inQuote){lines.push(current);current='';} else current+=ch; }
+  if(current)lines.push(current);
+  if(lines.length<2){ console.warn('[MKT] CSV vacío'); return rows; }
+  const headers=splitCSVLine(lines[0]).map(h=>h.trim());
+  const iDia=findCol(headers,'DIA','DÍA','Dia','Día'), iResp=findCol(headers,'RESPONSABLE LOGISTICO','RESPONSABLE','Responsable'),
+        iHor=findCol(headers,'HORARIO ARMADO','HORARIO','Horario'), iEsp=findCol(headers,'ESPACIO','Espacio'),
+        iNec=findCol(headers,'NECESIDAD','Necesidad'), iInfo=findCol(headers,'INFO','Info'), iNotas=findCol(headers,'NOTAS','Notas','NOTA'),
+        iComp=findCol(headers,'COMPLETADO','Completado'), iFecha=findCol(headers,'FECHA','Fecha');
+  console.log('[MKT] Headers:',headers,'FECHA:',iFecha);
+  let lastDia='',lastHorario='',lastEspacio='',sheetRow=1;
+  for(let i=1;i<lines.length;i++){
+    sheetRow++;
+    const line=lines[i].trim(); if(!line) continue;
+    const cols=splitCSVLine(line);
+    const get=idx=>idx>=0&&idx<cols.length?(cols[idx]||'').trim():'';
+    let dia=get(iDia>=0?iDia:0), resp=get(iResp>=0?iResp:1), horario=get(iHor>=0?iHor:2), espacio=get(iEsp>=0?iEsp:3),
+        necesidad=get(iNec>=0?iNec:4), info=get(iInfo>=0?iInfo:5), notas=get(iNotas>=0?iNotas:6), completado=get(iComp>=0?iComp:7);
+    const fechaRaw=iFecha>=0?get(iFecha):'';
+    if(fechaRaw){
+      const ser=mktParseDate(fechaRaw);
+      if(ser==null){ MKT_INVALID++; console.warn('[MKT] fila '+sheetRow+': FECHA no interpretable →',fechaRaw); continue; }
+      if(!espacio&&!necesidad&&!info&&!notas) continue;
+      const dn=MKT_WEEKDAYS[(new Date(ser*86400000).getUTCDay())];
+      rows.push({dia:DIAS_LABELS[dn]||dn,diaNorm:dn,diaBase:dn,fechaSer:ser,resp:resp||'',horario:horario||'',espacio:espacio||'',necesidad:necesidad||'',info:info||'',notas:notas||'',completado:(completado||'').toUpperCase()==='SI'});
+      MKT_ROW_MAP.push(sheetRow);
+      continue;
+    }
+    if(dia) lastDia=dia; else dia=lastDia;
+    if(horario) lastHorario=horario; else horario=lastHorario;
+    if(espacio) lastEspacio=espacio; else espacio=lastEspacio;
+    if(!dia&&!espacio&&!necesidad&&!info&&!notas) continue;
+    if(!dia) continue;
+    rows.push({dia,diaNorm:norm(dia),diaBase:norm(dia),fechaSer:null,resp:resp||'',horario:horario||'',espacio:espacio||'',necesidad:necesidad||'',info:info||'',notas:notas||'',completado:(completado||'').toUpperCase()==='SI'});
+    MKT_ROW_MAP.push(sheetRow);
+  }
+  return rows;
+}
+
+function mktSetView(v){
+  MKT_VIEW = (v==='mes')?'mes':'sem';
+  try{ localStorage.setItem('mkt_view', MKT_VIEW); }catch(e){}
+  mktApplyView(); renderMkt(); renderPendientesMkt();
+}
+function mktApplyView(){
+  const mes = MKT_VIEW==='mes';
+  const set=(id,disp)=>{ const el=document.getElementById(id); if(el) el.style.display=disp; };
+  set('mkt-week-view', mes?'none':'block'); set('mkt-month-view', mes?'block':'none'); set('mkt-g-dia', mes?'none':'');
+  const a=document.getElementById('mkt-vw-sem'), b=document.getElementById('mkt-vw-mes');
+  if(a) a.classList.toggle('on',!mes); if(b) b.classList.toggle('on',mes);
+  const h=document.getElementById('mkt-viewhint'); if(h) h.textContent = mes ? 'Tareas con fecha (columna FECHA de la hoja)' : 'Tareas semanales + las que tienen fecha en esta semana';
+}
+function mktMove(delta){ if(!MKT_VM){ const t=mktFromSer(mktTodaySer()); MKT_VM={y:t.y,m:t.m}; } const t=new Date(Date.UTC(MKT_VM.y,MKT_VM.m+delta,1)); MKT_VM={y:t.getUTCFullYear(),m:t.getUTCMonth()}; renderMktMonth(); }
+function mktGoToday(){ const t=mktFromSer(mktTodaySer()); MKT_VM={y:t.y,m:t.m}; renderMktMonth(); }
+function mktSyncChips(){ document.querySelectorAll('.mkt-t[data-i]').forEach(el=>{ const r=MKT_DATA[+el.getAttribute('data-i')]; if(r) el.classList.toggle('done',!!r.completado); }); }
+
+function mktChip(it){
+  const r=it.r;
+  const top=[r.horario,r.espacio].filter(Boolean).map(mktEsc).join(' · ');
+  const ini=r.resp?mktEsc(initials(r.resp)):'';
+  return `<div class="mkt-t${r.completado?' done':''}" data-i="${it.i}">`+
+    (top?`<div class="mkt-t-top">${top}</div>`:'')+
+    (r.necesidad?`<div class="mkt-t-nec">${mktEsc(r.necesidad)}</div>`:'')+
+    (r.info?`<small>${mktEsc(r.info)}</small>`:'')+
+    (r.notas?`<small>${mktEsc(r.notas)}</small>`:'')+
+    (r.resp?`<div class="mkt-t-resp"><span class="mkt-av">${ini}</span>${mktEsc(r.resp)}</div>`:'')+
+    okBtnHtml(it.i,r.completado,'mkt','mkt')+`</div>`;
+}
+
+function renderMktMonth(){
+  if(!MKT_VM){ const t=mktFromSer(mktTodaySer()); MKT_VM={y:t.y,m:t.m}; }
+  const y=MKT_VM.y, m=MKT_VM.m, today=mktTodaySer();
+  const resp=document.getElementById('mkt-sel-resp').value.toLowerCase().trim();
+  const esp=document.getElementById('mkt-inp-esp').value.toLowerCase().trim();
+  document.getElementById('mkt-m-title').textContent=MKT_MONTHS[m]+' '+y;
+  const first=mktSer(y,m,1), last=mktSer(y,m+1,0);
+  const start=first-mktDowMon(first), end=last+(6-mktDowMon(last));
+  const items=MKT_DATA.map((r,i)=>({r,i})).filter(({r})=>{
+    if(r.fechaSer==null) return false;
+    if(resp&&!r.resp.toLowerCase().includes(resp)) return false;
+    if(esp&&!r.espacio.toLowerCase().includes(esp)) return false;
+    return true;
+  });
+  const inMonth=items.filter(it=>it.r.fechaSer>=first&&it.r.fechaSer<=last);
+  document.getElementById('mkt-count').textContent=inMonth.length+(inMonth.length===1?' tarea':' tareas');
+  document.getElementById('mkt-m-empty').style.display=inMonth.length?'none':'block';
+  const byDay=n=>ordenarPorDiaYHorario(items.filter(it=>it.r.fechaSer===n));
+  let html='';
+  for(let ws=start; ws<=end; ws+=7){
+    html+='<div class="mkt-wk">';
+    for(let k=0;k<7;k++){
+      const d=ws+k, o=mktFromSer(d), out=o.m!==m;
+      html+=`<div class="mkt-day${out?' out':''}${d===today?' today':''}"><div class="mkt-dn"><span>${o.d}${o.d===1&&out?' '+MKT_MONTHS[o.m].slice(0,3).toLowerCase():''}</span></div>${byDay(d).map(mktChip).join('')}</div>`;
+    }
+    html+='</div>';
+  }
+  document.getElementById('mkt-m-grid').innerHTML=html;
+  const names=['LUN','MAR','MIÉ','JUE','VIE','SÁB','DOM']; let lh='';
+  for(let d=first; d<=last; d++){
+    const list=byDay(d); if(!list.length) continue;
+    lh+=`<div class="mkt-lday">${names[mktDowMon(d)]} ${mktFromSer(d).d}${d===today?' <em>HOY</em>':''}</div>`+list.map(mktChip).join('');
+  }
+  document.getElementById('mkt-m-list').innerHTML=lh;
+}
+
 function renderMkt(){
+  if(MKT_VIEW==='mes'){ renderMktMonth(); return; }
   const dia=document.getElementById('mkt-sel-dia').value||getTodayNorm();
   const resp=document.getElementById('mkt-sel-resp').value.toLowerCase().trim();
   const esp=document.getElementById('mkt-inp-esp').value.toLowerCase().trim();
-  renderSection({data:MKT_DATA,dia,resp,esp,countId:'mkt-count',emptyId:'mkt-empty',tbodyId:'mkt-tbody',tableId:'mkt-table',cardsId:'mkt-cards-list',section:'mkt',theme:'mkt'});
+  // las tareas con fecha solo se muestran si caen en el día elegido de la semana en curso
+  const t=mktTodaySer(), target=t-mktDowMon(t)+Math.max(0,DIAS_ORDER.indexOf(dia));
+  MKT_DATA.forEach(r=>{ if(r.fechaSer!=null) r.diaNorm=(r.fechaSer===target)?r.diaBase:'__FUERA__'; });
+  try{
+    renderSection({data:MKT_DATA,dia,resp,esp,countId:'mkt-count',emptyId:'mkt-empty',tbodyId:'mkt-tbody',tableId:'mkt-table',cardsId:'mkt-cards-list',section:'mkt',theme:'mkt'});
+  } finally { MKT_DATA.forEach(r=>{ if(r.fechaSer!=null) r.diaNorm=r.diaBase; }); }
 }
 
+try{ if(localStorage.getItem('mkt_view')==='mes') MKT_VIEW='mes'; }catch(e){}
+mktApplyView();
 fetchMkt();
 setInterval(syncEstadosMkt,30*1000);
 setInterval(fetchMkt,5*60*1000);
