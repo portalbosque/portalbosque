@@ -449,6 +449,8 @@ tbody.mkt tr:hover td{background:#f6dde5!important;transition:background .12s}
 .mkt-t .ok-btn{padding:2px 9px;font-size:11px;margin-top:5px;min-height:0}
 .mkt-t.done{background:#eef7f0;border-color:#cfe6d6;border-left-color:#3d8f5a;opacity:.78}
 .mkt-t.done .mkt-t-nec{text-decoration:line-through}
+.mkt-fecha-badge{display:inline-block;font-size:12px;font-weight:700;color:#8f2a4a;background:#fbeef2;border:1px solid #f0d3dc;border-radius:6px;padding:3px 8px;white-space:nowrap}
+.mkt-card-fecha{font-size:11px;font-weight:700;color:#f0d3dc;margin-left:8px;letter-spacing:.03em}
 .mkt-mlist{display:none}
 .mkt-lday{font-size:13px;font-weight:800;color:#4a2233;text-transform:uppercase;letter-spacing:.06em;padding:.5rem .2rem .25rem;border-bottom:2px solid #c2476b;margin-top:.7rem;display:flex;gap:.5rem;align-items:center}
 .mkt-lday em{font-style:normal;font-size:10px;background:#e0a800;color:#fff;border-radius:4px;padding:1px 6px}
@@ -460,7 +462,9 @@ tbody.mkt tr:hover td{background:#f6dde5!important;transition:background .12s}
   .mkt-dow,.mkt-mgrid{display:none}
   .mkt-mlist{display:block}
   .mkt-btn{padding:.45rem .6rem;font-size:11px}
-  .filters.mkt select{min-width:130px}
+  .filters.mkt.mkt-mes .filter-group{flex:1 1 100%;display:flex;align-items:center;gap:.6rem}
+  .filters.mkt.mkt-mes .filter-group select,.filters.mkt.mkt-mes .filter-group input{flex:1;min-width:0}
+  .filters.mkt.mkt-mes .filter-label{min-width:92px}
 }
 @media(min-width:701px) and (max-width:1000px){ .mkt-t{font-size:11px;padding:4px 5px} }
 </style>
@@ -3885,7 +3889,7 @@ function renderPendientesMkt(){
     document.getElementById(ids.count).textContent=pend.length;
     document.getElementById(ids.table).innerHTML=pend.map(({r,i})=>`
       <tr id="${ids.rowPrefix}${i}">
-        <td><span class="pend-dia">${DIAS_LABELS[r.diaNorm]||r.dia} · ${r.horario||'—'}</span></td>
+        <td><span class="pend-dia">${DIAS_LABELS[r.diaNorm]||r.dia}${r.fechaSer!=null?' '+mktFmtFull(r.fechaSer):''} · ${r.horario||'—'}</span></td>
         <td><span class="pend-esp">${r.espacio}</span></td>
         <td><span class="pend-resp">${r.resp||'—'}</span></td>
         <td><span style="font-size:11px;color:var(--pending-text)">${r.necesidad||''}</span></td>
@@ -3901,7 +3905,7 @@ function renderPendientesMkt(){
     mList.innerHTML=pend.map(({r,i})=>`
       <div class="card-pending" id="${ids.cardPrefix}${i}">
         <div class="card-pending-header">
-          <span class="card-dia-pending">⚠ ${(DIAS_LABELS[r.diaNorm]||r.dia).toUpperCase()}</span>
+          <span class="card-dia-pending">⚠ ${(DIAS_LABELS[r.diaNorm]||r.dia).toUpperCase()}${r.fechaSer!=null?' '+mktFmtFull(r.fechaSer):''}</span>
           ${r.horario?`<span style="font-size:10px;color:#ffe5a0;font-family:monospace">${r.horario}</span>`:''}
         </div>
         <div style="padding:.6rem 1rem;background:var(--pending-bg)">
@@ -3936,6 +3940,22 @@ function mktParseDate(s){
     const nm=norm(m[2]); mo=MKT_MONTHS.findIndex(x=>x===nm||x.slice(0,3)===nm.slice(0,3)); d=+m[1]; y=m[3]?+m[3]:cy; if(mo<0) return null;
   } else return null;
   return mktValidDate(y,mo,d)?mktSer(y,mo,d):null;
+}
+function mktFmtFull(n){ const o=mktFromSer(n); return String(o.d).padStart(2,'0')+'/'+String(o.m+1).padStart(2,'0')+'/'+o.y; }
+// Agrega la columna Fecha (primera) a la tabla semanal y la fecha en las tarjetas del celular, sin tocar renderSection
+function mktDecorateWeek(){
+  const head=document.querySelector('#mkt-table thead tr');
+  if(head && !head.querySelector('.mkt-th-fecha')){ const th=document.createElement('th'); th.className='mkt-th-fecha'; th.textContent='Fecha'; head.insertBefore(th,head.firstChild); }
+  const idxOf=el=>{ const b=el.querySelector('[data-ok-idx^="mkt-"]'); return b?+b.getAttribute('data-ok-idx').slice(4):-1; };
+  document.querySelectorAll('#mkt-tbody tr').forEach(tr=>{
+    const r=MKT_DATA[idxOf(tr)]; const td=document.createElement('td');
+    td.innerHTML=(r&&r.fechaSer!=null)?'<span class="mkt-fecha-badge">'+mktFmtFull(r.fechaSer)+'</span>':'<span style="color:#aaa">—</span>';
+    tr.insertBefore(td,tr.firstChild);
+  });
+  document.querySelectorAll('#mkt-cards-list .card').forEach(card=>{
+    const r=MKT_DATA[idxOf(card)]; const row=card.querySelector('.card-dia-row');
+    if(r&&r.fechaSer!=null&&row){ const s=document.createElement('span'); s.className='mkt-card-fecha'; s.textContent=mktFmtFull(r.fechaSer); row.appendChild(s); }
+  });
 }
 function mktFmt(n){ const o=mktFromSer(n); return String(o.d).padStart(2,'0')+'/'+String(o.m+1).padStart(2,'0'); }
 
@@ -3991,6 +4011,7 @@ function mktSetView(v){
 function mktApplyView(){
   const mes = MKT_VIEW==='mes';
   const set=(id,disp)=>{ const el=document.getElementById(id); if(el) el.style.display=disp; };
+  const fb=document.querySelector('#section-mkt .filters.mkt'); if(fb) fb.classList.toggle('mkt-mes',mes);
   set('mkt-week-view', mes?'none':'block'); set('mkt-month-view', mes?'block':'none'); set('mkt-g-dia', mes?'none':'');
   const a=document.getElementById('mkt-vw-sem'), b=document.getElementById('mkt-vw-mes');
   if(a) a.classList.toggle('on',!mes); if(b) b.classList.toggle('on',mes);
@@ -4060,6 +4081,7 @@ function renderMkt(){
   try{
     renderSection({data:MKT_DATA,dia,resp,esp,countId:'mkt-count',emptyId:'mkt-empty',tbodyId:'mkt-tbody',tableId:'mkt-table',cardsId:'mkt-cards-list',section:'mkt',theme:'mkt'});
   } finally { MKT_DATA.forEach(r=>{ if(r.fechaSer!=null) r.diaNorm=r.diaBase; }); }
+  mktDecorateWeek();
 }
 
 try{ if(localStorage.getItem('mkt_view')==='mes') MKT_VIEW='mes'; }catch(e){}
