@@ -387,6 +387,38 @@ tbody.infraestructura tr:hover td{background:#e0edf5!important;transition:backgr
 }
 </style>
 <!-- CALENDARIO:END -->
+<!-- MKT:START --><style>
+/* ===== MKT — mismas reglas que Logística, solo cambia la paleta (marrón) ===== */
+.nav-btn.active.mkt-active{color:#8f2a4a;border-bottom-color:#c2476b;background:#fbeef2}
+.section-header.mkt{background:#4a2233;border-bottom:2px solid #c2476b}
+.section-pill.mkt{background:#c2476b;color:#fff}
+.filters.mkt{background:#fbeef2;border-color:#f0d3dc}
+.filters.mkt .filter-label{color:var(--text)}
+.filters.mkt select:focus,.filters.mkt input:focus{border-color:#c2476b}
+.count.mkt{color:var(--text3)}
+.status.mkt{color:var(--text3);background:var(--bg2);border-color:var(--border2)}
+.status-dot.mkt{background:#c2476b}
+table.mkt{background:var(--bg2)}
+thead tr.mkt{background:#4a2233}
+tbody.mkt tr td{border-bottom:1px solid var(--border2)}
+tbody.mkt tr:last-child td{border-bottom:none}
+tbody.mkt tr:hover td{background:#f6dde5!important;transition:background .12s}
+.dia-badge.mkt{background:#4a2233}
+.horario-badge.mkt{background:#f6dde5;border:1px solid #f0d3dc}
+.horario-badge.mkt .horario-badge-text{color:#4a2233}
+.esp-name.mkt{color:var(--text)}
+.nec.mkt{color:var(--text2)}
+.nota.mkt{color:var(--text3)}
+.ok-btn.mkt{border-color:var(--border);color:var(--text3)}
+.ok-btn.mkt:hover{border-color:#c2476b;background:#f6dde5;color:#8f2a4a}
+.ok-btn.mkt.done{background:#c2476b;border-color:#c2476b;color:#fff}
+.card-header.mkt{background:#4a2233}
+.card-dia.mkt{color:#f0d3dc}
+.card-nec.mkt{color:var(--text2)}
+.card-nota.mkt{color:var(--text3)}
+.card-footer.mkt{border-color:var(--border2)}
+</style>
+<!-- MKT:END -->
 </head>
 <body>
 
@@ -435,6 +467,11 @@ tbody.infraestructura tr:hover td{background:#e0edf5!important;transition:backgr
     Calendario
   </button>
 <!-- CALENDARIO:END -->
+<!-- MKT:START -->  <button class="nav-btn" id="nav-mkt" onclick="showSection('mkt')">
+    <svg viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 8v4l10 4V4zM13 8.5h3M13 11.5h3M5.5 12.5V16h2.5v-2.5"/></svg>
+    MKT &amp; Comunicación
+  </button>
+<!-- MKT:END -->
 </div>
 
 <div id="section-log">
@@ -661,6 +698,47 @@ tbody.infraestructura tr:hover td{background:#e0edf5!important;transition:backgr
 </div>
 </div>
 <!-- CALENDARIO:END -->
+<!-- MKT:START --><div id="section-mkt" style="display:none">
+<div class="section">
+  <div class="section-header mkt">
+    <span class="section-title">📣 MKT &amp; Comunicación</span>
+    <span class="section-pill mkt">MKT</span>
+  </div>
+  <div class="filters mkt">
+    <div class="filter-group"><span class="filter-label">Día</span><select id="mkt-sel-dia" onchange="renderMkt()"><option value="">Hoy</option></select></div>
+    <div class="filter-group"><span class="filter-label">Responsable</span><select id="mkt-sel-resp" onchange="renderMkt()"><option value="">Todos</option></select></div>
+    <div class="filter-group"><span class="filter-label">Espacio</span><input id="mkt-inp-esp" type="text" placeholder="Ej: Yurta" oninput="renderMkt()"></div>
+    <span class="count mkt" id="mkt-count">—</span>
+  </div>
+  <div class="status mkt"><div class="status-dot mkt"></div><span id="mkt-status">Conectando...</span></div>
+  <div class="pending-section" id="mkt-pending-section">
+    <div class="pending-header-bar"><span class="pending-title">⚠ Pendientes de ayer sin completar</span><span class="pending-count" id="mkt-pending-count">0</span></div>
+    <table class="pending-table" id="mkt-pending-table"></table>
+  </div>
+  <div class="table-wrap">
+    <div id="mkt-loading" class="loading">Cargando datos...</div>
+    <table id="mkt-table" class="mkt" style="display:none">
+      <thead><tr class="mkt">
+        <th>Día</th><th>Responsable</th><th>Horario</th><th>Espacio</th>
+        <th>Necesidad</th><th>Info</th><th>Notas</th><th style="text-align:center">Completado</th>
+      </tr></thead>
+      <tbody id="mkt-tbody" class="mkt"></tbody>
+    </table>
+    <div id="mkt-empty" class="empty" style="display:none">Sin resultados.</div>
+  </div>
+  <div class="cards" id="mkt-cards">
+    <div class="cards-pending-section" id="mkt-cards-pending-section">
+      <div class="cards-pending-header">
+        <span class="cards-pending-title">⚠ Pendientes de ayer</span>
+        <span class="cards-pending-count" id="mkt-cards-pending-count">0</span>
+      </div>
+      <div class="cards-pending-list" id="mkt-cards-pending-list"></div>
+    </div>
+    <div id="mkt-cards-list"></div>
+  </div>
+</div>
+</div>
+<!-- MKT:END -->
 <footer class="footer">
   <span>Portal Bosque · <a href="https://www.portalbosque.com" target="_blank">portalbosque.com</a></span>
 
@@ -3560,5 +3638,205 @@ setInterval(calFetch, 5 * 60 * 1000);
 })();
 </script>
 <!-- CALENDARIO:END -->
+<!-- MKT:START --><script>
+/* ===== MKT — mismo sistema que Logística: parseCSV, renderSection, okBtnHtml/pendBtnHtml,
+   filtros, pendientes de ayer, sync cada 30s y recarga cada 5 min. Todo se reutiliza sin modificarlo.
+   Lo único propio es la lectura del Sheet y el guardado del check (ver MKT_APPS_SCRIPT_URL). ===== */
+
+const MKT_SHEET_ID = '1C5-L9zVObKyZQRm2NMh3l1N7om4XAj4ZcbILFANCXMY';
+const MKT_SHEET_TAB = '';   // vacío = primera pestaña de la planilla
+// Opcional (igual que CSV_LOG/CSV_PROD): link "Archivo → Compartir → Publicar en la web → CSV".
+const MKT_CSV_PUBLISHED = '';
+// Apps Script PROPIO de la hoja MKT & Comunicación (ver MKT_Comunicacion_AppsScript.gs). Mientras esté vacío, el check NO se guarda
+// en la planilla (no se usa el Apps Script de Logística: escribiría en la hoja equivocada).
+const MKT_APPS_SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbyGMgzBue5Ky7MNglBHHHrTRV-FgQEyMBLBwM_kslMoSInhgTmmwKthgcEWUYIPm3nQWQ/exec';
+
+let MKT_DATA = [], MKT_ROW_MAP = [];
+let MKT_BASE_STATUS = '', MKT_LINK = {ok:null, msg:''};
+const MKT_PEND = {section:'mkt-pending-section',table:'mkt-pending-table',count:'mkt-pending-count',cardsSection:'mkt-cards-pending-section',cardsCount:'mkt-cards-pending-count',cardsList:'mkt-cards-pending-list',rowPrefix:'mkt-pend-row-',cardPrefix:'mkt-pend-card-'};
+
+/* Navegación y botón de completar: se envuelven las funciones existentes SIN modificar su código.
+   Para 'log' y 'prod' todo pasa tal cual por la función original. */
+(function(){
+  var baseShow = window.showSection;
+  window.showSection = function(which){
+    if(typeof baseShow === 'function') baseShow.apply(this, arguments);
+    var sec = document.getElementById('section-mkt'), nav = document.getElementById('nav-mkt');
+    if(sec) sec.style.display = (which === 'mkt') ? 'block' : 'none';
+    if(nav) nav.className = 'nav-btn' + (which === 'mkt' ? ' active mkt-active' : '');
+    try{ var bar = document.querySelector('.nav-bar'), act = bar && bar.querySelector('.nav-btn.active, .nav-btn[class*="-active"]'); if(act) bar.scrollLeft = act.offsetLeft - (bar.clientWidth - act.offsetWidth) / 2; }catch(e){}
+  };
+  var baseToggle = window.toggleOk;
+  window.toggleOk = function(dataIdx, section){
+    if(section === 'mkt') return toggleOkMkt(dataIdx);
+    return baseToggle.apply(this, arguments);
+  };
+})();
+
+function mktCapFirst(s){ s = (s || '').trim(); return s.charAt(0).toUpperCase() + s.slice(1); }
+
+function mktUrls(){
+  var base = 'https://docs.google.com/spreadsheets/d/' + MKT_SHEET_ID;
+  // /export primero: devuelve los valores tal como se ven en la celda (gviz descarta celdas que no son del tipo dominante de la columna)
+  return [MKT_CSV_PUBLISHED, base + '/export?format=csv&gid=0', base + '/gviz/tq?tqx=out:csv&headers=1' + (MKT_SHEET_TAB ? '&sheet=' + encodeURIComponent(MKT_SHEET_TAB) : '')].filter(Boolean);
+}
+async function mktFetchCsv(){
+  var lastErr = null, list = mktUrls();
+  for(var k = 0; k < list.length; k++){
+    var u = list[k];
+    try{
+      var res = await fetch(u + (u.indexOf('?') >= 0 ? '&' : '?') + 't=' + Date.now());
+      if(!res.ok) throw new Error('HTTP ' + res.status);
+      var text = await res.text();
+      if(/^\s*<(!doctype|html)/i.test(text)) throw new Error('la planilla no es pública (respuesta HTML)');
+      return text;
+    }catch(e){ lastErr = e; console.warn('[MKT] falló', u, e.message); }
+  }
+  throw lastErr || new Error('sin URL configurada');
+}
+
+async function fetchMkt(){
+  try{
+    const parsed = parseCSV(await mktFetchCsv(), MKT_ROW_MAP, 'MKT');
+    // se descartan filas vacías (el CSV puede traer filas en blanco al final) manteniendo alineado MKT_ROW_MAP
+    const rowMap = MKT_ROW_MAP.slice(); const keep = [], keepMap = [];
+    parsed.forEach((r,i)=>{ if(r.necesidad||r.info||r.notas){ r.espacio=mktCapFirst(r.espacio); r.necesidad=mktCapFirst(r.necesidad); keep.push(r); keepMap.push(rowMap[i]); } });
+    MKT_DATA = keep; MKT_ROW_MAP.length = 0; keepMap.forEach(x=>MKT_ROW_MAP.push(x));
+    const diasNorm=new Set(MKT_DATA.map(r=>r.diaNorm).filter(Boolean));
+    populateSelect('mkt-sel-dia',DIAS_ORDER.filter(d=>diasNorm.has(d)).map(d=>({val:d,label:DIAS_LABELS[d]||d})));
+    populateSelect('mkt-sel-resp',RESPS_VALIDOS.map(r=>r.split(' ').map(w=>w.charAt(0).toUpperCase()+w.slice(1)).join(' ')));
+    document.getElementById('mkt-loading').style.display='none';
+    document.getElementById('mkt-table').style.display='table';
+    const n=new Date();
+    MKT_BASE_STATUS=`Sincronizado · ${n.toLocaleDateString('es-UY')} ${n.toLocaleTimeString('es-UY',{hour:'2-digit',minute:'2-digit'})} · ${MKT_DATA.length} registros`;
+    await syncEstadosMkt();
+  }catch(e){
+    document.getElementById('mkt-loading').textContent='Error al cargar datos. Verificá la conexión.';
+    document.getElementById('mkt-status').textContent='Sin conexión con Google Sheets';
+    document.querySelector('.status-dot.mkt').style.background='#c05050';
+    document.querySelector('.status-dot.mkt').style.animation='none';
+    console.error('[MKT] Error:',e);
+  }
+}
+
+function mktRenderStatus(){
+  const el=document.getElementById('mkt-status'), dot=document.querySelector('.status-dot.mkt');
+  let t=MKT_BASE_STATUS, bad=false;
+  if(!MKT_APPS_SCRIPT_URL) t+=' · check sin guardado en planilla';
+  else if(MKT_LINK.ok===true) t+=' · guardado en planilla activo ✓';
+  else if(MKT_LINK.ok===false){ t+=' · ⚠ '+MKT_LINK.msg; bad=true; }
+  el.textContent=t;
+  if(dot){ dot.style.background=bad?'#c05050':''; dot.style.animation=bad?'none':''; }
+}
+const MKT_MSG_NO_CONTACT='No se pudo contactar al Apps Script (¿implementado como "Cualquier usuario"?)';
+
+async function syncEstadosMkt(){
+  if(MKT_APPS_SCRIPT_URL){
+    try{
+      const res=await fetch(MKT_APPS_SCRIPT_URL+'?t='+Date.now());
+      const resData=await res.json();
+      if(resData.ok&&resData.estados){
+        resData.estados.forEach(e=>{const idx=MKT_ROW_MAP.indexOf(e.row);if(idx!==-1&&MKT_DATA[idx])MKT_DATA[idx].completado=e.completado;});
+        MKT_LINK={ok:true,msg:''};
+      }else MKT_LINK={ok:false,msg:'El Apps Script respondió con error: '+(resData.error||'respuesta inesperada')};
+    }catch(e){ console.log('[syncEstados:mkt]',e); MKT_LINK={ok:false,msg:MKT_MSG_NO_CONTACT}; }
+  }
+  renderMkt();
+  renderPendientesMkt();
+  mktRenderStatus();
+}
+
+async function toggleOkMkt(dataIdx){
+  const row=MKT_DATA[dataIdx];const sheetRow=MKT_ROW_MAP[dataIdx];
+  const prev=row.completado;
+  row.completado=!prev;const newVal=row.completado?'SI':'';
+  document.querySelectorAll(`[data-ok-idx="mkt-${dataIdx}"]`).forEach(btn=>{btn.classList.toggle('done',row.completado);btn.classList.add('loading');btn.querySelector('.ok-label').textContent=row.completado?'Completado':'Pendiente';});
+  if(MKT_APPS_SCRIPT_URL){
+    let saved=false, msg='';
+    try{
+      const res=await fetch(`${MKT_APPS_SCRIPT_URL}?row=${sheetRow}&value=${encodeURIComponent(newVal)}&t=${Date.now()}`);
+      const j=await res.json();
+      saved=(j&&j.ok===true);
+      if(!saved) msg='El Apps Script respondió con error: '+((j&&j.error)||'respuesta inesperada');
+    }catch(e){ msg=MKT_MSG_NO_CONTACT; }
+    if(!saved){
+      // no se guardó en la planilla: se revierte para que no parezca completada
+      row.completado=prev;
+      MKT_LINK={ok:false,msg:'No se guardó: '+msg};
+      renderMkt(); renderPendientesMkt(); mktRenderStatus();
+      return;
+    }
+    MKT_LINK={ok:true,msg:''}; mktRenderStatus();
+  }
+  if(row.completado){
+    [`${MKT_PEND.rowPrefix}${dataIdx}`,`${MKT_PEND.cardPrefix}${dataIdx}`].forEach(id=>{const el=document.getElementById(id);if(el){el.style.transition='opacity .3s';el.style.opacity='0';setTimeout(()=>{el.remove();refreshPendingCountMkt();},300);}});
+  }
+  setTimeout(()=>{document.querySelectorAll(`[data-ok-idx="mkt-${dataIdx}"]`).forEach(btn=>btn.classList.remove('loading'));},1000);
+}
+
+function refreshPendingCountMkt(){
+  const ids=MKT_PEND;
+  const rows=document.getElementById(ids.table).querySelectorAll('tr');
+  if(!rows.length)document.getElementById(ids.section).classList.remove('visible');
+  else document.getElementById(ids.count).textContent=rows.length;
+  const cards=document.getElementById(ids.cardsList).querySelectorAll('.card-pending');
+  const mSec=document.getElementById(ids.cardsSection);
+  if(!cards.length)mSec.classList.remove('visible');
+  else document.getElementById(ids.cardsCount).textContent=cards.length;
+}
+
+function renderPendientesMkt(){
+  const ids=MKT_PEND;
+  const ayer=getYesterdayNorm();
+  let pend=MKT_DATA.map((r,i)=>({r,i})).filter(({r})=>r.diaNorm===ayer&&!r.completado);
+  pend=ordenarPorDiaYHorario(pend);
+  const sec=document.getElementById(ids.section);
+  if(!pend.length){sec.classList.remove('visible');}
+  else{
+    sec.classList.add('visible');
+    document.getElementById(ids.count).textContent=pend.length;
+    document.getElementById(ids.table).innerHTML=pend.map(({r,i})=>`
+      <tr id="${ids.rowPrefix}${i}">
+        <td><span class="pend-dia">${DIAS_LABELS[r.diaNorm]||r.dia} · ${r.horario||'—'}</span></td>
+        <td><span class="pend-esp">${r.espacio}</span></td>
+        <td><span class="pend-resp">${r.resp||'—'}</span></td>
+        <td><span style="font-size:11px;color:var(--pending-text)">${r.necesidad||''}</span></td>
+        <td class="ok-cell">${pendBtnHtml(i,'mkt')}</td>
+      </tr>`).join('');
+  }
+  const mSec=document.getElementById(ids.cardsSection);
+  const mList=document.getElementById(ids.cardsList);
+  if(!pend.length){mSec.classList.remove('visible');}
+  else{
+    mSec.classList.add('visible');
+    document.getElementById(ids.cardsCount).textContent=pend.length;
+    mList.innerHTML=pend.map(({r,i})=>`
+      <div class="card-pending" id="${ids.cardPrefix}${i}">
+        <div class="card-pending-header">
+          <span class="card-dia-pending">⚠ ${(DIAS_LABELS[r.diaNorm]||r.dia).toUpperCase()}</span>
+          ${r.horario?`<span style="font-size:10px;color:#ffe5a0;font-family:monospace">${r.horario}</span>`:''}
+        </div>
+        <div style="padding:.6rem 1rem;background:var(--pending-bg)">
+          <div style="font-weight:700;color:var(--pending-text);font-size:13px">${r.espacio}</div>
+          ${r.resp?`<div style="font-size:11px;color:#9a7200;margin-top:2px">${r.resp}</div>`:''}
+          ${r.necesidad?`<div class="card-nec-pending" style="margin-top:5px">${r.necesidad}</div>`:''}
+        </div>
+        <div class="card-footer-pending">${pendBtnHtml(i,'mkt')}</div>
+      </div>`).join('');
+  }
+}
+
+function renderMkt(){
+  const dia=document.getElementById('mkt-sel-dia').value||getTodayNorm();
+  const resp=document.getElementById('mkt-sel-resp').value.toLowerCase().trim();
+  const esp=document.getElementById('mkt-inp-esp').value.toLowerCase().trim();
+  renderSection({data:MKT_DATA,dia,resp,esp,countId:'mkt-count',emptyId:'mkt-empty',tbodyId:'mkt-tbody',tableId:'mkt-table',cardsId:'mkt-cards-list',section:'mkt',theme:'mkt'});
+}
+
+fetchMkt();
+setInterval(syncEstadosMkt,30*1000);
+setInterval(fetchMkt,5*60*1000);
+</script>
+<!-- MKT:END -->
 </body>
 </html>
