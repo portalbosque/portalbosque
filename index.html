@@ -362,7 +362,7 @@ tbody.infraestructura tr:hover td{background:#e0edf5!important;transition:backgr
 .cal-pop-f{padding:.55rem 0;border-top:1px solid #e6ecec}
 .cal-pop-f dt{font-size:10.5px;font-weight:800;letter-spacing:.09em;text-transform:uppercase;color:#6a7a7a;margin-bottom:.15rem}
 .cal-pop-f dd{margin:0;font-size:14.5px;line-height:1.45;color:#1f2d2d;white-space:pre-wrap;overflow-wrap:anywhere}
-.cal-pop-f dd.empty{color:#a3aeae}
+.cal-pop-f dd.vacio{color:#a3aeae}
 html.cal-pop-lock body{overflow:hidden}
 .cal-tag{display:inline-block;font-size:9.5px;font-weight:800;letter-spacing:.06em;text-transform:uppercase;border-radius:4px;padding:0 5px;margin-left:4px;vertical-align:1px;background:rgba(0,0,0,.55);color:#fff}
 .cal-ev.canc,.cal-li.canc{background-image:repeating-linear-gradient(135deg,rgba(0,0,0,.09) 0 6px,transparent 6px 12px)!important;opacity:.72}
@@ -3779,7 +3779,7 @@ function fillPop(e){
   h += '<dl class="cal-pop-fields">';
   e.fields.forEach(function(f){
     var v = String(f[1]), has = v.trim() !== '';
-    h += '<div class="cal-pop-f"><dt>' + esc(f[0]) + '</dt><dd class="' + (has ? '' : 'empty') + '">' + (has ? esc(v) : '—') + '</dd></div>';
+    h += '<div class="cal-pop-f"><dt>' + esc(f[0]) + '</dt><dd class="' + (has ? '' : 'vacio') + '">' + (has ? esc(v) : '—') + '</dd></div>';
   });
   h += '</dl>';
   document.getElementById('cal-pop-body').innerHTML = h;
@@ -4164,7 +4164,7 @@ function mktPopOpen(r){
     d.addEventListener('click',ev=>{ if(ev.target===d||ev.target.closest('.cal-pop-x')) mktPopClose(); });
   }
   let h='<h3 id="mkt-pop-title" class="cal-pop-title">'+mktEsc(r.resp||'Actividad')+'</h3>'+(r.fechaSer!=null?'<div class="cal-pop-date">'+mktFmtFull(r.fechaSer)+'</div>':'')+'<dl class="cal-pop-fields">';
-  r.fields.forEach(f=>{ const v=String(f[1]), has=v.trim()!==''; h+='<div class="cal-pop-f"><dt>'+mktEsc(f[0])+'</dt><dd class="'+(has?'':'empty')+'">'+(has?mktEsc(v):'—')+'</dd></div>'; });
+  r.fields.forEach(f=>{ const v=String(f[1]), has=v.trim()!==''; h+='<div class="cal-pop-f"><dt>'+mktEsc(f[0])+'</dt><dd class="'+(has?'':'vacio')+'">'+(has?mktEsc(v):'—')+'</dd></div>'; });
   document.getElementById('mkt-pop-body').innerHTML=h+'</dl>';
   if(d.style.display==='none'){ d._y=window.pageYOffset; document.documentElement.classList.add('cal-pop-lock'); }
   d.style.display='flex';
@@ -4197,16 +4197,16 @@ function mktMove(delta){ if(!MKT_VM){ const t=mktFromSer(mktTodaySer()); MKT_VM=
 function mktGoToday(){ const t=mktFromSer(mktTodaySer()); MKT_VM={y:t.y,m:t.m}; renderMktMonth(); }
 function mktSyncChips(){ document.querySelectorAll('.mkt-t[data-i]').forEach(el=>{ const r=MKT_DATA[+el.getAttribute('data-i')]; if(r) el.classList.toggle('done',!!r.completado); }); }
 
-function mktChip(it, raw){
+function mktChip(it, raw, compact){
   const r=it.r; const nec=raw&&r.necesidadRaw!=null?r.necesidadRaw:r.necesidad, esp=raw&&r.espacioRaw!=null?r.espacioRaw:r.espacio;
   const top=[r.horario,esp].filter(Boolean).map(mktEsc).join(' · ');
   const ini=r.resp?mktEsc(initials(r.resp)):'';
   return `<div class="mkt-t${r.completado?' done':''}" data-i="${it.i}">`+
     (top?`<div class="mkt-t-top">${top}</div>`:'')+
     (nec?`<div class="mkt-t-nec">${mktEsc(nec)}</div>`:'')+
-    (r.info?`<small>${mktEsc(r.info)}</small>`:'')+
-    (r.notas?`<small>${mktEsc(r.notas)}</small>`:'')+
-    (r.resp?`<div class="mkt-t-resp"><span class="mkt-av">${ini}</span>${mktEsc(r.resp)}</div>`:'')+
+    (!compact&&r.info?`<small>${mktEsc(r.info)}</small>`:'')+
+    (!compact&&r.notas?`<small>${mktEsc(r.notas)}</small>`:'')+
+    (!compact&&r.resp?`<div class="mkt-t-resp"><span class="mkt-av">${ini}</span>${mktEsc(r.resp)}</div>`:'')+
     okBtnHtml(it.i,r.completado,'mkt','mkt')+`</div>`;
 }
 
@@ -4268,7 +4268,7 @@ function renderMktMonth(){
     html+='<div class="mkt-wk">';
     for(let k=0;k<7;k++){
       const d=ws+k, o=mktFromSer(d), out=o.m!==m;
-      html+=`<div class="mkt-day${out?' out':''}${d===today?' today':''}"><div class="mkt-dn"><span>${o.d}${o.d===1&&out?' '+MKT_MONTHS[o.m].slice(0,3).toLowerCase():''}</span></div>${byDay(d).map(mktChip).join('')}</div>`;
+      html+=`<div class="mkt-day${out?' out':''}${d===today?' today':''}"><div class="mkt-dn"><span>${o.d}${o.d===1&&out?' '+MKT_MONTHS[o.m].slice(0,3).toLowerCase():''}</span></div>${byDay(d).map(it=>mktChip(it,true,true)).join('')}</div>`;
     }
     html+='</div>';
   }
@@ -4276,7 +4276,7 @@ function renderMktMonth(){
   const names=['LUN','MAR','MIÉ','JUE','VIE','SÁB','DOM']; let lh='';
   for(let d=first; d<=last; d++){
     const list=byDay(d); if(!list.length) continue;
-    lh+=`<div class="mkt-lday">${names[mktDowMon(d)]} ${mktFromSer(d).d}${d===today?' <em>HOY</em>':''}</div>`+list.map(mktChip).join('');
+    lh+=`<div class="mkt-lday">${names[mktDowMon(d)]} ${mktFromSer(d).d}${d===today?' <em>HOY</em>':''}</div>`+list.map(it=>mktChip(it,true,true)).join('');
   }
   document.getElementById('mkt-m-list').innerHTML=lh;
 }
