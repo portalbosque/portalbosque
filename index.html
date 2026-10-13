@@ -3773,7 +3773,7 @@ function fillPop(e){
   document.getElementById('cal-pop-cat').textContent = e.catLabel || e.cat || 'Actividad';
   var title = e.mkt ? (e.resp.trim() || 'Actividad') : e.name;
   var h = '<h3 id="cal-pop-title" class="cal-pop-title">' + esc(title) + '</h3>' +
-    '<div class="cal-pop-date">' + esc(fmt(e.s) + (e.e > e.s ? ' – ' + fmt(e.e) : '')) + '</div>';
+    (e.e > e.s ? '' : '<div class="cal-pop-date">' + esc(fmt(e.s)) + '</div>');
   h += '<dl class="cal-pop-fields">';
   e.fields.forEach(function(f){
     var v = String(f[1]), has = v.trim() !== '';
