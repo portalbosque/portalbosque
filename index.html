@@ -486,6 +486,8 @@ tbody.mkt tr:hover td{background:#f6dde5!important;transition:background .12s}
 .mkt-lista .mkt-t-nec,.mkt-lista .mkt-t small{white-space:pre-wrap}
 .mkt-t-date{font-size:12px;font-weight:800;letter-spacing:.04em;color:#4a2233;margin-bottom:3px;text-transform:uppercase}
 .mkt-t-date em{font-style:normal;font-size:10px;background:#e0a800;color:#fff;border-radius:4px;padding:1px 6px;margin-left:6px}
+.mkt-month .mkt-t,.mkt-lista .mkt-t{cursor:pointer}
+.mkt-month .mkt-t:hover,.mkt-lista .mkt-t:hover{box-shadow:0 1px 4px rgba(0,0,0,.25)}
 .mkt-mempty{text-align:center;color:var(--text3);padding:1.2rem;font-size:13px}
 @media(max-width:700px){
   .mkt-lista{padding:.8rem 1rem 1.2rem}
@@ -3734,7 +3736,7 @@ function render(){
       for(var dd2 = cs; dd2 <= ce; dd2++){
         segs += '<div class="cal-ev cal-day ' + (e.kind === 'canc' ? 'canc ' : e.kind === 'conf' ? 'conf' : '') +
           '" style="grid-column:' + (dd2 - ws + 1) + ' / span 1;grid-row:' + (lane + 2) + ';background:' + catColor(e.cat) + ';color:' + catFg(e.cat) + '" data-i="' + e.i + '" role="button" tabindex="0" title="' + esc(e.name + ' · ' + fmt(e.s) + (e.e > e.s ? ' – ' + fmt(e.e) : '') + ' · clic para ver el detalle') + '">' +
-          evBody(e, false, false, true) + '</div>';
+          evBody(e, false, false, false) + '</div>';
       }
     });
     html += '<div class="cal-week"><div class="cal-bg">' + bg + '</div><div class="cal-fg">' + nums + segs + '</div></div>';
@@ -3748,7 +3750,7 @@ function render(){
     var od = fromSer(dd), names = ['LUN','MAR','MIÉ','JUE','VIE','SÁB','DOM'];
     lh += '<div class="cal-li-day' + (dd === today ? ' today' : '') + '">' + names[dowMon(dd)] + ' ' + od.d + (dd === today ? ' <em>HOY</em>' : '') + '</div>';
     todays.forEach(function(e){
-      var multi = e.e > e.s ? '<small>Día ' + (dd - e.s + 1) + ' de ' + (e.e - e.s + 1) + ' · ' + fmtShort(e.s) + ' al ' + fmtShort(e.e) + '</small>' : '';
+      var multi = e.e > e.s ? '<small>Día ' + (dd - e.s + 1) + ' de ' + (e.e - e.s + 1) + '</small>' : '';
       lh += '<div class="cal-li ' + (e.kind === 'canc' ? 'canc' : e.kind === 'conf' ? 'conf' : '') + '" data-i="' + e.i + '" role="button" tabindex="0" style="background:' + catColor(e.cat) + ';color:' + catFg(e.cat) + '">' + (e.mkt ? evBody(e, false, false, false) + multi : '<b>' + esc(e.name) + tagHtml(e) + '</b>' + multi + metaLines({e:e.s, s:e.s, hora:e.hora, lugar:e.lugar, resp:e.resp, desc:e.desc}, false) + needHtml(e)) + '</div>';
     });
   }
@@ -4129,7 +4131,7 @@ function mktParse(text){
       if(ser==null){ MKT_INVALID++; console.warn('[MKT] fila '+sheetRow+': FECHA no interpretable →',fechaRaw); continue; }
       if(!espacio&&!necesidad&&!info&&!notas) continue;
       const dn=MKT_WEEKDAYS[(new Date(ser*86400000).getUTCDay())];
-      rows.push({dia:DIAS_LABELS[dn]||dn,diaNorm:dn,diaBase:dn,fechaSer:ser,resp:resp||'',horario:horario||'',espacio:espacio||'',necesidad:necesidad||'',info:info||'',notas:notas||'',completado:(completado||'').toUpperCase()==='SI'});
+      rows.push({fields:mktFields(headers,cols),dia:DIAS_LABELS[dn]||dn,diaNorm:dn,diaBase:dn,fechaSer:ser,resp:resp||'',horario:horario||'',espacio:espacio||'',necesidad:necesidad||'',info:info||'',notas:notas||'',completado:(completado||'').toUpperCase()==='SI'});
       MKT_ROW_MAP.push(sheetRow);
       continue;
     }
@@ -4138,13 +4140,45 @@ function mktParse(text){
     if(espacio) lastEspacio=espacio; else espacio=lastEspacio;
     if(!dia&&!espacio&&!necesidad&&!info&&!notas) continue;
     if(!dia) continue;
-    rows.push({dia,diaNorm:norm(dia),diaBase:norm(dia),fechaSer:null,resp:resp||'',horario:horario||'',espacio:espacio||'',necesidad:necesidad||'',info:info||'',notas:notas||'',completado:(completado||'').toUpperCase()==='SI'});
+    rows.push({fields:mktFields(headers,cols),dia,diaNorm:norm(dia),diaBase:norm(dia),fechaSer:null,resp:resp||'',horario:horario||'',espacio:espacio||'',necesidad:necesidad||'',info:info||'',notas:notas||'',completado:(completado||'').toUpperCase()==='SI'});
     MKT_ROW_MAP.push(sheetRow);
   }
   return rows;
 }
 
+function mktFields(headers,cols){ const f=[]; headers.forEach((h,i)=>{ if(h) f.push([h, cols[i]!=null?String(cols[i]):'']); }); return f; }
+
+/* Pop-up de detalle (mismo diseño que el del Calendario): todos los campos de la fila, tal cual están en la hoja */
+function mktPopClose(){
+  const d=document.getElementById('mkt-pop'); if(!d||d.style.display==='none') return;
+  d.style.display='none'; document.documentElement.classList.remove('cal-pop-lock');
+  try{ window.scrollTo(0,d._y||0); }catch(e){}
+}
+function mktPopOpen(r){
+  if(!r||!r.fields) return;
+  let d=document.getElementById('mkt-pop');
+  if(!d){
+    d=document.createElement('div'); d.id='mkt-pop'; d.className='cal-pop'; d.style.display='none';
+    d.innerHTML='<div class="cal-pop-box" role="dialog" aria-modal="true" aria-labelledby="mkt-pop-title"><div class="cal-pop-head" style="background:#c2476b;color:#fff"><span>MKT &amp; COMUNICACIÓN</span><button type="button" class="cal-pop-x" aria-label="Cerrar">×</button></div><div class="cal-pop-body" id="mkt-pop-body"></div></div>';
+    document.body.appendChild(d);
+    d.addEventListener('click',ev=>{ if(ev.target===d||ev.target.closest('.cal-pop-x')) mktPopClose(); });
+  }
+  let h='<h3 id="mkt-pop-title" class="cal-pop-title">'+mktEsc(r.resp||'Actividad')+'</h3>'+(r.fechaSer!=null?'<div class="cal-pop-date">'+mktFmtFull(r.fechaSer)+'</div>':'')+'<dl class="cal-pop-fields">';
+  r.fields.forEach(f=>{ const v=String(f[1]), has=v.trim()!==''; h+='<div class="cal-pop-f"><dt>'+mktEsc(f[0])+'</dt><dd class="'+(has?'':'empty')+'">'+(has?mktEsc(v):'—')+'</dd></div>'; });
+  document.getElementById('mkt-pop-body').innerHTML=h+'</dl>';
+  if(d.style.display==='none'){ d._y=window.pageYOffset; document.documentElement.classList.add('cal-pop-lock'); }
+  d.style.display='flex';
+  try{ d.querySelector('.cal-pop-x').focus({preventScroll:true}); }catch(e){}
+}
+document.addEventListener('click',ev=>{
+  if(ev.target.closest('.ok-btn')) return;
+  const n=ev.target.closest('#mkt-month-view .mkt-t[data-i], #mkt-list-view .mkt-t[data-i]'); if(!n) return;
+  mktPopOpen(MKT_DATA[+n.getAttribute('data-i')]);
+});
+document.addEventListener('keydown',ev=>{ if(ev.key==='Escape') mktPopClose(); });
+
 function mktSetView(v){
+  mktPopClose();
   MKT_VIEW = (v==='mes')?'mes':(v==='sem')?'sem':'lista';
   try{ localStorage.setItem('mkt_view2', MKT_VIEW); }catch(e){}
   mktApplyView(); renderMkt(); renderPendientesMkt();
