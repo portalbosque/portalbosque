@@ -682,7 +682,7 @@ tbody.mkt tr:hover td{background:#f6dde5!important;transition:background .12s}
     <span class="section-pill instalaciones">Instalaciones</span>
   </div>
   <div class="filters instalaciones">
-    <div class="filter-group"><span class="filter-label">Día</span><select id="inst-sel-dia" onchange="renderInst()"><option value="">Hoy</option></select></div>
+    <div class="filter-group"><span class="filter-label">Día</span><select id="inst-sel-dia" onchange="renderInst()"><option value="__SEMANA__">Semana completa</option></select></div>
     <div class="filter-group"><span class="filter-label">Responsable</span><select id="inst-sel-resp" onchange="renderInst()"><option value="">Todos</option></select></div>
     <div class="filter-group"><span class="filter-label">Espacio</span><input id="inst-inp-esp" type="text" placeholder="Ej: Yurta" oninput="renderInst()"></div>
     <span class="count instalaciones" id="inst-count">—</span>
@@ -723,7 +723,7 @@ tbody.mkt tr:hover td{background:#f6dde5!important;transition:background .12s}
     <span class="section-pill infraestructura">Infraestructura</span>
   </div>
   <div class="filters infraestructura">
-    <div class="filter-group"><span class="filter-label">Día</span><select id="infra-sel-dia" onchange="renderInfra()"><option value="">Hoy</option></select></div>
+    <div class="filter-group"><span class="filter-label">Día</span><select id="infra-sel-dia" onchange="renderInfra()"><option value="__SEMANA__">Semana completa</option></select></div>
     <div class="filter-group"><span class="filter-label">Responsable</span><select id="infra-sel-resp" onchange="renderInfra()"><option value="">Todos</option></select></div>
     <div class="filter-group"><span class="filter-label">Espacio</span><input id="infra-inp-esp" type="text" placeholder="Ej: Yurta" oninput="renderInfra()"></div>
     <span class="count infraestructura" id="infra-count">—</span>
@@ -3111,7 +3111,7 @@ async function fetchInst(){
     parsed.forEach((r,i)=>{ if(r.necesidad||r.info||r.notas){ r.espacio=instCapFirst(r.espacio); r.necesidad=instCapFirst(r.necesidad); keep.push(r); keepMap.push(rowMap[i]); } });
     INST_DATA = keep; INST_ROW_MAP.length = 0; keepMap.forEach(x=>INST_ROW_MAP.push(x));
     const diasNorm=new Set(INST_DATA.map(r=>r.diaNorm).filter(Boolean));
-    populateSelect('inst-sel-dia',DIAS_ORDER.filter(d=>diasNorm.has(d)).map(d=>({val:d,label:DIAS_LABELS[d]||d})));
+    { const _sd=document.getElementById('inst-sel-dia'), _pv=_sd.value; populateSelect('inst-sel-dia',[{val:'',label:'Hoy'}].concat(DIAS_ORDER.filter(d=>diasNorm.has(d)).map(d=>({val:d,label:DIAS_LABELS[d]||d})))); if(Array.from(_sd.options).some(op=>op.value===_pv)) _sd.value=_pv; }
     { const _sel=document.getElementById('inst-sel-resp'), _prev=_sel.value; populateSelect('inst-sel-resp',instRespOptions(INST_DATA)); if(_prev && Array.from(_sel.options).some(op=>op.value===_prev)) _sel.value=_prev; }
     document.getElementById('inst-loading').style.display='none';
     document.getElementById('inst-table').style.display='table';
@@ -3235,7 +3235,7 @@ function renderPendientesInst(){
 }
 
 function renderInst(){
-  const dia=document.getElementById('inst-sel-dia').value||getTodayNorm();
+  const _dv=document.getElementById('inst-sel-dia').value, dia=_dv==='__SEMANA__'?'':(_dv||getTodayNorm());   // Semana completa = todos los días
   const resp=document.getElementById('inst-sel-resp').value.toLowerCase().trim();
   const esp=document.getElementById('inst-inp-esp').value.toLowerCase().trim();
   renderSection({data:INST_DATA,dia,resp,esp,countId:'inst-count',emptyId:'inst-empty',tbodyId:'inst-tbody',tableId:'inst-table',cardsId:'inst-cards-list',section:'inst',theme:'instalaciones'});
@@ -3317,7 +3317,7 @@ async function fetchInfra(){
     parsed.forEach((r,i)=>{ if(r.necesidad||r.info||r.notas){ r.espacio=infraCapFirst(r.espacio); r.necesidad=infraCapFirst(r.necesidad); keep.push(r); keepMap.push(rowMap[i]); } });
     INFRA_DATA = keep; INFRA_ROW_MAP.length = 0; keepMap.forEach(x=>INFRA_ROW_MAP.push(x));
     const diasNorm=new Set(INFRA_DATA.map(r=>r.diaNorm).filter(Boolean));
-    populateSelect('infra-sel-dia',DIAS_ORDER.filter(d=>diasNorm.has(d)).map(d=>({val:d,label:DIAS_LABELS[d]||d})));
+    { const _sd=document.getElementById('infra-sel-dia'), _pv=_sd.value; populateSelect('infra-sel-dia',[{val:'',label:'Hoy'}].concat(DIAS_ORDER.filter(d=>diasNorm.has(d)).map(d=>({val:d,label:DIAS_LABELS[d]||d})))); if(Array.from(_sd.options).some(op=>op.value===_pv)) _sd.value=_pv; }
     { const _sel=document.getElementById('infra-sel-resp'), _prev=_sel.value; populateSelect('infra-sel-resp',infraRespOptions(INFRA_DATA)); if(_prev && Array.from(_sel.options).some(op=>op.value===_prev)) _sel.value=_prev; }
     document.getElementById('infra-loading').style.display='none';
     document.getElementById('infra-table').style.display='table';
@@ -3441,7 +3441,7 @@ function renderPendientesInfra(){
 }
 
 function renderInfra(){
-  const dia=document.getElementById('infra-sel-dia').value||getTodayNorm();
+  const _dv=document.getElementById('infra-sel-dia').value, dia=_dv==='__SEMANA__'?'':(_dv||getTodayNorm());   // Semana completa = todos los días
   const resp=document.getElementById('infra-sel-resp').value.toLowerCase().trim();
   const esp=document.getElementById('infra-inp-esp').value.toLowerCase().trim();
   renderSection({data:INFRA_DATA,dia,resp,esp,countId:'infra-count',emptyId:'infra-empty',tbodyId:'infra-tbody',tableId:'infra-table',cardsId:'infra-cards-list',section:'infra',theme:'infraestructura'});
