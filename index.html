@@ -494,6 +494,8 @@ tbody.mkt tr:hover td{background:#f6dde5!important;transition:background .12s}
 .mkt-avisos{margin:.6rem 1.5rem 0;padding:.6rem .9rem;background:#fff4d6;border:1px solid #e8c766;border-radius:8px;color:#6b4e00;font-size:12.5px}
 .mkt-avisos ul{margin:.3rem 0 0 1.1rem;padding:0}
 @media(max-width:700px){.mkt-avisos{margin:.6rem 1rem 0}}
+.mkt-t.mkt-hl{outline:3px solid #e0a800;outline-offset:2px;animation:mktHl 1.2s ease-in-out 3}
+@keyframes mktHl{50%{box-shadow:0 0 0 6px rgba(224,168,0,.35)}}
 .mkt-mempty{text-align:center;color:var(--text3);padding:1.2rem;font-size:13px}
 @media(max-width:700px){
   .mkt-lista{padding:.8rem 1rem 1.2rem}
@@ -810,6 +812,7 @@ tbody.mkt tr:hover td{background:#f6dde5!important;transition:background .12s}
   </div>
   <div class="status mkt"><div class="status-dot mkt"></div><span id="mkt-status">Conectando...</span></div>
   <div id="mkt-avisos" class="mkt-avisos" style="display:none"></div>
+  <div id="mkt-avisos-link" class="mkt-avisos" style="display:none"></div>
   <div id="mkt-week-view">
   <div class="pending-section" id="mkt-pending-section">
     <div class="pending-header-bar"><span class="pending-title">⚠ Pendientes de ayer sin completar</span><span class="pending-count" id="mkt-pending-count">0</span></div>
@@ -857,7 +860,7 @@ tbody.mkt tr:hover td{background:#f6dde5!important;transition:background .12s}
 </div>
 <!-- MKT:END -->
 <footer class="footer">
-  <span>Portal Bosque · <a href="https://www.portalbosque.com" target="_blank">portalbosque.com</a> · versión 16-10 E</span>
+  <span>Portal Bosque · <a href="https://www.portalbosque.com" target="_blank">portalbosque.com</a> · versión 16-10 F</span>
 
   <span id="last-update">—</span>
 </footer>
@@ -3952,6 +3955,7 @@ async function fetchMkt(){
     const n=new Date();
     MKT_BASE_STATUS=`Sincronizado · ${n.toLocaleDateString('es-UY')} ${n.toLocaleTimeString('es-UY',{hour:'2-digit',minute:'2-digit'})} · ${MKT_DATA.length} registros${MKT_DATA.some(r=>r.fechaSer!=null)?' ('+MKT_DATA.filter(r=>r.fechaSer!=null).length+' con fecha)':''}${MKT_INVALID?' · ⚠ '+MKT_INVALID+(MKT_INVALID===1?' fila con FECHA inválida (no se muestra)':' filas con FECHA inválida (no se muestran)'):''}`;
     await syncEstadosMkt();
+    mktDeepLink();
   }catch(e){
     document.getElementById('mkt-loading').textContent='Error al cargar datos. Verificá la conexión.';
     document.getElementById('mkt-status').textContent='Sin conexión con Google Sheets';
@@ -4186,6 +4190,28 @@ document.addEventListener('click',ev=>{
   mktPopOpen(MKT_DATA[+n.getAttribute('data-i')]);
 });
 document.addEventListener('keydown',ev=>{ if(ev.key==='Escape') mktPopClose(); });
+
+/* Enlace del mail (?mkt=<fila>&f=<fecha>&n=<comienzo de la necesidad>): abre MKT & Comunicación en esa tarea.
+   Se busca por fila y se verifica con fecha y necesidad; si la fila se movió, se reencuentra por fecha + necesidad. */
+let MKT_DL_DONE = false;
+function mktDeepLink(){
+  if(MKT_DL_DONE) return; MKT_DL_DONE = true;
+  let q; try{ q = new URLSearchParams(location.search); }catch(e){ return; }
+  if(!q.has('mkt')) return;
+  const row=parseInt(q.get('mkt'),10), f=q.get('f')?mktParseDate(q.get('f')):null, n=q.get('n')?norm(q.get('n')):'';
+  const okRow=i=>{ const r=MKT_DATA[i]; if(!r) return false; if(f!=null && r.fechaSer!==f) return false; if(n && !norm(r.necesidadRaw!=null?r.necesidadRaw:r.necesidad).startsWith(n)) return false; return true; };
+  let idx=MKT_ROW_MAP.indexOf(row); if(idx<0||!okRow(idx)){ idx=-1; for(let i=0;i<MKT_DATA.length;i++){ if((f!=null||n) && okRow(i)){ idx=i; break; } } }
+  try{ history.replaceState(null,'',location.pathname+location.hash); }catch(e){}   // limpia el enlace: al refrescar no se reabre
+  if(typeof showSection==='function') showSection('mkt');
+  MKT_VIEW='lista'; mktApplyView();
+  document.getElementById('mkt-sel-resp').value=''; document.getElementById('mkt-inp-esp').value='';
+  renderMkt();
+  const box=document.getElementById('mkt-avisos-link');
+  if(idx<0){ if(box){ box.style.display='block'; box.textContent='No se encontró la tarea del enlace (puede haber sido movida, completada o eliminada de la planilla).'; setTimeout(()=>{ box.style.display='none'; },12000); } return; }
+  const el=document.querySelector('#mkt-l-body .mkt-t[data-i="'+idx+'"]');
+  if(el){ el.classList.add('mkt-hl'); try{ el.scrollIntoView({block:'center'}); }catch(e){} setTimeout(()=>el.classList.remove('mkt-hl'),6000); }
+  mktPopOpen(MKT_DATA[idx]);
+}
 
 function mktSetView(v){
   mktPopClose();
