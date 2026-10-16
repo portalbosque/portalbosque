@@ -803,7 +803,7 @@ tbody.mkt tr:hover td{background:#f6dde5!important;transition:background .12s}
     <span class="mkt-viewhint" id="mkt-viewhint"></span>
   </div>
   <div class="filters mkt">
-    <div class="filter-group" id="mkt-g-dia"><span class="filter-label">Día</span><select id="mkt-sel-dia" onchange="renderMkt()"><option value="">Hoy</option></select></div>
+    <div class="filter-group" id="mkt-g-dia"><span class="filter-label">Día</span><select id="mkt-sel-dia" onchange="renderMkt()"><option value="__SEMANA__">Semana completa</option></select></div>
     <div class="filter-group"><span class="filter-label">Responsable</span><select id="mkt-sel-resp" onchange="renderMkt()"><option value="">Todos</option></select></div>
     <div class="filter-group"><span class="filter-label">Espacio</span><input id="mkt-inp-esp" type="text" placeholder="Ej: Yurta" oninput="renderMkt()"></div>
     <span class="count mkt" id="mkt-count">—</span>
@@ -857,7 +857,7 @@ tbody.mkt tr:hover td{background:#f6dde5!important;transition:background .12s}
 </div>
 <!-- MKT:END -->
 <footer class="footer">
-  <span>Portal Bosque · <a href="https://www.portalbosque.com" target="_blank">portalbosque.com</a> · versión 16-10 D</span>
+  <span>Portal Bosque · <a href="https://www.portalbosque.com" target="_blank">portalbosque.com</a> · versión 16-10 E</span>
 
   <span id="last-update">—</span>
 </footer>
@@ -3945,7 +3945,7 @@ async function fetchMkt(){
     parsed.forEach((r,i)=>{ if(r.necesidad||r.info||r.notas){ r.necesidadRaw=r.necesidad; r.espacioRaw=r.espacio; r.espacio=mktCapFirst(r.espacio); r.necesidad=mktCapFirst(r.necesidad); keep.push(r); keepMap.push(rowMap[i]); } });
     MKT_DATA = keep; MKT_ROW_MAP.length = 0; keepMap.forEach(x=>MKT_ROW_MAP.push(x));
     const diasNorm=new Set(MKT_DATA.map(r=>r.diaNorm).filter(Boolean));
-    populateSelect('mkt-sel-dia',DIAS_ORDER.filter(d=>diasNorm.has(d)).map(d=>({val:d,label:DIAS_LABELS[d]||d})));
+    { const _sd=document.getElementById('mkt-sel-dia'), _pv=_sd.value; populateSelect('mkt-sel-dia',[{val:'',label:'Hoy'}].concat(DIAS_ORDER.filter(d=>diasNorm.has(d)).map(d=>({val:d,label:DIAS_LABELS[d]||d})))); if(Array.from(_sd.options).some(op=>op.value===_pv)) _sd.value=_pv; }
     { const _sel=document.getElementById('mkt-sel-resp'), _prev=_sel.value; populateSelect('mkt-sel-resp',mktRespOptions(MKT_DATA)); if(_prev && Array.from(_sel.options).some(op=>op.value===_prev)) _sel.value=_prev; }
     document.getElementById('mkt-loading').style.display='none';
     document.getElementById('mkt-table').style.display='table';
@@ -4294,14 +4294,17 @@ function renderMktMonth(){
 function renderMkt(){
   if(MKT_VIEW==='lista'){ renderMktLista(); return; }
   if(MKT_VIEW==='mes'){ renderMktMonth(); return; }
-  const dia=document.getElementById('mkt-sel-dia').value||getTodayNorm();
+  const _dv=document.getElementById('mkt-sel-dia').value, semana=_dv==='__SEMANA__', dia=semana?'':(_dv||getTodayNorm());   // Semana completa = todos los días
   const resp=document.getElementById('mkt-sel-resp').value.toLowerCase().trim();
   const esp=document.getElementById('mkt-inp-esp').value.toLowerCase().trim();
   // las tareas con fecha solo se muestran si caen en el día elegido de la semana en curso
   const t=mktTodaySer(), target=t-mktDowMon(t)+Math.max(0,DIAS_ORDER.indexOf(dia));
   MKT_DATA.forEach(r=>{ if(r.fechaSer!=null) r.diaNorm=(r.fechaSer===target)?r.diaBase:'__FUERA__'; });
   try{
-    renderSection({data:MKT_DATA,dia,resp,esp,countId:'mkt-count',emptyId:'mkt-empty',tbodyId:'mkt-tbody',tableId:'mkt-table',cardsId:'mkt-cards-list',section:'mkt',theme:'mkt'});
+    // Semana completa: tareas semanales + las que tienen fecha dentro de esta semana (lunes a domingo). Se conservan los índices originales.
+    const lun=t-mktDowMon(t);
+    const dataSel=semana?{map:fn=>MKT_DATA.map(fn).filter(({r})=>r.fechaSer==null||(r.fechaSer>=lun&&r.fechaSer<=lun+6))}:MKT_DATA;
+    renderSection({data:dataSel,dia,resp,esp,countId:'mkt-count',emptyId:'mkt-empty',tbodyId:'mkt-tbody',tableId:'mkt-table',cardsId:'mkt-cards-list',section:'mkt',theme:'mkt'});
   } finally { MKT_DATA.forEach(r=>{ if(r.fechaSer!=null) r.diaNorm=r.diaBase; }); }
   mktDecorateWeek();
 }
