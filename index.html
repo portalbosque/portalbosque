@@ -491,6 +491,9 @@ tbody.mkt tr:hover td{background:#f6dde5!important;transition:background .12s}
 .mkt-t-date em{font-style:normal;font-size:10px;background:#e0a800;color:#fff;border-radius:4px;padding:1px 6px;margin-left:6px}
 .mkt-month .mkt-t,.mkt-lista .mkt-t{cursor:pointer}
 .mkt-month .mkt-t:hover,.mkt-lista .mkt-t:hover{box-shadow:0 1px 4px rgba(0,0,0,.25)}
+.mkt-avisos{margin:.6rem 1.5rem 0;padding:.6rem .9rem;background:#fff4d6;border:1px solid #e8c766;border-radius:8px;color:#6b4e00;font-size:12.5px}
+.mkt-avisos ul{margin:.3rem 0 0 1.1rem;padding:0}
+@media(max-width:700px){.mkt-avisos{margin:.6rem 1rem 0}}
 .mkt-mempty{text-align:center;color:var(--text3);padding:1.2rem;font-size:13px}
 @media(max-width:700px){
   .mkt-lista{padding:.8rem 1rem 1.2rem}
@@ -806,6 +809,7 @@ tbody.mkt tr:hover td{background:#f6dde5!important;transition:background .12s}
     <span class="count mkt" id="mkt-count">—</span>
   </div>
   <div class="status mkt"><div class="status-dot mkt"></div><span id="mkt-status">Conectando...</span></div>
+  <div id="mkt-avisos" class="mkt-avisos" style="display:none"></div>
   <div id="mkt-week-view">
   <div class="pending-section" id="mkt-pending-section">
     <div class="pending-header-bar"><span class="pending-title">⚠ Pendientes de ayer sin completar</span><span class="pending-count" id="mkt-pending-count">0</span></div>
@@ -853,7 +857,7 @@ tbody.mkt tr:hover td{background:#f6dde5!important;transition:background .12s}
 </div>
 <!-- MKT:END -->
 <footer class="footer">
-  <span>Portal Bosque · <a href="https://www.portalbosque.com" target="_blank">portalbosque.com</a> · versión 14-10 B</span>
+  <span>Portal Bosque · <a href="https://www.portalbosque.com" target="_blank">portalbosque.com</a> · versión 16-10 D</span>
 
   <span id="last-update">—</span>
 </footer>
@@ -3602,7 +3606,7 @@ function parseEvents(text){
 }
 function rowFields(heads, r){            // todos los campos de la fila, tal cual están en el Sheet (texto sin tocar)
   var f = [];
-  heads.forEach(function(hd, i){ if(hd) f.push([hd, r[i] != null ? String(r[i]) : '']); });
+  heads.forEach(function(hd, i){ if(hd && hd.toUpperCase() !== 'NOTIFICADO') f.push([hd, r[i] != null ? String(r[i]) : '']); });
   return f;
 }
 // MKT & COMUNICACIÓN: cada fila (FECHA, DIA, RESPONSABLE, HORARIO, ESPACIO, NECESIDAD, INFO, NOTAS, COMPLETADO) es una actividad de un día
@@ -3880,10 +3884,10 @@ const MKT_SHEET_TAB = '';   // vacío = primera pestaña de la planilla
 const MKT_CSV_PUBLISHED = '';
 // Apps Script PROPIO de la hoja MKT & Comunicación (ver MKT_Comunicacion_AppsScript.gs). Mientras esté vacío, el check NO se guarda
 // en la planilla (no se usa el Apps Script de Logística: escribiría en la hoja equivocada).
-const MKT_APPS_SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbyGMgzBue5Ky7MNglBHHHrTRV-FgQEyMBLBwM_kslMoSInhgTmmwKthgcEWUYIPm3nQWQ/exec';
+const MKT_APPS_SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbzrR9qCprPI8Mw82YcxZnN0Xb2UBz8dMSi9hNJ2r60oqAgkWKvZ-qc0V7kHgSrJFCtJ-g/exec';
 
 let MKT_DATA = [], MKT_ROW_MAP = [];
-let MKT_BASE_STATUS = '', MKT_LINK = {ok:null, msg:''};
+let MKT_BASE_STATUS = '', MKT_LINK = {ok:null, msg:''}, MKT_AVISOS = [];   // avisos del Apps Script (tareas sin responsable/sin mail, errores de envío)
 const MKT_PEND = {section:'mkt-pending-section',table:'mkt-pending-table',count:'mkt-pending-count',cardsSection:'mkt-cards-pending-section',cardsCount:'mkt-cards-pending-count',cardsList:'mkt-cards-pending-list',rowPrefix:'mkt-pend-row-',cardPrefix:'mkt-pend-card-'};
 
 /* Navegación y botón de completar: se envuelven las funciones existentes SIN modificar su código.
@@ -3964,6 +3968,8 @@ function mktRenderStatus(){
   else if(MKT_LINK.ok===true) t+=' · guardado en planilla activo ✓';
   else if(MKT_LINK.ok===false){ t+=' · ⚠ '+MKT_LINK.msg; bad=true; }
   el.textContent=t;
+  const box=document.getElementById('mkt-avisos');
+  if(box){ if(MKT_AVISOS.length){ box.style.display='block'; box.innerHTML='<b>⚠ Avisos por mail ('+MKT_AVISOS.length+')</b><ul>'+MKT_AVISOS.map(a=>'<li>'+(a.row?'Fila '+a.row+': ':'')+mktEsc(a.motivo)+'</li>').join('')+'</ul>'; } else { box.style.display='none'; box.innerHTML=''; } }
   if(dot){ dot.style.background=bad?'#c05050':''; dot.style.animation=bad?'none':''; }
 }
 const MKT_MSG_NO_CONTACT='No se pudo contactar al Apps Script (¿implementado como "Cualquier usuario"?)';
@@ -3976,6 +3982,7 @@ async function syncEstadosMkt(){
       if(resData.ok&&resData.estados){
         resData.estados.forEach(e=>{const idx=MKT_ROW_MAP.indexOf(e.row);if(idx!==-1&&MKT_DATA[idx])MKT_DATA[idx].completado=e.completado;});
         MKT_LINK={ok:true,msg:''};
+        MKT_AVISOS=Array.isArray(resData.avisos)?resData.avisos:[];
       }else MKT_LINK={ok:false,msg:'El Apps Script respondió con error: '+(resData.error||'respuesta inesperada')};
     }catch(e){ console.log('[syncEstados:mkt]',e); MKT_LINK={ok:false,msg:MKT_MSG_NO_CONTACT}; }
   }
@@ -4149,7 +4156,7 @@ function mktParse(text){
   return rows;
 }
 
-function mktFields(headers,cols){ const f=[]; headers.forEach((h,i)=>{ if(h) f.push([h, cols[i]!=null?String(cols[i]):'']); }); return f; }
+function mktFields(headers,cols){ const f=[]; headers.forEach((h,i)=>{ if(h && h.toUpperCase()!=='NOTIFICADO') f.push([h, cols[i]!=null?String(cols[i]):'']); }); return f; }
 
 /* Pop-up de detalle (mismo diseño que el del Calendario): todos los campos de la fila, tal cual están en la hoja */
 function mktPopClose(){
