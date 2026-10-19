@@ -861,7 +861,7 @@ tbody.mkt tr:hover td{background:#f6dde5!important;transition:background .12s}
 </div>
 <!-- MKT:END -->
 <footer class="footer">
-  <span>Portal Bosque · <a href="https://www.portalbosque.com" target="_blank">portalbosque.com</a> · versión 19-10 I</span>
+  <span>Portal Bosque · <a href="https://www.portalbosque.com" target="_blank">portalbosque.com</a> · versión 19-10 K</span>
 
   <span id="last-update">—</span>
 </footer>
@@ -3475,11 +3475,11 @@ var MONTHS = ['ENERO','FEBRERO','MARZO','ABRIL','MAYO','JUNIO','JULIO','AGOSTO',
 var SEASON_BY_MONTH = ['VERANO','VERANO','OTOÑO','OTOÑO','OTOÑO','INVIERNO','INVIERNO','INVIERNO','PRIMAVERA','PRIMAVERA','PRIMAVERA','VERANO'];
 // colores de las etiquetas del Sheet: [fondo, texto]
 var DEFAULT_COLORS = {'EVENTO':['#c5e0f4','#2254a3'],'WORKSHOP':['#553682','#e2d0f0'],'CAPACITACION':['#cadbe0','#30596a'],'CHARLA':['#a42116','#f8d1cb'],
-  'RETIRO':['#e3d0f0','#553682'],'AGENDA REGULAR':['#fbe5a9','#453924'],'TRIBUS':['#d9ecc1','#33714e'],'ESPECIAL':['#e9e8e8','#1f1f1f'],'MKT & COMUNICACION':['#e8863a','#1f1f1f']};
+  'RETIRO':['#e3d0f0','#553682'],'AGENDA GENERAL':['#fbe5a9','#453924'],'TRIBUS':['#d9ecc1','#33714e'],'ESPECIAL':['#e9e8e8','#1f1f1f'],'MKT & COMUNICACION':['#e8863a','#1f1f1f']};
 var LABELS = {'CAPACITACION':'CAPACITACIÓN','MKT & COMUNICACION':'MKT & COMUNICACIÓN'};
 // Categorías que SIEMPRE muestran su filtro (aunque no tengan eventos). Si agregás una categoría nueva al desplegable
 // del Sheet, sumala acá o en una pestaña "CATEGORIAS" (columnas CATEGORIA | COLOR) y aparece sola.
-var ALL_CATEGORIES = ['EVENTO','WORKSHOP','CAPACITACION','CHARLA','RETIRO','AGENDA REGULAR','TRIBUS','ESPECIAL','MKT & COMUNICACION'];
+var ALL_CATEGORIES = ['EVENTO','WORKSHOP','CAPACITACION','CHARLA','RETIRO','AGENDA GENERAL','TRIBUS','ESPECIAL','MKT & COMUNICACION'];
 var PALETTE = ['#b6d7a8','#f9cb9c','#ea9999','#a2c4c9','#b4a7d6','#d9d2e9','#fce5cd','#c9daf8'];
 var DAY = 86400000;
 
@@ -3677,7 +3677,9 @@ function monthNow(){ var t = fromSer(todaySer()); return {y:t.y, m:t.m}; }
 function categoriesInUse(){
   var seen = {}, list = [];
   // orden fijo: primero las categorías base (siempre visibles, tengan o no eventos), luego las de la pestaña CATEGORIAS y por último las que aparezcan en eventos
-  ALL_CATEGORIES.concat(Object.keys(CATS)).forEach(function(k){ k = norm(k); if(k && !seen[k]){ seen[k] = 1; list.push({k:k, label:LABELS[k] || k}); } });
+  // si la pestaña CATEGORIAS tiene datos, manda ella (una categoría borrada ahí desaparece); si no, se usan las base
+  var base = Object.keys(CATS).length ? ['MKT & COMUNICACION'] : ALL_CATEGORIES;
+  base.concat(Object.keys(CATS)).forEach(function(k){ k = norm(k); if(k && !seen[k]){ seen[k] = 1; list.push({k:k, label:LABELS[k] || k}); } });
   EVENTS.forEach(function(e){ if(e.cat && !seen[e.cat]){ seen[e.cat] = 1; list.push({k:e.cat, label:e.catLabel}); } });
   return list;
 }
