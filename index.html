@@ -913,6 +913,10 @@ tbody.mkt tr:hover td{background:#f6dde5!important;transition:background .12s}
 .pag-t-date em{font-style:normal;font-size:10px;background:#e0a800;color:#fff;border-radius:4px;padding:1px 6px;margin-left:6px}
 .pag-tag{display:inline-block;font-size:10px;font-weight:700;letter-spacing:.04em;text-transform:uppercase;border-radius:20px;padding:1px 8px;margin:3px 4px 0 0;background:#fff;border:1px dashed #8aa3c4;color:#4a6585}
 .pag-tag.ok{background:#2d7a4a;border-color:#2d7a4a;color:#fff}
+.pag-ok{font:inherit;font-size:11px;font-weight:700;letter-spacing:.03em;border:1.5px solid #b9cbe0;background:#fff;color:#4a6585;border-radius:999px;padding:2px 11px;margin-top:6px;cursor:pointer;display:inline-flex;gap:5px;align-items:center}
+.pag-ok:hover{border-color:#2d7a4a;color:#2d7a4a;background:#f1f8f3}
+.pag-ok.done{background:#2d7a4a;border-color:#2d7a4a;color:#fff}
+.pag-ok.loading{opacity:.6;pointer-events:none}
 .pag-mlist{display:none}
 .pag-lday{font-size:13px;font-weight:800;color:#2b4a6b;text-transform:uppercase;letter-spacing:.06em;padding:.5rem .2rem .25rem;border-bottom:2px solid #5b7fa8;margin-top:.7rem;display:flex;gap:.5rem;align-items:center}
 .pag-lday em{font-style:normal;font-size:10px;background:#e0a800;color:#fff;border-radius:4px;padding:1px 6px}
@@ -986,7 +990,7 @@ tbody.mkt tr:hover td{background:#f6dde5!important;transition:background .12s}
 </div>
 <!-- PAGENDA:END -->
 <footer class="footer">
-  <span>Portal Bosque · <a href="https://www.portalbosque.com" target="_blank">portalbosque.com</a> · versión 19-10 M</span>
+  <span>Portal Bosque · <a href="https://www.portalbosque.com" target="_blank">portalbosque.com</a> · versión 19-10 O</span>
 
   <span id="last-update">—</span>
 </footer>
@@ -4479,6 +4483,10 @@ setInterval(fetchMkt,5*60*1000);
    Lista (por mes), Semana y Mes (con pop-up de detalle). Bloque independiente: no modifica otras secciones. ===== */
 (function(){
 var SHEET = '1YHNS0W6MYxEQu1DD9gWCyHJy79lZRqn6adw4WBleXgY', DAY = 864e5;
+/* URL del Apps Script (ProduccionAgenda_AppsScript.gs, implementado como "Aplicación web") que guarda COMPLETADO en la planilla.
+   Mientras esté vacía la sección es solo de lectura y los botones de completar no se muestran. */
+var PAG_APPS_SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbzK1haM_bPK9izDYCbxS5Q2-_pQbDLwZnlumhnhw6B1nmnakFxEKolETJtDFXkT3Aik6w/exec';
+var PAG_LINK = {ok:true, msg:''}, BUSY = {};
 var MONTHS = ['ENERO','FEBRERO','MARZO','ABRIL','MAYO','JUNIO','JULIO','AGOSTO','SEPTIEMBRE','OCTUBRE','NOVIEMBRE','DICIEMBRE'];
 var DOW = ['LUN','MAR','MIÉ','JUE','VIE','SÁB','DOM'];
 var COLORS = {'EVENTO':'#8db4de','WORKSHOP':'#5a3a8c','CAPACITACION':'#9fb3b8','CHARLA':'#a22c20','RETIRO':'#b98fd6','AGENDA GENERAL':'#e8c35a','TRIBUS':'#8cc063','ESPECIAL':'#a8a8a8'};
@@ -4507,12 +4515,14 @@ function monthIdx(v){
   return -1;
 }
 function parse(text){
-  var rows = csv(text).filter(function(r){ return r.some(function(c){ return String(c).trim(); }); });
+  var all = csv(text), rows = [];
+  all.forEach(function(r, i){ if(r.some(function(c){ return String(c).trim(); })) rows.push({r:r, row:i + 1}); });   // se conserva el número de fila real de la planilla
   if(!rows.length) return [];
-  var heads = rows[0].map(function(x){ return String(x).trim(); }), h = heads.map(norm), ix = function(n){ return h.indexOf(n); };
+  var heads = rows[0].r.map(function(x){ return String(x).trim(); }), h = heads.map(norm), ix = function(n){ return h.indexOf(n); };
   var cD = ix('DIA'), cM = ix('MES'), cY = ix('ANO'), cN = ix('NOMBRE DEL EVENTO'), cT = ix('TAREA'), cC = ix('CATEGORIA'), cE = ix('ESTADO'), cK = ix('COMPLETADO');
   var out = [];
-  rows.slice(1).forEach(function(r){
+  rows.slice(1).forEach(function(rw){
+    var r = rw.r;
     var g = function(i){ return i >= 0 ? String(r[i] == null ? '' : r[i]).trim() : ''; };
     var m = monthIdx(g(cM)), y = parseInt(g(cY).replace(/\D/g,''), 10);
     var dm = g(cD).match(/^(\d{1,2})\s*(?:[-–]\s*(\d{1,2}))?$/);
@@ -4522,7 +4532,7 @@ function parse(text){
     if(e < s) e = s;
     var task = g(cT); if(/^[-–—]+$/.test(task)) task = '';
     var fields = []; heads.forEach(function(hh, i){ if(hh) fields.push([hh, r[i] == null ? '' : String(r[i])]); });
-    out.push({s:s, e:e, name:g(cN), task:task, cat:norm(g(cC)), est:g(cE), done:/^(SI|S|TRUE|VERDADERO|X|1|OK|✓|✔|HECHO|LISTO|COMPLETADO)$/.test(norm(g(cK))), fields:fields});
+    out.push({row:rw.row, cK:cK, s:s, e:e, name:g(cN), task:task, cat:norm(g(cC)), est:g(cE), done:/^(SI|S|TRUE|VERDADERO|X|1|OK|✓|✔|HECHO|LISTO|COMPLETADO)$/.test(norm(g(cK))), fields:fields});
   });
   out.sort(function(a,b){ return a.s - b.s || a.e - b.e; });
   out.forEach(function(x, i){ x.i = i; });
@@ -4560,13 +4570,13 @@ function visible(){
 function chip(r, withDate, day){
   var td = todayS(), tags = '';
   if(r.est && !/^CONFIRMAD/.test(norm(r.est))) tags += '<span class="pag-tag">' + esc(r.est) + '</span>';
-  if(r.done) tags += '<span class="pag-tag ok">✓ Completado</span>';
+  var okb = PAG_APPS_SCRIPT_URL ? '<div><button type="button" class="pag-ok' + (r.done ? ' done' : '') + '" data-ok="' + r.i + '">' + (r.done ? '✓ Completado' : 'Completar') + '</button></div>' : (r.done ? '<span class="pag-tag ok">✓ Completado</span>' : '');
   var multi = r.s !== r.e;
   var dt = withDate ? '<div class="pag-t-date">' + esc(fmtRange(r)) + (r.s <= td && td <= r.e ? '<em>HOY</em>' : '') + '</div>' : '';
   var rng = (!withDate && multi) ? '<small>' + esc(fmtRange(r)) + '</small>' : '';
   return '<div class="pag-t' + (r.done ? ' done' : '') + '" data-i="' + r.i + '" style="--pc:' + color(r) + '">' + dt +
     (r.cat ? '<div class="pag-t-top">' + esc(r.cat) + '</div>' : '') +
-    '<div class="pag-t-nec">' + esc(r.name || '(sin nombre)') + '</div>' + (r.task ? '<small>' + esc(r.task) + '</small>' : '') + rng + tags + '</div>';
+    '<div class="pag-t-nec">' + esc(r.name || '(sin nombre)') + '</div>' + (r.task ? '<small>' + esc(r.task) + '</small>' : '') + rng + tags + okb + '</div>';
 }
 function fillCats(){
   var cs = $('pag-sel-cat'), cv = cs.value, seen = {}, o = '<option value="">Todas</option>';
@@ -4664,10 +4674,43 @@ function popOpen(r){
   try{ d.querySelector('.cal-pop-x').focus({preventScroll:true}); }catch(e){}
 }
 document.addEventListener('click', function(ev){
+  if(ev.target.closest && ev.target.closest('.pag-ok')) return;
   var n = ev.target.closest && ev.target.closest('#section-pag .pag-t[data-i]'); if(!n) return;
   popOpen(ROWS[+n.getAttribute('data-i')]);
 });
 document.addEventListener('keydown', function(ev){ if(ev.key === 'Escape') popClose(); });
+/* ---------- completar tarea (guarda COMPLETADO en la planilla vía Apps Script) ---------- */
+function setDoneField(r){ r.fields.forEach(function(f){ if(String(f[0]).trim().toUpperCase() === 'COMPLETADO') f[1] = r.done ? 'SI' : ''; }); }
+function statusText(){
+  var st = $('pag-status'); if(!st) return;
+  var base = st.getAttribute('data-base') || st.textContent;
+  st.textContent = base + (PAG_LINK.ok ? '' : ' · ⚠ ' + PAG_LINK.msg) + (PAG_APPS_SCRIPT_URL ? '' : ' · solo lectura (falta conectar el Apps Script para completar)');
+}
+async function toggleOk(i){
+  var r = ROWS[i]; if(!r || BUSY[r.row] || !PAG_APPS_SCRIPT_URL) return;
+  BUSY[r.row] = 1; var prev = r.done; r.done = !prev; setDoneField(r); render();
+  var saved = false, msg = '';
+  try{
+    var res = await fetch(PAG_APPS_SCRIPT_URL + '?row=' + r.row + '&value=' + encodeURIComponent(r.done ? 'SI' : '') + '&n=' + encodeURIComponent(norm(r.name).slice(0, 25)) + '&t=' + Date.now());
+    var j = await res.json(); saved = !!(j && j.ok === true);
+    if(!saved) msg = (j && j.error) || 'respuesta inesperada';
+  }catch(e){ msg = 'no se pudo contactar al Apps Script'; }
+  delete BUSY[r.row];
+  if(!saved){ r.done = prev; setDoneField(r); PAG_LINK = {ok:false, msg:'No se guardó: ' + msg}; render(); statusText(); load(); return; }
+  PAG_LINK = {ok:true, msg:''}; statusText();
+}
+async function syncEstados(){
+  if(!PAG_APPS_SCRIPT_URL || !LOADED) return;
+  try{
+    var j = await (await fetch(PAG_APPS_SCRIPT_URL + '?t=' + Date.now())).json();
+    if(!j || !j.ok || !j.estados) return;
+    var m = {}; j.estados.forEach(function(x){ m[x.row] = !!x.completado; });
+    var ch = false;
+    ROWS.forEach(function(r){ if(!BUSY[r.row] && m[r.row] != null && m[r.row] !== r.done){ r.done = m[r.row]; setDoneField(r); ch = true; } });
+    if(ch) render();
+  }catch(e){}
+}
+$('section-pag').addEventListener('click', function(ev){ var b = ev.target.closest('.pag-ok'); if(b) toggleOk(+b.getAttribute('data-ok')); });
 /* ---------- carga y eventos ---------- */
 async function load(manual){
   var st = $('pag-status'), btn = $('pag-refresh');
@@ -4675,7 +4718,8 @@ async function load(manual){
   try{
     ROWS = parse(await fetchText()); LOADED = true;
     var n = new Date(), p = function(x){ return (x < 10 ? '0' : '') + x; };
-    if(st) st.textContent = 'Conectado al Sheet · ' + ROWS.length + ' filas · ' + p(n.getHours()) + ':' + p(n.getMinutes());
+    var base = 'Conectado al Sheet · ' + ROWS.length + ' filas · ' + p(n.getHours()) + ':' + p(n.getMinutes());
+    if(st){ st.setAttribute('data-base', base); statusText(); }
     fillCats();
   }catch(e){
     console.error('[PRODUCCIÓN AGENDA]', e);
@@ -4683,6 +4727,7 @@ async function load(manual){
   }
   if(btn) btn.disabled = false;
   render();
+  syncEstados();
 }
 $('pag-sel-cat').addEventListener('change', render);
 $('pag-sel-dia').addEventListener('change', render);
@@ -4711,6 +4756,7 @@ window.showSection = function(which){
 render();
 load();
 setInterval(load, 5 * 60 * 1000);
+setInterval(syncEstados, 30 * 1000);
 })();
 </script>
 <!-- PAGENDA:END -->
