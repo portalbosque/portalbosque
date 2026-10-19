@@ -322,6 +322,7 @@ tbody.infraestructura tr:hover td{background:#e0edf5!important;transition:backgr
 .cal-pill{font:inherit;font-size:12px;font-weight:600;border:1.5px solid var(--border);background:#fff;color:var(--text2);border-radius:999px;padding:.3rem .8rem;cursor:pointer;display:inline-flex;align-items:center;gap:.4rem}
 .cal-pill i{width:10px;height:10px;border-radius:50%;display:inline-block;border:1px solid rgba(0,0,0,.25)}
 .cal-pill.on{background:var(--cal-title);border-color:var(--cal-title);color:#fff}
+.cal-pill.on:not([data-cat=""])::before{content:"✓";font-weight:800;margin-right:-.1rem}
 .cal-dow,.cal-bg,.cal-fg{display:grid;grid-template-columns:repeat(7,minmax(0,1fr))}
 .cal-dow div{text-align:center;font-size:12px;font-weight:800;letter-spacing:.08em;color:var(--cal-title);padding:.4rem 0;border:1px solid var(--cal-line);border-left:none;background:#f1f6fc}
 .cal-dow div:first-child{border-left:1px solid var(--cal-line)}
@@ -860,7 +861,7 @@ tbody.mkt tr:hover td{background:#f6dde5!important;transition:background .12s}
 </div>
 <!-- MKT:END -->
 <footer class="footer">
-  <span>Portal Bosque · <a href="https://www.portalbosque.com" target="_blank">portalbosque.com</a> · versión 16-10 G</span>
+  <span>Portal Bosque · <a href="https://www.portalbosque.com" target="_blank">portalbosque.com</a> · versión 19-10 H</span>
 
   <span id="last-update">—</span>
 </footer>
@@ -3482,7 +3483,7 @@ var ALL_CATEGORIES = ['EVENTO','WORKSHOP','CAPACITACION','CHARLA','RETIRO','AGEN
 var PALETTE = ['#b6d7a8','#f9cb9c','#ea9999','#a2c4c9','#b4a7d6','#d9d2e9','#fce5cd','#c9daf8'];
 var DAY = 86400000;
 
-var SKIPPED = 0, MKT_FAIL = false, EVENTS = [], EV_MAIN = [], EV_MKT = [], CATS = {}, FILTER = '', VIEW = null, LOADED = false, LAST_OK = null;
+var SKIPPED = 0, MKT_FAIL = false, EVENTS = [], EV_MAIN = [], EV_MKT = [], CATS = {}, FILTERS = [], VIEW = null, LOADED = false, LAST_OK = null;
 
 function esc(s){ return String(s == null ? '' : s).replace(/[&<>"']/g, function(c){ return {'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]; }); }
 function norm(s){ return String(s == null ? '' : s).normalize('NFD').replace(/[̀-ͯ]/g,'').replace(/\s+/g,' ').trim().toUpperCase(); }
@@ -3703,7 +3704,7 @@ function tagHtml(e){
   if(e.est && !/^CONFIRMAD/.test(norm(e.est))) return '<span class="cal-tag">' + esc(e.est) + '</span>';
   return '';
 }
-function visibleEvents(){ return EVENTS.filter(function(e){ return !FILTER || e.cat === FILTER; }); }
+function visibleEvents(){ return EVENTS.filter(function(e){ return !FILTERS.length || FILTERS.indexOf(e.cat) >= 0; }); }
 
 function render(){
   if(!VIEW) VIEW = monthNow();
@@ -3714,9 +3715,9 @@ function render(){
   el('cal-sub').textContent = SEASON_BY_MONTH[m] + ' ' + y;
   // filtros
   var cats = categoriesInUse();
-  if(FILTER && !cats.some(function(c){ return c.k === FILTER; })) FILTER = '';
-  el('cal-pills').innerHTML = '<button class="cal-pill' + (!FILTER ? ' on' : '') + '" data-cat="">Todas</button>' +
-    cats.map(function(c){ return '<button class="cal-pill' + (FILTER === c.k ? ' on' : '') + '" data-cat="' + esc(c.k) + '"><i style="background:' + catColor(c.k) + '"></i>' + esc(c.label || c.k) + '</button>'; }).join('');
+  FILTERS = FILTERS.filter(function(k){ return cats.some(function(c){ return c.k === k; }); });   // multi-selección de categorías
+  el('cal-pills').innerHTML = '<button class="cal-pill' + (!FILTERS.length ? ' on' : '') + '" data-cat="" aria-pressed="' + (!FILTERS.length) + '">Todas</button>' +
+    cats.map(function(c){ return '<button class="cal-pill' + (FILTERS.indexOf(c.k) >= 0 ? ' on' : '') + '" data-cat="' + esc(c.k) + '" aria-pressed="' + (FILTERS.indexOf(c.k) >= 0) + '"><i style="background:' + catColor(c.k) + '"></i>' + esc(c.label || c.k) + '</button>'; }).join('');
   el('cal-legend').innerHTML = cats.map(function(c){ return '<span><i style="background:' + catColor(c.k) + '"></i>' + esc(c.label || c.k) + '</span>'; }).join('') +
     '<span><i style="background:#fff;border-style:dashed"></i>A confirmar</span><span><i style="background:repeating-linear-gradient(135deg,#ddd 0 3px,#fff 3px 6px)"></i>Cancelado</span>';
   // semanas del mes
@@ -3726,7 +3727,7 @@ function render(){
   var inMonth = evs.filter(function(e){ return e.e >= first && e.s <= last; });
   el('cal-count').textContent = inMonth.length + (inMonth.length === 1 ? ' evento' : ' eventos') + ' este mes';
   el('cal-empty').style.display = LOADED && !inMonth.length ? 'block' : 'none';
-  el('cal-empty').textContent = FILTER ? 'No hay eventos de esta categoría este mes.' : 'No hay eventos este mes.';
+  el('cal-empty').textContent = FILTERS.length ? 'No hay eventos de las categorías elegidas este mes.' : 'No hay eventos este mes.';
   var sorted = evs.slice().sort(function(a, b){ return a.s - b.s || (b.e - b.s) - (a.e - a.s) || a.name.localeCompare(b.name); });
   var html = '';
   for(var ws = start; ws <= end; ws += 7){
@@ -3855,7 +3856,10 @@ window.__calTest = {parseEvents:parseEvents, parseMktEvents:parseMktEvents, rang
 
 document.addEventListener('click', function(ev){
   var b = ev.target.closest && ev.target.closest('#cal-pills .cal-pill'); if(!b) return;
-  FILTER = b.getAttribute('data-cat') || ''; render();
+  var k = b.getAttribute('data-cat') || '';
+  if(!k) FILTERS = [];                                                   // "Todas" limpia la selección
+  else{ var i = FILTERS.indexOf(k); if(i >= 0) FILTERS.splice(i, 1); else FILTERS.push(k); }   // cada clic suma o quita una categoría
+  render();
 });
 
 var baseShow = window.showSection;
