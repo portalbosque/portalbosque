@@ -565,6 +565,11 @@ tbody.mkt tr:hover td{background:#f6dde5!important;transition:background .12s}
     MKT &amp; Comunicación
   </button>
 <!-- MKT:END -->
+<!-- PAGENDA:START -->  <button class="nav-btn" id="nav-pag" onclick="showSection('pag')">
+    <svg viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 5h12M4 10h12M4 15h7M15.5 13v4M13.5 15h4"/></svg>
+    Producción Agenda
+  </button>
+<!-- PAGENDA:END -->
 </div>
 
 <div id="section-log">
@@ -860,8 +865,52 @@ tbody.mkt tr:hover td{background:#f6dde5!important;transition:background .12s}
 </div>
 </div>
 <!-- MKT:END -->
+<!-- PAGENDA:START --><style>
+  .section-header.pag{background:#2b4a6b;border-bottom:2px solid #5b7fa8}
+  .section-pill.pag{background:#5b7fa8;color:#fff}
+  .nav-btn.active.pag-active{color:#2b4a6b;border-bottom-color:#5b7fa8;background:#e9f0f8}
+  .pag-filters{background:#eef3f9;border-bottom:1px solid #cfdcec;padding:.7rem 1.5rem;display:flex;flex-wrap:wrap;gap:.6rem 1rem;align-items:flex-end}
+  .pag-filters label{display:flex;flex-direction:column;gap:3px;font-size:10px;font-weight:700;letter-spacing:.08em;text-transform:uppercase;color:#4a6585;font-family:'DM Mono',monospace}
+  .pag-filters select,.pag-filters input{font-family:'DM Sans',sans-serif;font-size:14px;padding:7px 10px;border:1.5px solid #b9cbe0;border-radius:8px;background:#fff;color:#1a2e20;min-width:150px}
+  .pag-count{margin-left:auto;font-size:12px;color:#4a6585;font-family:'DM Mono',monospace}
+  .pag-status{padding:.4rem 1.5rem;font-size:12px;color:#4a6585;font-family:'DM Mono',monospace;background:#f7f9fc;border-bottom:1px solid #e1e9f3;display:flex;align-items:center;gap:8px}
+  .pag-status button{margin-left:auto;border:1px solid #b9cbe0;background:#fff;border-radius:8px;padding:3px 10px;cursor:pointer;color:#2b4a6b}
+  .pag-body{padding:1rem 1.5rem 2rem;max-width:980px;margin:0 auto}
+  .pag-month{font-family:'Playfair Display',serif;font-size:20px;letter-spacing:.06em;text-transform:uppercase;color:#2b4a6b;margin:1.4rem 0 .6rem;padding-bottom:.3rem;border-bottom:2px solid #cfdcec}
+  .pag-month:first-child{margin-top:.2rem}
+  .pag-row{display:flex;gap:14px;align-items:flex-start;background:#fff;border:1px solid #dbe5f1;border-left:5px solid var(--pc,#5b7fa8);border-radius:10px;padding:.7rem .9rem;margin-bottom:.5rem}
+  .pag-row.past{opacity:.6}
+  .pag-row.done{background:#f3f8f3}
+  .pag-date{min-width:62px;text-align:center;font-family:'DM Mono',monospace;font-weight:700;font-size:17px;color:#2b4a6b;line-height:1.1}
+  .pag-date small{display:block;font-size:10px;font-weight:600;letter-spacing:.08em;color:#6b85a6;margin-top:2px}
+  .pag-main{flex:1;min-width:0}
+  .pag-name{font-weight:700;font-size:15px;color:#1a2e20;overflow-wrap:anywhere}
+  .pag-task{margin-top:3px;font-size:13.5px;color:#3a5040;overflow-wrap:anywhere}
+  .pag-tags{display:flex;flex-wrap:wrap;gap:6px;margin-top:6px}
+  .pag-tag{font-size:10.5px;font-weight:700;letter-spacing:.05em;text-transform:uppercase;padding:2px 9px;border-radius:20px;background:var(--pc,#5b7fa8);color:var(--pf,#fff)}
+  .pag-tag.est{background:#fff;border:1px dashed #8aa3c4;color:#4a6585}
+  .pag-tag.ok{background:#2d7a4a;color:#fff}
+  .pag-empty{padding:2rem 0;text-align:center;color:#6b85a6}
+  @media(max-width:640px){.pag-filters,.pag-body,.pag-status{padding-left:1rem;padding-right:1rem}.pag-filters select,.pag-filters input{min-width:0;width:100%}.pag-filters label{flex:1 1 140px}.pag-count{margin-left:0;width:100%}}
+</style><div id="section-pag" style="display:none">
+<div class="section">
+  <div class="section-header pag">
+    <span class="section-title">🗓️ Producción Agenda</span>
+    <span class="section-pill pag">Agenda</span>
+  </div>
+  <div class="pag-filters">
+    <label>Mes<select id="pag-mes"><option value="">Todos los meses</option></select></label>
+    <label>Categoría<select id="pag-cat"><option value="">Todas</option></select></label>
+    <label>Buscar<input id="pag-q" type="search" placeholder="Evento o tarea…"></label>
+    <span class="pag-count" id="pag-count">—</span>
+  </div>
+  <div class="pag-status"><span id="pag-status">Conectando…</span><button type="button" id="pag-refresh" title="Actualizar">↻</button></div>
+  <div class="pag-body" id="pag-body"></div>
+</div>
+</div>
+<!-- PAGENDA:END -->
 <footer class="footer">
-  <span>Portal Bosque · <a href="https://www.portalbosque.com" target="_blank">portalbosque.com</a> · versión 19-10 K</span>
+  <span>Portal Bosque · <a href="https://www.portalbosque.com" target="_blank">portalbosque.com</a> · versión 19-10 L</span>
 
   <span id="last-update">—</span>
 </footer>
@@ -4348,5 +4397,133 @@ setInterval(syncEstadosMkt,30*1000);
 setInterval(fetchMkt,5*60*1000);
 </script>
 <!-- MKT:END -->
+<!-- PAGENDA:START --><script>
+/* ===== PRODUCCIÓN AGENDA — vista de solo lectura de la planilla de Producción Agenda
+   (DIA | MES | AÑO | NOMBRE DEL EVENTO | TAREA | CATEGORIA | ESTADO | COMPLETADO).
+   Bloque independiente: no usa ni modifica ninguna otra sección. ===== */
+(function(){
+var SHEET = '1YHNS0W6MYxEQu1DD9gWCyHJy79lZRqn6adw4WBleXgY';
+var MONTHS = ['ENERO','FEBRERO','MARZO','ABRIL','MAYO','JUNIO','JULIO','AGOSTO','SEPTIEMBRE','OCTUBRE','NOVIEMBRE','DICIEMBRE'];
+var COLORS = {'EVENTO':['#c9def2','#1f3a57'],'WORKSHOP':['#5a3a8c','#fff'],'CAPACITACION':['#cfd9dc','#2d3d42'],'CHARLA':['#a22c20','#fff'],'RETIRO':['#e3d0f0','#553682'],'AGENDA GENERAL':['#fbe5a9','#453924'],'TRIBUS':['#d9ecc1','#33714e'],'ESPECIAL':['#e9e8e8','#1f1f1f']};
+var ROWS = [], LOADED = false;
+function $(id){ return document.getElementById(id); }
+function norm(v){ return String(v == null ? '' : v).normalize('NFD').replace(/[̀-ͯ]/g,'').replace(/\s+/g,' ').trim().toUpperCase(); }
+function esc(v){ return String(v == null ? '' : v).replace(/[&<>"']/g,function(c){ return {'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]; }); }
+function csv(t){
+  var rows = [], r = [], f = '', q = false, i = 0;
+  for(; i < t.length; i++){
+    var c = t[i];
+    if(q){ if(c === '"'){ if(t[i+1] === '"'){ f += '"'; i++; } else q = false; } else f += c; }
+    else if(c === '"') q = true;
+    else if(c === ','){ r.push(f); f = ''; }
+    else if(c === '\n' || c === '\r'){ if(c === '\r' && t[i+1] === '\n') i++; r.push(f); f = ''; rows.push(r); r = []; }
+    else f += c;
+  }
+  if(f !== '' || r.length){ r.push(f); rows.push(r); }
+  return rows;
+}
+function monthIdx(v){
+  var s = norm(v); if(!s) return -1;
+  if(/^\d{1,2}$/.test(s)){ var n = +s - 1; return n >= 0 && n < 12 ? n : -1; }
+  for(var i = 0; i < 12; i++) if(MONTHS[i] === s || MONTHS[i].slice(0,3) === s.slice(0,3)) return i;
+  return -1;
+}
+function parse(text){
+  var rows = csv(text).filter(function(r){ return r.some(function(c){ return String(c).trim(); }); });
+  if(!rows.length) return [];
+  var h = rows[0].map(norm), ix = function(n){ return h.indexOf(n); };
+  var cD = ix('DIA'), cM = ix('MES'), cY = ix('ANO'), cN = ix('NOMBRE DEL EVENTO'), cT = ix('TAREA'), cC = ix('CATEGORIA'), cE = ix('ESTADO'), cK = ix('COMPLETADO');
+  var out = [];
+  rows.slice(1).forEach(function(r){
+    var g = function(i){ return i >= 0 ? String(r[i] == null ? '' : r[i]).trim() : ''; };
+    var m = monthIdx(g(cM)), y = parseInt(g(cY).replace(/\D/g,''), 10);
+    var dm = g(cD).match(/^(\d{1,2})\s*(?:[-–]\s*(\d{1,2}))?$/);
+    if(m < 0 || !y || !dm) return;
+    if(y < 100) y += 2000;
+    var d1 = +dm[1], d2 = dm[2] ? +dm[2] : d1;
+    var task = g(cT); if(/^[-–—]+$/.test(task)) task = '';
+    var done = /^(SI|S|TRUE|VERDADERO|X|1|OK|✓|✔|HECHO|LISTO|COMPLETADO)$/.test(norm(g(cK)));
+    out.push({y:y, m:m, d1:d1, d2:d2, s:Date.UTC(y, m, d1), e:Date.UTC(y, m, d2), name:g(cN), task:task, cat:norm(g(cC)), est:g(cE), done:done});
+  });
+  out.sort(function(a,b){ return a.s - b.s || a.e - b.e; });
+  return out;
+}
+async function fetchText(){
+  var base = 'https://docs.google.com/spreadsheets/d/' + SHEET, list = [base + '/export?format=csv&gid=0', base + '/gviz/tq?tqx=out:csv&headers=1'], last = null;
+  for(var k = 0; k < list.length; k++){
+    try{
+      var res = await fetch(list[k] + '&t=' + Date.now());
+      if(!res.ok) throw new Error('HTTP ' + res.status);
+      var t = await res.text();
+      if(/^\s*<(!doctype|html)/i.test(t)) throw new Error('la planilla no es pública');
+      return t;
+    }catch(e){ last = e; }
+  }
+  throw last || new Error('sin URL');
+}
+function todayUTC(){ var n = new Date(); return Date.UTC(n.getFullYear(), n.getMonth(), n.getDate()); }
+function fillSelects(){
+  var ms = $('pag-mes'), cs = $('pag-cat'), mv = ms.value, cv = cs.value, seenM = {}, seenC = {};
+  var mo = '<option value="">Todos los meses</option>', co = '<option value="">Todas</option>';
+  ROWS.forEach(function(r){ var k = r.y + '-' + r.m; if(!seenM[k]){ seenM[k] = 1; mo += '<option value="' + k + '">' + MONTHS[r.m] + ' ' + r.y + '</option>'; } });
+  ROWS.forEach(function(r){ if(r.cat && !seenC[r.cat]){ seenC[r.cat] = 1; co += '<option value="' + esc(r.cat) + '">' + esc(r.cat) + '</option>'; } });
+  ms.innerHTML = mo; cs.innerHTML = co;
+  ms.value = seenM[mv] ? mv : ''; cs.value = seenC[cv] ? cv : '';
+}
+function dateLabel(r){ return r.d1 === r.d2 ? '' + r.d1 : r.d1 + '–' + r.d2; }
+function render(){
+  var body = $('pag-body'); if(!body) return;
+  var mv = $('pag-mes').value, cv = $('pag-cat').value, q = norm($('pag-q').value), td = todayUTC();
+  var list = ROWS.filter(function(r){
+    return (!mv || (r.y + '-' + r.m) === mv) && (!cv || r.cat === cv) && (!q || norm(r.name + ' ' + r.task).indexOf(q) >= 0);
+  });
+  $('pag-count').textContent = list.length + (list.length === 1 ? ' fila' : ' filas');
+  if(!list.length){ body.innerHTML = '<div class="pag-empty">' + (LOADED ? 'No hay filas con estos filtros.' : 'Cargando…') + '</div>'; return; }
+  var html = '', cur = '';
+  list.forEach(function(r){
+    var k = r.y + '-' + r.m;
+    if(k !== cur){ cur = k; html += '<div class="pag-month">' + MONTHS[r.m] + ' ' + r.y + '</div>'; }
+    var col = COLORS[r.cat] || ['#5b7fa8','#fff'];
+    var tags = '';
+    if(r.cat) tags += '<span class="pag-tag">' + esc(r.cat) + '</span>';
+    if(r.est && !/^CONFIRMAD/.test(norm(r.est))) tags += '<span class="pag-tag est">' + esc(r.est) + '</span>';
+    if(r.done) tags += '<span class="pag-tag ok">✓ Completado</span>';
+    html += '<div class="pag-row' + (r.e < td ? ' past' : '') + (r.done ? ' done' : '') + '" style="--pc:' + col[0] + ';--pf:' + col[1] + '">' +
+      '<div class="pag-date">' + dateLabel(r) + '<small>' + MONTHS[r.m].slice(0,3) + '</small></div>' +
+      '<div class="pag-main"><div class="pag-name">' + esc(r.name || '(sin nombre)') + '</div>' + (r.task ? '<div class="pag-task">' + esc(r.task) + '</div>' : '') + (tags ? '<div class="pag-tags">' + tags + '</div>' : '') + '</div></div>';
+  });
+  body.innerHTML = html;
+}
+async function load(manual){
+  var st = $('pag-status'), btn = $('pag-refresh');
+  if(manual && btn) btn.disabled = true;
+  try{
+    ROWS = parse(await fetchText()); LOADED = true;
+    var n = new Date(), p = function(x){ return (x < 10 ? '0' : '') + x; };
+    if(st) st.textContent = 'Conectado al Sheet · ' + ROWS.length + ' filas · ' + p(n.getHours()) + ':' + p(n.getMinutes());
+    fillSelects();
+  }catch(e){
+    console.error('[PRODUCCIÓN AGENDA]', e);
+    if(st) st.textContent = 'No se pudo leer el Sheet: ' + e.message + (LOADED ? ' (se muestran los últimos datos)' : '');
+  }
+  if(btn) btn.disabled = false;
+  render();
+}
+['pag-mes','pag-cat'].forEach(function(id){ $(id).addEventListener('change', render); });
+$('pag-q').addEventListener('input', render);
+$('pag-refresh').addEventListener('click', function(){ load(true); });
+var baseShow = window.showSection;
+window.showSection = function(which){
+  if(typeof baseShow === 'function') baseShow.apply(this, arguments);
+  var sec = $('section-pag'), nav = $('nav-pag');
+  if(sec) sec.style.display = (which === 'pag') ? 'block' : 'none';
+  if(nav) nav.className = 'nav-btn' + (which === 'pag' ? ' active pag-active' : '');
+  if(which === 'pag') render();
+};
+load();
+setInterval(load, 5 * 60 * 1000);
+})();
+</script>
+<!-- PAGENDA:END -->
 </body>
 </html>
