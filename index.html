@@ -1026,7 +1026,7 @@ tbody.mkt tr:hover td{background:#f6dde5!important;transition:background .12s}
 </div>
 <!-- PAGENDA:END -->
 <footer class="footer">
-  <span>Portal Bosque · <a href="https://www.portalbosque.com" target="_blank">portalbosque.com</a> · versión 20-10 Z</span>
+  <span>Portal Bosque · <a href="https://www.portalbosque.com" target="_blank">portalbosque.com</a> · versión 20-10 AA</span>
 
   <span id="last-update">—</span>
 </footer>
@@ -3125,7 +3125,7 @@ function agCardHtml(item,mobile){
   const cls=mobile?'ag-card-mobile':'ag-card';
   const det=(item.detalle||[]).map(d=>`<div>${d}</div>`).join('');
   return `<div class="${cls}" style="background:${agColor(item)}">
-    <div class="ag-esp"><span class="ag-esp-tag" style="background:${agTono(agEspKey(agEspPrimary(item)))[0]};color:${agTono(agEspKey(agEspPrimary(item)))[1]}">${item.espacio}</span></div>
+    <div class="ag-esp"><span class="ag-esp-tag" style="background:${agTonoFor(agEspKey(agEspPrimary(item)),item.color)[0]};color:${agTonoFor(agEspKey(agEspPrimary(item)),item.color)[1]}">${item.espacio}</span></div>
     <div class="ag-tit">${item.titulo}</div>
     ${item.horario&&item.horario!=='—'?`<div class="ag-hor">🕐 ${item.horario}</div>`:''}
     ${det?`<div class="ag-det">${det}</div>`:''}
@@ -3138,12 +3138,20 @@ let AG_ESP=[];
 // de la tarjeta y en el filtro (así se distinguen aunque todas las tarjetas sean del mismo azul).
 const AG_ADULTOS=['#6fa8dc','#a4c2f4','#c9daf8'], AG_AZUL_ADULTOS='#6fa8dc';
 const AG_TONOS=[['#d6e6f7','#12305c'],['#173f80','#fff'],['#8fbcef','#12305c'],['#2f6bc4','#fff'],['#bfe3ee','#12305c'],['#0f2d5e','#fff'],['#5aa9c9','#0b2540'],['#4a5fc1','#fff'],['#a9b8ee','#12305c'],['#1f7a99','#fff'],['#b3d0f2','#12305c'],['#264f9b','#fff']];
-let AG_TONO_MAP=null;
-function agTono(key){   // [fondo, texto] del recuadrito del espacio
+let AG_TONO_MAP=null, AG_TONO_IDX={};
+const AG_LUMS=[90,26,72,40,82,20,60,34,94,48,78,30];   // luminosidades (0-100) para los tonos de las tarjetas que no son azules
+function agHsl(hex){const h=hex.replace('#',''),r=parseInt(h.substr(0,2),16)/255,g=parseInt(h.substr(2,2),16)/255,b=parseInt(h.substr(4,2),16)/255,mx=Math.max(r,g,b),mn=Math.min(r,g,b),d=mx-mn;let H=0;if(d){if(mx===r)H=((g-b)/d)%6;else if(mx===g)H=(b-r)/d+2;else H=(r-g)/d+4;H=Math.round(H*60);if(H<0)H+=360;}const L=(mx+mn)/2,S=d?d/(1-Math.abs(2*L-1)):0;return [H,Math.round(S*100)];}
+function agTonoFor(key,base){   // tono del recuadrito: azul para adultos; para el resto, la misma gama de color del fondo de la tarjeta
+  const t=agTono(key);
+  if(AG_ADULTOS.indexOf(base)>=0) return t;
+  const i=AG_TONO_IDX[key]||0,hs=agHsl(base),L=AG_LUMS[i%AG_LUMS.length],S=Math.max(hs[1],40);
+  return [`hsl(${hs[0]},${S}%,${L}%)`, L<52?'#fff':`hsl(${hs[0]},${Math.min(S,60)}%,14%)`];
+}
+function agTono(key){   // [fondo, texto] del recuadrito del espacio (gama de azules; es el que se usa en el filtro)
   if(!AG_TONO_MAP){
     const ks={};
     Object.keys(AGENDA_DATA).forEach(d=>{const v=AGENDA_DATA[d];(Array.isArray(v)?[v]:Object.keys(v).map(b=>v[b])).forEach(l=>l.forEach(x=>{const k=agEspKey(agEspPrimary(x));if(k)ks[k]=1;}));});
-    AG_TONO_MAP={};Object.keys(ks).sort().forEach((k,i)=>{AG_TONO_MAP[k]=AG_TONOS[i%AG_TONOS.length];});
+    AG_TONO_MAP={};Object.keys(ks).sort().forEach((k,i)=>{AG_TONO_MAP[k]=AG_TONOS[i%AG_TONOS.length];AG_TONO_IDX[k]=i;});
   }
   return AG_TONO_MAP[key]||['#d6e6f7','#12305c'];
 }
