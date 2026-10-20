@@ -879,8 +879,6 @@ tbody.mkt tr:hover td{background:#f6dde5!important;transition:background .12s}
 .pag-fl{font-size:10px;font-weight:700;letter-spacing:.08em;text-transform:uppercase;color:var(--text);font-family:'DM Mono',monospace}
 .pag-filters select,.pag-filters input{font-family:'DM Sans',sans-serif;font-size:14px;padding:7px 10px;border:1.5px solid #b9cbe0;border-radius:8px;background:#fff;color:#1a2e20;min-width:160px}
 .pag-filters select:focus,.pag-filters input:focus{border-color:#5b7fa8;outline:none}
-.pag-chk{display:flex;align-items:center;gap:6px;font-size:13px;font-weight:600;color:var(--text);cursor:pointer;padding-bottom:7px}
-.pag-chk input{min-width:0!important;width:16px;height:16px;padding:0}
 .pag-count{margin-left:auto;font-size:12px;color:var(--text3);font-family:'DM Mono',monospace}
 .pag-status{padding:.45rem 1.5rem;font-size:12px;color:var(--text3);background:var(--bg2);border-bottom:1px solid var(--border2);display:flex;align-items:center;gap:8px}
 .pag-dot{width:8px;height:8px;border-radius:50%;background:#5b7fa8;flex:0 0 auto}
@@ -910,7 +908,7 @@ tbody.mkt tr:hover td{background:#f6dde5!important;transition:background .12s}
 .pag-t-nec{font-weight:600}
 .pag-t small{display:block;font-size:11px;color:#5a6b7d}
 .pag-t.done{background:#eef7f0;border-color:#cfe6d6;border-left-color:#3d8f5a;opacity:.8}
-.pag-t.done .pag-t-nec{text-decoration:line-through}
+.pag-t.done .pag-t-nec,.pag-t.done small,.pag-t.done .pag-t-top,.pag-t.done .pag-t-date{text-decoration:line-through}
 .pag-t-date{font-size:12px;font-weight:800;letter-spacing:.04em;color:#2b4a6b;margin-bottom:3px;text-transform:uppercase}
 .pag-t-date em{font-style:normal;font-size:10px;background:#e0a800;color:#fff;border-radius:4px;padding:1px 6px;margin-left:6px}
 .pag-tag{display:inline-block;font-size:10px;font-weight:700;letter-spacing:.04em;text-transform:uppercase;border-radius:20px;padding:1px 8px;margin:3px 4px 0 0;background:#fff;border:1px dashed #8aa3c4;color:#4a6585}
@@ -962,7 +960,6 @@ tbody.mkt tr:hover td{background:#f6dde5!important;transition:background .12s}
     <div class="pag-fg" id="pag-g-dia" style="display:none"><span class="pag-fl">Día</span><select id="pag-sel-dia"><option value="">Semana completa</option><option value="0">Lunes</option><option value="1">Martes</option><option value="2">Miércoles</option><option value="3">Jueves</option><option value="4">Viernes</option><option value="5">Sábado</option><option value="6">Domingo</option></select></div>
     <div class="pag-fg"><span class="pag-fl">Categoría</span><select id="pag-sel-cat"><option value="">Todas</option></select></div>
     <div class="pag-fg"><span class="pag-fl">Buscar</span><input id="pag-inp-q" type="search" placeholder="Evento o tarea…"></div>
-    <label class="pag-chk"><input type="checkbox" id="pag-show-done"> Ver completadas</label>
     <span class="pag-count" id="pag-count">—</span>
   </div>
   <div class="pag-status"><span class="pag-dot"></span><span id="pag-status">Conectando…</span><button type="button" id="pag-refresh" title="Actualizar">↻</button></div>
@@ -994,7 +991,7 @@ tbody.mkt tr:hover td{background:#f6dde5!important;transition:background .12s}
 </div>
 <!-- PAGENDA:END -->
 <footer class="footer">
-  <span>Portal Bosque · <a href="https://www.portalbosque.com" target="_blank">portalbosque.com</a> · versión 20-10 Q</span>
+  <span>Portal Bosque · <a href="https://www.portalbosque.com" target="_blank">portalbosque.com</a> · versión 20-10 R</span>
 
   <span id="last-update">—</span>
 </footer>
@@ -4569,13 +4566,12 @@ function fmtFull(r){
 function color(r){ return COLORS[r.cat] || '#5b7fa8'; }
 function visible(){
   var cv = $('pag-sel-cat').value, q = norm($('pag-inp-q').value);
-  var sd = $('pag-show-done').checked;   // las tareas completadas se ocultan salvo que se pida verlas
-  return ROWS.filter(function(r){ return (sd || !r.done) && (!cv || r.cat === cv) && (!q || norm(r.name + ' ' + r.task).indexOf(q) >= 0); });
+  return ROWS.filter(function(r){ return (!cv || r.cat === cv) && (!q || norm(r.name + ' ' + r.task).indexOf(q) >= 0); });
 }
 function chip(r, withDate, day){
   var td = todayS(), tags = '';
   if(r.est && !/^CONFIRMAD/.test(norm(r.est))) tags += '<span class="pag-tag">' + esc(r.est) + '</span>';
-  var okb = PAG_APPS_SCRIPT_URL ? '<div><button type="button" class="pag-ok' + (r.done ? ' done' : '') + '" data-ok="' + r.i + '">' + (r.done ? '✓ Completado' : 'Completar') + '</button></div>' : (r.done ? '<span class="pag-tag ok">✓ Completado</span>' : '');
+  var okb = PAG_APPS_SCRIPT_URL ? '<div><button type="button" class="pag-ok' + (r.done ? ' done' : '') + '" data-ok="' + r.i + '"' + (r.done ? ' title="Tocá para volver a dejarla pendiente"' : '') + '>' + (r.done ? '✓ Completado · deshacer' : 'Completar') + '</button></div>' : (r.done ? '<span class="pag-tag ok">✓ Completado</span>' : '');
   var multi = r.s !== r.e;
   var dt = withDate ? '<div class="pag-t-date">' + esc(fmtRange(r)) + (r.s <= td && td <= r.e ? '<em>HOY</em>' : '') + '</div>' : '';
   var rng = (!withDate && multi) ? '<small>' + esc(fmtRange(r)) + '</small>' : '';
@@ -4744,7 +4740,6 @@ async function load(manual){
 }
 $('pag-sel-cat').addEventListener('change', render);
 $('pag-sel-dia').addEventListener('change', render);
-$('pag-show-done').addEventListener('change', render);
 $('pag-inp-q').addEventListener('input', render);
 $('pag-refresh').addEventListener('click', function(){ load(true); });
 document.querySelector('.pag-seg').addEventListener('click', function(ev){ var b = ev.target.closest('button[data-v]'); if(b) setView(b.getAttribute('data-v')); });
