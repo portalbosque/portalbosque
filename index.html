@@ -193,8 +193,8 @@
   .ag-block-label{position:sticky;top:46px;background:#8d94a2;color:#fff;font-family:'DM Mono',monospace;font-size:11px;font-weight:700;text-align:center;padding:8px 4px;border-radius:8px;white-space:pre-line;line-height:1.3}
   .ag-cell{display:flex;flex-direction:column;gap:6px}
   .ag-card{border-radius:8px;padding:8px 10px;font-family:'DM Sans',sans-serif;box-shadow:0 1px 2px rgba(0,0,0,.08);border:1px solid rgba(0,0,0,.08)}
-  .ag-card .ag-esp{font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:.03em;color:rgba(0,0,0,.55);margin-bottom:2px}
-  .ag-card .ag-tit{font-size:12px;font-weight:700;color:#1a1a1a;line-height:1.3}
+  .ag-card .ag-esp{font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:.04em;color:rgba(0,0,0,.6);margin-bottom:3px;line-height:1.2}
+  .ag-card .ag-tit{font-size:15px;font-weight:800;color:#1a1a1a;line-height:1.25}
   .ag-card .ag-hor{font-size:10.5px;font-weight:600;color:rgba(0,0,0,.6);font-family:'DM Mono',monospace;margin-top:3px;line-height:1.35}
   .ag-card .ag-det{font-size:10.5px;color:rgba(0,0,0,.68);margin-top:4px;line-height:1.45}
   .ag-card .ag-det div{margin-top:2px}
@@ -206,8 +206,8 @@
   .agenda-day-title{font-family:'DM Mono',monospace;font-size:13px;font-weight:700;letter-spacing:.04em;text-transform:uppercase;color:#fff;background:#3a2a4a;padding:8px 12px;border-radius:8px;margin:1.2rem 0 .6rem}
   .agenda-day-title:first-child{margin-top:0}
   .ag-card-mobile{border-radius:10px;padding:.7rem 1rem;margin-bottom:.6rem;box-shadow:0 1px 3px rgba(0,0,0,.06);border:1px solid rgba(0,0,0,.1)}
-  .ag-card-mobile .ag-esp{font-size:10.5px;font-weight:700;text-transform:uppercase;letter-spacing:.03em;color:rgba(0,0,0,.55)}
-  .ag-card-mobile .ag-tit{font-size:14px;font-weight:700;color:#1a1a1a;margin-top:2px;line-height:1.35}
+  .ag-card-mobile .ag-esp{font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:.04em;color:rgba(0,0,0,.6);line-height:1.2}
+  .ag-card-mobile .ag-tit{font-size:18px;font-weight:800;color:#1a1a1a;margin-top:3px;line-height:1.25}
   .ag-card-mobile .ag-hor{font-size:11.5px;font-weight:600;color:rgba(0,0,0,.6);font-family:'DM Mono',monospace;margin-top:3px}
   .ag-card-mobile .ag-det{font-size:11.5px;color:rgba(0,0,0,.68);margin-top:5px;line-height:1.5}
   .ag-card-mobile .ag-det div{margin-top:2px}
@@ -513,7 +513,7 @@ tbody.mkt tr:hover td{background:#f6dde5!important;transition:background .12s}
 </style>
 <!-- MKT:END -->
 <!-- AGENDAESP:START --><style>
-.ag-esp{background:#f5edf7;border-bottom:1px solid #ddc8e5;padding:.2rem 1.5rem .8rem}
+.agx-bar{background:#f5edf7;border-bottom:1px solid #ddc8e5;padding:.2rem 1.5rem .8rem}
 .ag-esp-row{display:flex;flex-wrap:wrap;gap:.5rem .8rem;align-items:center}
 .ag-esp-dd{position:relative}
 .ag-esp-btn{font:inherit;font-size:14px;padding:7px 12px;border:1.5px solid #ddc8e5;border-radius:8px;background:#fff;color:#3a2a4a;cursor:pointer;min-width:200px;text-align:left}
@@ -524,12 +524,14 @@ tbody.mkt tr:hover td{background:#f6dde5!important;transition:background .12s}
 .ag-esp-opt{display:flex;align-items:center;gap:8px;padding:6px 6px;border-radius:6px;font-size:14px;cursor:pointer;color:#2b1f36}
 .ag-esp-opt:hover{background:#f5edf7}
 .ag-esp-opt input{width:16px;height:16px;accent-color:#7a4a8f;flex:0 0 auto}
+.ag-card .ag-esp-tag,.ag-card-mobile .ag-esp-tag{display:inline-block;padding:2px 8px;border-radius:5px;box-shadow:inset 0 0 0 1px rgba(0,0,0,.22);line-height:1.25}
+.ag-esp-dot{width:12px;height:12px;border-radius:50%;flex:0 0 auto;box-shadow:inset 0 0 0 1.5px rgba(0,0,0,.2)}
 .ag-esp-opt small{margin-left:auto;color:#8a7a96;font-size:11px}
 .ag-esp-clear{margin-top:.4rem;font:inherit;font-size:12px;font-weight:700;border:1px solid #ddc8e5;background:#fff;color:#7a4a8f;border-radius:8px;padding:5px 10px;cursor:pointer;width:100%}
 .ag-esp-chips{display:flex;flex-wrap:wrap;gap:6px}
-.ag-esp-chip{display:inline-flex;align-items:center;gap:6px;background:#7a4a8f;color:#fff;border:none;border-radius:999px;font:inherit;font-size:12px;font-weight:700;padding:4px 6px 4px 11px;cursor:pointer}
+.ag-esp-chip{display:inline-flex;align-items:center;gap:6px;background:#7a4a8f;color:rgba(0,0,0,.82);border:none;border-radius:999px;font:inherit;font-size:12px;font-weight:700;padding:4px 6px 4px 11px;cursor:pointer;box-shadow:inset 0 0 0 1.5px rgba(0,0,0,.12)}
 .ag-esp-chip b{font-size:14px;line-height:1;opacity:.85}
-@media(max-width:700px){.ag-esp{padding:.2rem 1rem .8rem}.ag-esp-btn{min-width:0;width:100%}.ag-esp-dd{flex:1 1 100%}}
+@media(max-width:700px){.agx-bar{padding:.2rem 1rem .8rem}.ag-esp-btn{min-width:0;width:100%}.ag-esp-dd{flex:1 1 100%}}
 </style><!-- AGENDAESP:END -->
 </head>
 <body>
@@ -651,7 +653,7 @@ tbody.mkt tr:hover td{background:#f6dde5!important;transition:background .12s}
       </select>
     </div>
   </div>
-<!-- AGENDAESP:START --><div class="ag-esp" id="ag-esp">
+<!-- AGENDAESP:START --><div class="agx-bar" id="ag-esp">
     <div class="ag-esp-row">
       <span class="filter-label">Espacio</span>
       <div class="ag-esp-dd">
@@ -1024,7 +1026,7 @@ tbody.mkt tr:hover td{background:#f6dde5!important;transition:background .12s}
 </div>
 <!-- PAGENDA:END -->
 <footer class="footer">
-  <span>Portal Bosque · <a href="https://www.portalbosque.com" target="_blank">portalbosque.com</a> · versión 20-10 S</span>
+  <span>Portal Bosque · <a href="https://www.portalbosque.com" target="_blank">portalbosque.com</a> · versión 20-10 Z</span>
 
   <span id="last-update">—</span>
 </footer>
@@ -3122,8 +3124,8 @@ const AGENDA_BLOQUE_TITULOS={A:'9:30 a 12',B:'12 a 16:30',C:'17:00 a 19:00'};
 function agCardHtml(item,mobile){
   const cls=mobile?'ag-card-mobile':'ag-card';
   const det=(item.detalle||[]).map(d=>`<div>${d}</div>`).join('');
-  return `<div class="${cls}" style="background:${item.color}">
-    <div class="ag-esp">${item.espacio}</div>
+  return `<div class="${cls}" style="background:${agColor(item)}">
+    <div class="ag-esp"><span class="ag-esp-tag" style="background:${agTono(agEspKey(agEspPrimary(item)))[0]};color:${agTono(agEspKey(agEspPrimary(item)))[1]}">${item.espacio}</span></div>
     <div class="ag-tit">${item.titulo}</div>
     ${item.horario&&item.horario!=='—'?`<div class="ag-hor">🕐 ${item.horario}</div>`:''}
     ${det?`<div class="ag-det">${det}</div>`:''}
@@ -3132,9 +3134,23 @@ function agCardHtml(item,mobile){
 
 // Filtro por espacios (selección múltiple): AG_ESP = espacios elegidos; vacío = todos. La interfaz está en el bloque AGENDAESP.
 let AG_ESP=[];
+// Talleres de adultos (azules): todos del mismo azul. Cada espacio tiene su propio tono de azul, que se ve en el recuadrito del espacio
+// de la tarjeta y en el filtro (así se distinguen aunque todas las tarjetas sean del mismo azul).
+const AG_ADULTOS=['#6fa8dc','#a4c2f4','#c9daf8'], AG_AZUL_ADULTOS='#6fa8dc';
+const AG_TONOS=[['#d6e6f7','#12305c'],['#173f80','#fff'],['#8fbcef','#12305c'],['#2f6bc4','#fff'],['#bfe3ee','#12305c'],['#0f2d5e','#fff'],['#5aa9c9','#0b2540'],['#4a5fc1','#fff'],['#a9b8ee','#12305c'],['#1f7a99','#fff'],['#b3d0f2','#12305c'],['#264f9b','#fff']];
+let AG_TONO_MAP=null;
+function agTono(key){   // [fondo, texto] del recuadrito del espacio
+  if(!AG_TONO_MAP){
+    const ks={};
+    Object.keys(AGENDA_DATA).forEach(d=>{const v=AGENDA_DATA[d];(Array.isArray(v)?[v]:Object.keys(v).map(b=>v[b])).forEach(l=>l.forEach(x=>{const k=agEspKey(agEspPrimary(x));if(k)ks[k]=1;}));});
+    AG_TONO_MAP={};Object.keys(ks).sort().forEach((k,i)=>{AG_TONO_MAP[k]=AG_TONOS[i%AG_TONOS.length];});
+  }
+  return AG_TONO_MAP[key]||['#d6e6f7','#12305c'];
+}
+function agColor(it){return AG_ADULTOS.indexOf(it.color)>=0?AG_AZUL_ADULTOS:it.color;}
 function agEspKey(n){return String(n==null?'':n).normalize('NFD').replace(/[\u0300-\u036f]/g,'').replace(/\s+/g,'').toLowerCase();}
 function agEspPrimary(item){   // espacio principal: lo que va antes de "/" (lo que viene después es el plan B por lluvia)
-  return String(item.espacio||'').split('/')[0].replace(/\s*(si llueve|se suspende por lluvia)\s*$/i,'').replace(/\s+/g,' ').trim();
+  return String(item.espacio||'').replace(/\([^)]*\)/g,m=>m.replace(/\//g,'\u0001')).split('/')[0].replace(/\u0001/g,'/').replace(/\s*(si llueve|se suspende por lluvia)\s*$/i,'').replace(/\s+/g,' ').trim();
 }
 function agF(items){return AG_ESP.length?(items||[]).filter(it=>AG_ESP.indexOf(agEspKey(agEspPrimary(it)))>=0):(items||[]);}
 
@@ -4827,18 +4843,21 @@ function build(){
 }
 function $(id){ return document.getElementById(id); }
 function esc(v){ return String(v).replace(/[&<>"']/g,function(c){ return {'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]; }); }
+function colorOf(k){ return agTono(k)[0]; }
+function textOf(k){ return agTono(k)[1]; }
 function label(k){ for(var i = 0; i < OPTS.length; i++) if(OPTS[i].k === k) return OPTS[i].label; return k; }
 function drawList(){
   var q = agEspKey($('ag-esp-q').value);
   $('ag-esp-list').innerHTML = OPTS.filter(function(o){ return !q || o.k.indexOf(q) >= 0; }).map(function(o){
-    return '<label class="ag-esp-opt"><input type="checkbox" data-k="' + esc(o.k) + '"' + (AG_ESP.indexOf(o.k) >= 0 ? ' checked' : '') + '>' + esc(o.label) + '<small>' + o.n + '</small></label>';
+    var on = AG_ESP.indexOf(o.k) >= 0;
+    return '<label class="ag-esp-opt"><input type="checkbox" data-k="' + esc(o.k) + '"' + (on ? ' checked' : '') + '>' + '<span class="ag-esp-dot" style="background:' + colorOf(o.k) + '"></span>' + esc(o.label) + '<small>' + o.n + '</small></label>';
   }).join('') || '<div style="padding:.5rem;color:#8a7a96;font-size:13px">Sin resultados</div>';
 }
 window.agEspRefresh = function(){
   var b = $('ag-esp-btn'); if(!b) return;
   b.textContent = (AG_ESP.length ? 'Espacios (' + AG_ESP.length + ')' : 'Todos los espacios') + ' ▾';
   b.classList.toggle('on', AG_ESP.length > 0);
-  $('ag-esp-chips').innerHTML = AG_ESP.map(function(k){ return '<button type="button" class="ag-esp-chip" data-k="' + esc(k) + '" title="Quitar">' + esc(label(k)) + ' <b>×</b></button>'; }).join('');
+  $('ag-esp-chips').innerHTML = AG_ESP.map(function(k){ return '<button type="button" class="ag-esp-chip" data-k="' + esc(k) + '" style="background:' + colorOf(k) + ';color:' + textOf(k) + '" title="Quitar">' + esc(label(k)) + ' <b>×</b></button>'; }).join('');
   drawList();
 };
 function toggle(k){ var i = AG_ESP.indexOf(k); if(i >= 0) AG_ESP.splice(i, 1); else AG_ESP.push(k); renderAgendaAll(); }
