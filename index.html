@@ -919,6 +919,7 @@ tbody.mkt tr:hover td{background:#f6dde5!important;transition:background .12s}
 .pag-ok:hover{border-color:#2d7a4a;color:#2d7a4a;background:#f1f8f3}
 .pag-ok.done{background:#2d7a4a;border-color:#2d7a4a;color:#fff}
 .pag-ok.loading{opacity:.6;pointer-events:none}
+.pag-toast{position:fixed;left:50%;bottom:18px;transform:translateX(-50%);z-index:1100;max-width:min(92vw,560px);background:#8f1d1d;color:#fff;font-size:13.5px;line-height:1.35;padding:.7rem 1rem;border-radius:10px;box-shadow:0 4px 18px rgba(0,0,0,.35)}
 .pag-mlist{display:none}
 .pag-lday{font-size:13px;font-weight:800;color:#2b4a6b;text-transform:uppercase;letter-spacing:.06em;padding:.5rem .2rem .25rem;border-bottom:2px solid #5b7fa8;margin-top:.7rem;display:flex;gap:.5rem;align-items:center}
 .pag-lday em{font-style:normal;font-size:10px;background:#e0a800;color:#fff;border-radius:4px;padding:1px 6px}
@@ -993,7 +994,7 @@ tbody.mkt tr:hover td{background:#f6dde5!important;transition:background .12s}
 </div>
 <!-- PAGENDA:END -->
 <footer class="footer">
-  <span>Portal Bosque · <a href="https://www.portalbosque.com" target="_blank">portalbosque.com</a> · versión 20-10 P</span>
+  <span>Portal Bosque · <a href="https://www.portalbosque.com" target="_blank">portalbosque.com</a> · versión 20-10 Q</span>
 
   <span id="last-update">—</span>
 </footer>
@@ -4690,17 +4691,25 @@ function statusText(){
   var base = st.getAttribute('data-base') || st.textContent;
   st.textContent = base + (PAG_LINK.ok ? '' : ' · ⚠ ' + PAG_LINK.msg) + (PAG_APPS_SCRIPT_URL ? '' : ' · solo lectura (falta conectar el Apps Script para completar)');
 }
+function toast(msg){
+  var t = $('pag-toast');
+  if(!t){ t = document.createElement('div'); t.id = 'pag-toast'; t.className = 'pag-toast'; document.body.appendChild(t); }
+  t.textContent = msg; t.style.display = 'block';
+  clearTimeout(t._h); t._h = setTimeout(function(){ t.style.display = 'none'; }, 12000);
+}
 async function toggleOk(i){
   var r = ROWS[i]; if(!r || BUSY[r.row] || !PAG_APPS_SCRIPT_URL) return;
   BUSY[r.row] = 1; var prev = r.done; r.done = !prev; setDoneField(r); render();
   var saved = false, msg = '';
   try{
     var res = await fetch(PAG_APPS_SCRIPT_URL + '?row=' + r.row + '&value=' + encodeURIComponent(r.done ? 'SI' : '') + '&n=' + encodeURIComponent(norm(r.name).slice(0, 25)) + '&t=' + Date.now());
-    var j = await res.json(); saved = !!(j && j.ok === true);
-    if(!saved) msg = (j && j.error) || 'respuesta inesperada';
-  }catch(e){ msg = 'no se pudo contactar al Apps Script'; }
+    var txt = await res.text(), j = null;
+    try{ j = JSON.parse(txt); }catch(e){}
+    saved = !!(j && j.ok === true);
+    if(!saved) msg = j ? (j.error || 'respuesta inesperada') : (res.ok ? 'el Apps Script no devolvió datos (¿está publicado como "Cualquier persona"?): ' + txt.replace(/<[^>]*>/g, ' ').replace(/\s+/g, ' ').trim().slice(0, 120) : 'HTTP ' + res.status);
+  }catch(e){ msg = 'no se pudo contactar al Apps Script (' + (e && e.message || e) + ')'; }
   delete BUSY[r.row];
-  if(!saved){ r.done = prev; setDoneField(r); PAG_LINK = {ok:false, msg:'No se guardó: ' + msg}; render(); statusText(); load(); return; }
+  if(!saved){ r.done = prev; setDoneField(r); PAG_LINK = {ok:false, msg:'No se guardó: ' + msg}; render(); statusText(); toast('No se pudo guardar el check en la planilla — ' + msg); load(); return; }
   PAG_LINK = {ok:true, msg:''}; statusText();
 }
 async function syncEstados(){
