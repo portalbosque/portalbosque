@@ -512,6 +512,25 @@ tbody.mkt tr:hover td{background:#f6dde5!important;transition:background .12s}
 @media(min-width:701px) and (max-width:1000px){ .mkt-t{font-size:11px;padding:4px 5px} }
 </style>
 <!-- MKT:END -->
+<!-- AGENDAESP:START --><style>
+.ag-esp{background:#f5edf7;border-bottom:1px solid #ddc8e5;padding:.2rem 1.5rem .8rem}
+.ag-esp-row{display:flex;flex-wrap:wrap;gap:.5rem .8rem;align-items:center}
+.ag-esp-dd{position:relative}
+.ag-esp-btn{font:inherit;font-size:14px;padding:7px 12px;border:1.5px solid #ddc8e5;border-radius:8px;background:#fff;color:#3a2a4a;cursor:pointer;min-width:200px;text-align:left}
+.ag-esp-btn.on{border-color:#7a4a8f;background:#7a4a8f;color:#fff;font-weight:700}
+.ag-esp-panel{position:absolute;z-index:60;top:calc(100% + 4px);left:0;width:min(340px,86vw);background:#fff;border:1.5px solid #ddc8e5;border-radius:10px;box-shadow:0 8px 24px rgba(0,0,0,.18);padding:.6rem}
+.ag-esp-panel input[type=search]{width:100%;font:inherit;font-size:14px;padding:7px 10px;border:1.5px solid #ddc8e5;border-radius:8px;margin-bottom:.4rem}
+.ag-esp-list{max-height:min(320px,50vh);overflow:auto}
+.ag-esp-opt{display:flex;align-items:center;gap:8px;padding:6px 6px;border-radius:6px;font-size:14px;cursor:pointer;color:#2b1f36}
+.ag-esp-opt:hover{background:#f5edf7}
+.ag-esp-opt input{width:16px;height:16px;accent-color:#7a4a8f;flex:0 0 auto}
+.ag-esp-opt small{margin-left:auto;color:#8a7a96;font-size:11px}
+.ag-esp-clear{margin-top:.4rem;font:inherit;font-size:12px;font-weight:700;border:1px solid #ddc8e5;background:#fff;color:#7a4a8f;border-radius:8px;padding:5px 10px;cursor:pointer;width:100%}
+.ag-esp-chips{display:flex;flex-wrap:wrap;gap:6px}
+.ag-esp-chip{display:inline-flex;align-items:center;gap:6px;background:#7a4a8f;color:#fff;border:none;border-radius:999px;font:inherit;font-size:12px;font-weight:700;padding:4px 6px 4px 11px;cursor:pointer}
+.ag-esp-chip b{font-size:14px;line-height:1;opacity:.85}
+@media(max-width:700px){.ag-esp{padding:.2rem 1rem .8rem}.ag-esp-btn{min-width:0;width:100%}.ag-esp-dd{flex:1 1 100%}}
+</style><!-- AGENDAESP:END -->
 </head>
 <body>
 
@@ -632,6 +651,20 @@ tbody.mkt tr:hover td{background:#f6dde5!important;transition:background .12s}
       </select>
     </div>
   </div>
+<!-- AGENDAESP:START --><div class="ag-esp" id="ag-esp">
+    <div class="ag-esp-row">
+      <span class="filter-label">Espacio</span>
+      <div class="ag-esp-dd">
+        <button type="button" class="ag-esp-btn" id="ag-esp-btn" aria-haspopup="true" aria-expanded="false">Todos los espacios ▾</button>
+        <div class="ag-esp-panel" id="ag-esp-panel" style="display:none">
+          <input type="search" id="ag-esp-q" placeholder="Buscar espacio…" autocomplete="off">
+          <div class="ag-esp-list" id="ag-esp-list"></div>
+          <button type="button" class="ag-esp-clear" id="ag-esp-clear">Limpiar selección</button>
+        </div>
+      </div>
+      <div class="ag-esp-chips" id="ag-esp-chips"></div>
+    </div>
+  </div><!-- AGENDAESP:END -->
   <div class="agenda-note">Ciclo Primavera 2026 · actividades regulares niños / niñas / adultos · info a modo de referencia, no editable</div>
 
   <!-- Vista escritorio: grilla completa -->
@@ -991,7 +1024,7 @@ tbody.mkt tr:hover td{background:#f6dde5!important;transition:background .12s}
 </div>
 <!-- PAGENDA:END -->
 <footer class="footer">
-  <span>Portal Bosque · <a href="https://www.portalbosque.com" target="_blank">portalbosque.com</a> · versión 20-10 R</span>
+  <span>Portal Bosque · <a href="https://www.portalbosque.com" target="_blank">portalbosque.com</a> · versión 20-10 S</span>
 
   <span id="last-update">—</span>
 </footer>
@@ -3097,6 +3130,14 @@ function agCardHtml(item,mobile){
   </div>`;
 }
 
+// Filtro por espacios (selección múltiple): AG_ESP = espacios elegidos; vacío = todos. La interfaz está en el bloque AGENDAESP.
+let AG_ESP=[];
+function agEspKey(n){return String(n==null?'':n).normalize('NFD').replace(/[\u0300-\u036f]/g,'').replace(/\s+/g,'').toLowerCase();}
+function agEspPrimary(item){   // espacio principal: lo que va antes de "/" (lo que viene después es el plan B por lluvia)
+  return String(item.espacio||'').split('/')[0].replace(/\s*(si llueve|se suspende por lluvia)\s*$/i,'').replace(/\s+/g,' ').trim();
+}
+function agF(items){return AG_ESP.length?(items||[]).filter(it=>AG_ESP.indexOf(agEspKey(agEspPrimary(it)))>=0):(items||[]);}
+
 function agSabadoItemsForBloque(key){
   if(key==='A')return AGENDA_DATA.SABADO_NINOS;
   if(key==='B')return AGENDA_DATA.SABADO_ADULTOS;
@@ -3112,7 +3153,7 @@ function renderAgendaDesktop(diaFiltro){
   AGENDA_BLOQUES.forEach(b=>{
     let cells=`<td class="ag-label-td"><div class="ag-block-label">${b.label}</div></td>`;
     dias.forEach(d=>{
-      const items = d==='SABADO' ? agSabadoItemsForBloque(b.key) : (AGENDA_DATA[d][b.key]||[]);
+      const items = agF(d==='SABADO' ? agSabadoItemsForBloque(b.key) : (AGENDA_DATA[d][b.key]||[]));
       cells+=`<td><div class="ag-cell">${items.length?items.map(it=>agCardHtml(it,false)).join(''):'<div class="ag-empty-cell">—</div>'}</div></td>`;
     });
     rows+=`<tr>${cells}</tr>`;
@@ -3123,19 +3164,22 @@ function renderAgendaDesktop(diaFiltro){
 // ---- Vista mobile (cards) ----
 function renderAgendaCardsForDay(dia){
   if(dia==='SABADO'){
-    return `<div class="agenda-block-title">Niños · 10 a 12hs // 14 a 16hs</div>`+
-      AGENDA_DATA.SABADO_NINOS.map(it=>agCardHtml(it,true)).join('')+
-      `<div class="agenda-block-title">Adultos · 10 a 13hs</div>`+
-      AGENDA_DATA.SABADO_ADULTOS.map(it=>agCardHtml(it,true)).join('');
+    const sn=agF(AGENDA_DATA.SABADO_NINOS), sa=agF(AGENDA_DATA.SABADO_ADULTOS);
+    if(AG_ESP.length && !sn.length && !sa.length) return `<div class="ag-empty-cell" style="padding:.4rem 0">— Sin actividades en los espacios elegidos</div>`;
+    return (!AG_ESP.length||sn.length?`<div class="agenda-block-title">Niños · 10 a 12hs // 14 a 16hs</div>`:'')+
+      sn.map(it=>agCardHtml(it,true)).join('')+
+      (!AG_ESP.length||sa.length?`<div class="agenda-block-title">Adultos · 10 a 13hs</div>`:'')+
+      sa.map(it=>agCardHtml(it,true)).join('');
   }
   const dataDia=AGENDA_DATA[dia];
   let html='';
   AGENDA_BLOQUES.forEach(b=>{
-    const items=dataDia[b.key]||[];
+    const items=agF(dataDia[b.key]||[]);
     if(!items.length)return;
     html+=`<div class="agenda-block-title">${AGENDA_BLOQUE_TITULOS[b.key]}</div>`;
     html+=items.map(it=>agCardHtml(it,true)).join('');
   });
+  if(!html&&AG_ESP.length) html=`<div class="ag-empty-cell" style="padding:.4rem 0">— Sin actividades en los espacios elegidos</div>`;
   return html;
 }
 
@@ -3153,6 +3197,7 @@ function renderAgendaAll(){
   const dia=document.getElementById('agenda-sel-dia').value;
   renderAgendaDesktop(dia);
   renderAgendaMobile(dia);
+  if(typeof agEspRefresh==='function') agEspRefresh();
 }
 
 function initAgendaDefaultDay(){
@@ -4769,5 +4814,45 @@ setInterval(syncEstados, 30 * 1000);
 })();
 </script>
 <!-- PAGENDA:END -->
+<!-- AGENDAESP:START --><script>
+/* ===== Semana Tipo: filtro por espacio con selección múltiple. Usa AG_ESP / agF / agEspPrimary del script principal. ===== */
+(function(){
+var OPTS = [];   // [{k, label, n}]
+function build(){
+  var seen = {}, list = [];
+  function add(it){ var k = agEspKey(agEspPrimary(it)); if(!k) return; if(!seen[k]){ seen[k] = {k:k, label:agEspPrimary(it), n:0}; list.push(seen[k]); } seen[k].n++; }
+  Object.keys(AGENDA_DATA).forEach(function(d){ var v = AGENDA_DATA[d]; (Array.isArray(v) ? [v] : Object.keys(v).map(function(b){ return v[b]; })).forEach(function(l){ l.forEach(add); }); });
+  list.sort(function(a,b){ return a.label.localeCompare(b.label, 'es'); });
+  OPTS = list;
+}
+function $(id){ return document.getElementById(id); }
+function esc(v){ return String(v).replace(/[&<>"']/g,function(c){ return {'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]; }); }
+function label(k){ for(var i = 0; i < OPTS.length; i++) if(OPTS[i].k === k) return OPTS[i].label; return k; }
+function drawList(){
+  var q = agEspKey($('ag-esp-q').value);
+  $('ag-esp-list').innerHTML = OPTS.filter(function(o){ return !q || o.k.indexOf(q) >= 0; }).map(function(o){
+    return '<label class="ag-esp-opt"><input type="checkbox" data-k="' + esc(o.k) + '"' + (AG_ESP.indexOf(o.k) >= 0 ? ' checked' : '') + '>' + esc(o.label) + '<small>' + o.n + '</small></label>';
+  }).join('') || '<div style="padding:.5rem;color:#8a7a96;font-size:13px">Sin resultados</div>';
+}
+window.agEspRefresh = function(){
+  var b = $('ag-esp-btn'); if(!b) return;
+  b.textContent = (AG_ESP.length ? 'Espacios (' + AG_ESP.length + ')' : 'Todos los espacios') + ' ▾';
+  b.classList.toggle('on', AG_ESP.length > 0);
+  $('ag-esp-chips').innerHTML = AG_ESP.map(function(k){ return '<button type="button" class="ag-esp-chip" data-k="' + esc(k) + '" title="Quitar">' + esc(label(k)) + ' <b>×</b></button>'; }).join('');
+  drawList();
+};
+function toggle(k){ var i = AG_ESP.indexOf(k); if(i >= 0) AG_ESP.splice(i, 1); else AG_ESP.push(k); renderAgendaAll(); }
+function openPanel(o){ $('ag-esp-panel').style.display = o ? 'block' : 'none'; $('ag-esp-btn').setAttribute('aria-expanded', o ? 'true' : 'false'); if(o){ $('ag-esp-q').value = ''; drawList(); } }
+build();
+$('ag-esp-btn').addEventListener('click', function(){ openPanel($('ag-esp-panel').style.display === 'none'); });
+$('ag-esp-list').addEventListener('change', function(ev){ var c = ev.target.closest('input[data-k]'); if(c) toggle(c.getAttribute('data-k')); });
+$('ag-esp-q').addEventListener('input', drawList);
+$('ag-esp-clear').addEventListener('click', function(){ AG_ESP.length = 0; renderAgendaAll(); });
+$('ag-esp-chips').addEventListener('click', function(ev){ var c = ev.target.closest('.ag-esp-chip'); if(c) toggle(c.getAttribute('data-k')); });
+document.addEventListener('click', function(ev){ if(!ev.target.closest('.ag-esp-dd')) openPanel(false); });
+document.addEventListener('keydown', function(ev){ if(ev.key === 'Escape') openPanel(false); });
+agEspRefresh();
+})();
+</script><!-- AGENDAESP:END -->
 </body>
 </html>
