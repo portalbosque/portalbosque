@@ -879,6 +879,8 @@ tbody.mkt tr:hover td{background:#f6dde5!important;transition:background .12s}
 .pag-fl{font-size:10px;font-weight:700;letter-spacing:.08em;text-transform:uppercase;color:var(--text);font-family:'DM Mono',monospace}
 .pag-filters select,.pag-filters input{font-family:'DM Sans',sans-serif;font-size:14px;padding:7px 10px;border:1.5px solid #b9cbe0;border-radius:8px;background:#fff;color:#1a2e20;min-width:160px}
 .pag-filters select:focus,.pag-filters input:focus{border-color:#5b7fa8;outline:none}
+.pag-chk{display:flex;align-items:center;gap:6px;font-size:13px;font-weight:600;color:var(--text);cursor:pointer;padding-bottom:7px}
+.pag-chk input{min-width:0!important;width:16px;height:16px;padding:0}
 .pag-count{margin-left:auto;font-size:12px;color:var(--text3);font-family:'DM Mono',monospace}
 .pag-status{padding:.45rem 1.5rem;font-size:12px;color:var(--text3);background:var(--bg2);border-bottom:1px solid var(--border2);display:flex;align-items:center;gap:8px}
 .pag-dot{width:8px;height:8px;border-radius:50%;background:#5b7fa8;flex:0 0 auto}
@@ -959,6 +961,7 @@ tbody.mkt tr:hover td{background:#f6dde5!important;transition:background .12s}
     <div class="pag-fg" id="pag-g-dia" style="display:none"><span class="pag-fl">Día</span><select id="pag-sel-dia"><option value="">Semana completa</option><option value="0">Lunes</option><option value="1">Martes</option><option value="2">Miércoles</option><option value="3">Jueves</option><option value="4">Viernes</option><option value="5">Sábado</option><option value="6">Domingo</option></select></div>
     <div class="pag-fg"><span class="pag-fl">Categoría</span><select id="pag-sel-cat"><option value="">Todas</option></select></div>
     <div class="pag-fg"><span class="pag-fl">Buscar</span><input id="pag-inp-q" type="search" placeholder="Evento o tarea…"></div>
+    <label class="pag-chk"><input type="checkbox" id="pag-show-done"> Ver completadas</label>
     <span class="pag-count" id="pag-count">—</span>
   </div>
   <div class="pag-status"><span class="pag-dot"></span><span id="pag-status">Conectando…</span><button type="button" id="pag-refresh" title="Actualizar">↻</button></div>
@@ -990,7 +993,7 @@ tbody.mkt tr:hover td{background:#f6dde5!important;transition:background .12s}
 </div>
 <!-- PAGENDA:END -->
 <footer class="footer">
-  <span>Portal Bosque · <a href="https://www.portalbosque.com" target="_blank">portalbosque.com</a> · versión 19-10 O</span>
+  <span>Portal Bosque · <a href="https://www.portalbosque.com" target="_blank">portalbosque.com</a> · versión 20-10 P</span>
 
   <span id="last-update">—</span>
 </footer>
@@ -4565,7 +4568,8 @@ function fmtFull(r){
 function color(r){ return COLORS[r.cat] || '#5b7fa8'; }
 function visible(){
   var cv = $('pag-sel-cat').value, q = norm($('pag-inp-q').value);
-  return ROWS.filter(function(r){ return (!cv || r.cat === cv) && (!q || norm(r.name + ' ' + r.task).indexOf(q) >= 0); });
+  var sd = $('pag-show-done').checked;   // las tareas completadas se ocultan salvo que se pida verlas
+  return ROWS.filter(function(r){ return (sd || !r.done) && (!cv || r.cat === cv) && (!q || norm(r.name + ' ' + r.task).indexOf(q) >= 0); });
 }
 function chip(r, withDate, day){
   var td = todayS(), tags = '';
@@ -4731,6 +4735,7 @@ async function load(manual){
 }
 $('pag-sel-cat').addEventListener('change', render);
 $('pag-sel-dia').addEventListener('change', render);
+$('pag-show-done').addEventListener('change', render);
 $('pag-inp-q').addEventListener('input', render);
 $('pag-refresh').addEventListener('click', function(){ load(true); });
 document.querySelector('.pag-seg').addEventListener('click', function(ev){ var b = ev.target.closest('button[data-v]'); if(b) setView(b.getAttribute('data-v')); });
