@@ -510,6 +510,20 @@ tbody.mkt tr:hover td{background:#f6dde5!important;transition:background .12s}
   .filters.mkt.mkt-mes .filter-label{min-width:92px}
 }
 @media(min-width:701px) and (max-width:1000px){ .mkt-t{font-size:11px;padding:4px 5px} }
+/* Selección obligatoria de responsable al completar */
+.mkt-who-box{max-width:440px;width:100%}
+.mkt-who-sub{margin:.2rem 0 1rem;font-size:13px;color:var(--text3)}
+.mkt-who-lab{display:block;font-size:13px;font-weight:700;color:var(--text);margin-bottom:.4rem}
+#mkt-who-sel{width:100%;font-family:'DM Sans',sans-serif;font-size:16px;padding:10px 12px;border:1.5px solid #e3b6c5;border-radius:8px;background:#fff;color:#1a2e20}
+#mkt-who-sel:focus{outline:none;border-color:#c2476b;box-shadow:0 0 0 3px rgba(194,71,107,.18)}
+.mkt-who-err{margin-top:.5rem;font-size:12.5px;font-weight:600;color:#b3261e}
+.mkt-who-btns{display:flex;gap:.6rem;justify-content:flex-end;margin-top:1.1rem;flex-wrap:wrap}
+.mkt-who-btns button{font:inherit;font-size:13px;font-weight:700;border-radius:8px;padding:.6rem 1.1rem;cursor:pointer;border:1.5px solid #c2476b}
+.mkt-who-cancel{background:#fff;color:#c2476b}
+.mkt-who-ok{background:#c2476b;color:#fff}
+.mkt-who-ok:disabled{background:#e9d3db;border-color:#e9d3db;color:#fff;cursor:not-allowed}
+.mkt-t-por{margin-top:6px;font-size:11px;font-weight:700;color:#2d7a4a}
+.mkt-toast{position:fixed;left:50%;bottom:18px;transform:translateX(-50%);z-index:1200;max-width:min(92vw,560px);background:#8f1d1d;color:#fff;font-size:13.5px;line-height:1.35;padding:.7rem 1rem;border-radius:10px;box-shadow:0 4px 18px rgba(0,0,0,.35)}
 </style>
 <!-- MKT:END -->
 <!-- AGENDAESP:START --><style>
@@ -1027,7 +1041,7 @@ tbody.mkt tr:hover td{background:#f6dde5!important;transition:background .12s}
 </div>
 <!-- PAGENDA:END -->
 <footer class="footer">
-  <span>Portal Bosque · <a href="https://www.portalbosque.com" target="_blank">portalbosque.com</a> · versión 20-10 AB</span>
+  <span>Portal Bosque · <a href="https://www.portalbosque.com" target="_blank">portalbosque.com</a> · versión 19-11 AC</span>
 
   <span id="last-update">—</span>
 </footer>
@@ -4104,6 +4118,9 @@ const MKT_CSV_PUBLISHED = '';
 // en la planilla (no se usa el Apps Script de Logística: escribiría en la hoja equivocada).
 const MKT_APPS_SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbwsTNR_as-DxRTWb-PLsh1Cj58T5WmxaH7JahcwC4C9PVTu9vzmP3OSTYGJ9r2RRrMGkg/exec';
 
+// Quién puede completar una tarea (selección obligatoria). El Apps Script valida la misma lista (QUIENES_COMPLETAN).
+const MKT_QUIENES = ['Alexa','Nico','Facu','Andrea','Pili','Valen'];
+let MKT_SRV_REQ = null;   // true cuando el Apps Script publicado exige responsable para completar (versión nueva)
 let MKT_DATA = [], MKT_ROW_MAP = [];
 let MKT_BASE_STATUS = '', MKT_LINK = {ok:null, msg:''}, MKT_AVISOS = [];   // avisos del Apps Script (tareas sin responsable/sin mail, errores de envío)
 const MKT_PEND = {section:'mkt-pending-section',table:'mkt-pending-table',count:'mkt-pending-count',cardsSection:'mkt-cards-pending-section',cardsCount:'mkt-cards-pending-count',cardsList:'mkt-cards-pending-list',rowPrefix:'mkt-pend-row-',cardPrefix:'mkt-pend-card-'};
@@ -4121,7 +4138,11 @@ const MKT_PEND = {section:'mkt-pending-section',table:'mkt-pending-table',count:
   };
   var baseToggle = window.toggleOk;
   window.toggleOk = function(dataIdx, section){
-    if(section === 'mkt'){ const p = toggleOkMkt(dataIdx); mktSyncChips(); p.then(mktSyncChips, mktSyncChips); return p; }
+    if(section === 'mkt'){
+      const r = MKT_DATA[dataIdx];
+      if(r && !r.completado) return mktAskWho(dataIdx);   // completar: primero se pide quién la completa (obligatorio)
+      const p = toggleOkMkt(dataIdx); mktSyncChips(); p.then(mktSyncChips, mktSyncChips); return p;   // volver a pendiente: sin selección
+    }
     return baseToggle.apply(this, arguments);
   };
 })();
@@ -4199,39 +4220,45 @@ async function syncEstadosMkt(){
       const res=await fetch(MKT_APPS_SCRIPT_URL+'?t='+Date.now());
       const resData=await res.json();
       if(resData.ok&&resData.estados){
-        resData.estados.forEach(e=>{const idx=MKT_ROW_MAP.indexOf(e.row);if(idx!==-1&&MKT_DATA[idx])MKT_DATA[idx].completado=e.completado;});
+        resData.estados.forEach(e=>{const idx=MKT_ROW_MAP.indexOf(e.row);if(idx!==-1&&MKT_DATA[idx]){MKT_DATA[idx].completado=e.completado;MKT_DATA[idx].completadoPor=e.completado?(e.por||''):'';mktSetPorField(MKT_DATA[idx]);}});
+        MKT_SRV_REQ=resData.requiereResponsable===true;
         MKT_LINK={ok:true,msg:''};
         MKT_AVISOS=Array.isArray(resData.avisos)?resData.avisos:[];
       }else MKT_LINK={ok:false,msg:'El Apps Script respondió con error: '+(resData.error||'respuesta inesperada')};
-    }catch(e){ console.log('[syncEstados:mkt]',e); MKT_LINK={ok:false,msg:MKT_MSG_NO_CONTACT}; }
+    }catch(e){ console.log('[syncEstados:mkt]',e); MKT_SRV_REQ=null; MKT_LINK={ok:false,msg:MKT_MSG_NO_CONTACT}; }
   }
   renderMkt();
   renderPendientesMkt();
   mktRenderStatus();
 }
 
-async function toggleOkMkt(dataIdx){
+function mktQuien(n){ const k=String(n==null?'':n).normalize('NFD').replace(/[\u0300-\u036f]/g,'').trim().toLowerCase(); return MKT_QUIENES.find(x=>x.toLowerCase()===k)||''; }
+async function toggleOkMkt(dataIdx, who){
   const row=MKT_DATA[dataIdx];const sheetRow=MKT_ROW_MAP[dataIdx];
   const prev=row.completado;
+  // Requisito: para completar hace falta un responsable válido (la comprobación se repite en el Apps Script)
+  if(!prev){ who=mktQuien(who); if(!who){ mktToast('Seleccioná quién completa la tarea para poder completarla.'); return; } }
   row.completado=!prev;const newVal=row.completado?'SI':'';
   document.querySelectorAll(`[data-ok-idx="mkt-${dataIdx}"]`).forEach(btn=>{btn.classList.toggle('done',row.completado);btn.classList.add('loading');btn.querySelector('.ok-label').textContent=row.completado?'Completado':'Pendiente';});
   if(MKT_APPS_SCRIPT_URL){
     let saved=false, msg='';
     try{
-      const res=await fetch(`${MKT_APPS_SCRIPT_URL}?row=${sheetRow}&value=${encodeURIComponent(newVal)}&t=${Date.now()}`);
+      const res=await fetch(`${MKT_APPS_SCRIPT_URL}?row=${sheetRow}&value=${encodeURIComponent(newVal)}${newVal==='SI'?'&who='+encodeURIComponent(who):''}&t=${Date.now()}`);
       const j=await res.json();
       saved=(j&&j.ok===true);
-      if(!saved) msg='El Apps Script respondió con error: '+((j&&j.error)||'respuesta inesperada');
+      if(saved&&newVal==='SI'&&j.who!==who){ saved=false; msg='el Apps Script no guardó el responsable (¿falta publicar la versión nueva?)'; }
+      else if(!saved) msg='El Apps Script respondió con error: '+((j&&j.error)||'respuesta inesperada');
     }catch(e){ msg=MKT_MSG_NO_CONTACT; }
     if(!saved){
       // no se guardó en la planilla: se revierte para que no parezca completada
       row.completado=prev;
       MKT_LINK={ok:false,msg:'No se guardó: '+msg};
-      renderMkt(); renderPendientesMkt(); mktRenderStatus();
+      renderMkt(); renderPendientesMkt(); mktRenderStatus(); mktToast('No se pudo guardar en la planilla — '+msg);
       return;
     }
     MKT_LINK={ok:true,msg:''}; mktRenderStatus();
   }
+  row.completadoPor=row.completado?who:''; mktSetPorField(row); mktSyncChips();
   if(row.completado){
     [`${MKT_PEND.rowPrefix}${dataIdx}`,`${MKT_PEND.cardPrefix}${dataIdx}`].forEach(id=>{const el=document.getElementById(id);if(el){el.style.transition='opacity .3s';el.style.opacity='0';setTimeout(()=>{el.remove();refreshPendingCountMkt();},300);}});
   }
@@ -4446,7 +4473,53 @@ function mktApplyView(){
 }
 function mktMove(delta){ if(!MKT_VM){ const t=mktFromSer(mktTodaySer()); MKT_VM={y:t.y,m:t.m}; } const t=new Date(Date.UTC(MKT_VM.y,MKT_VM.m+delta,1)); MKT_VM={y:t.getUTCFullYear(),m:t.getUTCMonth()}; renderMktMonth(); }
 function mktGoToday(){ const t=mktFromSer(mktTodaySer()); MKT_VM={y:t.y,m:t.m}; renderMktMonth(); }
-function mktSyncChips(){ document.querySelectorAll('.mkt-t[data-i]').forEach(el=>{ const r=MKT_DATA[+el.getAttribute('data-i')]; if(r) el.classList.toggle('done',!!r.completado); }); }
+function mktSyncChips(){ document.querySelectorAll('.mkt-t[data-i]').forEach(el=>{ const r=MKT_DATA[+el.getAttribute('data-i')]; if(!r) return; el.classList.toggle('done',!!r.completado);
+  const old=el.querySelector('.mkt-t-por'); if(old) old.remove();
+  if(r.completado&&r.completadoPor){ const d=document.createElement('div'); d.className='mkt-t-por'; d.textContent='✓ Completó: '+r.completadoPor; const b=el.querySelector('.ok-btn'); if(b) el.insertBefore(d,b); else el.appendChild(d); } }); }
+function mktSetPorField(r){   // la ficha (pop-up) muestra la columna COMPLETADO POR con el valor al día
+  if(!r||!r.fields) return; const v=r.completado?(r.completadoPor||''):'';
+  const f=r.fields.find(x=>String(x[0]).trim().toUpperCase()==='COMPLETADO POR'); if(f) f[1]=v; else if(v) r.fields.push(['COMPLETADO POR',v]);
+}
+function mktToast(msg){
+  let t=document.getElementById('mkt-toast'); if(!t){ t=document.createElement('div'); t.id='mkt-toast'; t.className='mkt-toast'; t.setAttribute('role','alert'); document.body.appendChild(t); }
+  t.textContent=msg; t.style.display='block'; clearTimeout(t._h); t._h=setTimeout(()=>{ t.style.display='none'; },12000);
+}
+/* Selección obligatoria del responsable: ventana con desplegable; "Confirmar" queda deshabilitado hasta elegir a alguien */
+function mktWhoClose(){ const d=document.getElementById('mkt-who'); if(d) d.style.display='none'; }
+async function mktAskWho(dataIdx){
+  const r=MKT_DATA[dataIdx]; if(!r) return;
+  if(MKT_APPS_SCRIPT_URL && MKT_SRV_REQ!==true) await syncEstadosMkt();   // vuelve a consultar al Apps Script por si recién se actualizó
+  if(MKT_APPS_SCRIPT_URL && MKT_SRV_REQ!==true){
+    mktToast(MKT_LINK.ok===false ? 'No se puede completar ahora: no hay conexión con el Apps Script. Probá de nuevo en unos segundos.'
+      : 'No se puede completar: el Apps Script de MKT todavía no tiene la versión que exige responsable. Publicá la versión nueva (Implementar → Administrar implementaciones → ✏ → Nueva versión).');
+    return;
+  }
+  let d=document.getElementById('mkt-who');
+  if(!d){
+    d=document.createElement('div'); d.id='mkt-who'; d.className='cal-pop'; d.style.display='none'; d.style.zIndex='1100';
+    d.innerHTML='<div class="cal-pop-box mkt-who-box" role="dialog" aria-modal="true" aria-labelledby="mkt-who-title"><div class="cal-pop-head" style="background:#c2476b;color:#fff"><span>COMPLETAR TAREA</span><button type="button" class="cal-pop-x" aria-label="Cerrar">×</button></div><div class="cal-pop-body">'+
+      '<h3 id="mkt-who-title" class="cal-pop-title"></h3><p class="mkt-who-sub"></p>'+
+      '<label class="mkt-who-lab" for="mkt-who-sel">¿Quién completa y confirma esta tarea?</label>'+
+      '<select id="mkt-who-sel" required><option value="">Elegí una persona…</option>'+MKT_QUIENES.map(n=>'<option value="'+n+'">'+n+'</option>').join('')+'</select>'+
+      '<div class="mkt-who-err" style="display:none">Es obligatorio elegir quién completa la tarea.</div>'+
+      '<div class="mkt-who-btns"><button type="button" class="mkt-who-cancel">Cancelar</button><button type="button" class="mkt-who-ok" disabled>Confirmar y completar</button></div></div></div>';
+    document.body.appendChild(d);
+    const sel=d.querySelector('#mkt-who-sel'), ok=d.querySelector('.mkt-who-ok'), err=d.querySelector('.mkt-who-err');
+    sel.addEventListener('change',()=>{ const v=mktQuien(sel.value); ok.disabled=!v; err.style.display=v?'none':'block'; });
+    d.addEventListener('click',ev=>{ if(ev.target===d||ev.target.closest('.cal-pop-x')||ev.target.closest('.mkt-who-cancel')) mktWhoClose(); });
+    ok.addEventListener('click',()=>{
+      const who=mktQuien(sel.value); if(!who){ err.style.display='block'; ok.disabled=true; return; }   // sin responsable no se completa
+      const idx=d._idx; mktWhoClose();
+      const p=toggleOkMkt(idx,who); mktSyncChips(); p.then(mktSyncChips,mktSyncChips);
+    });
+    document.addEventListener('keydown',ev=>{ if(ev.key==='Escape'&&d.style.display!=='none'){ ev.stopPropagation(); mktWhoClose(); } },true);
+  }
+  d._idx=dataIdx;
+  d.querySelector('#mkt-who-title').textContent=(r.necesidad||r.resp||'Tarea');
+  d.querySelector('.mkt-who-sub').textContent=[r.fechaSer!=null?mktFmtFull(r.fechaSer):r.dia,r.horario,r.resp?'Asignada a '+r.resp:''].filter(Boolean).join(' · ');
+  const sel=d.querySelector('#mkt-who-sel'); sel.value=''; d.querySelector('.mkt-who-ok').disabled=true; d.querySelector('.mkt-who-err').style.display='none';
+  d.style.display='flex'; try{ sel.focus({preventScroll:true}); }catch(e){}
+}
 
 function mktChip(it, raw, compact){
   const r=it.r; const nec=raw&&r.necesidadRaw!=null?r.necesidadRaw:r.necesidad, esp=raw&&r.espacioRaw!=null?r.espacioRaw:r.espacio;
@@ -4458,6 +4531,7 @@ function mktChip(it, raw, compact){
     (!compact&&r.info?`<small>${mktEsc(r.info)}</small>`:'')+
     (!compact&&r.notas?`<small>${mktEsc(r.notas)}</small>`:'')+
     (!compact&&r.resp?`<div class="mkt-t-resp"><span class="mkt-av">${ini}</span>${mktEsc(r.resp)}</div>`:'')+
+    (r.completado&&r.completadoPor?`<div class="mkt-t-por">✓ Completó: ${mktEsc(r.completadoPor)}</div>`:'')+
     okBtnHtml(it.i,r.completado,'mkt','mkt')+`</div>`;
 }
 
