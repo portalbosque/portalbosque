@@ -1054,7 +1054,7 @@ tbody.mkt tr:hover td{background:#f6dde5!important;transition:background .12s}
 </div>
 <!-- PAGENDA:END -->
 <footer class="footer">
-  <span>Portal Bosque · <a href="https://www.portalbosque.com" target="_blank">portalbosque.com</a> · versión 25-11 AE</span>
+  <span>Portal Bosque · <a href="https://www.portalbosque.com" target="_blank">portalbosque.com</a> · versión 25-11 AF</span>
 
   <span id="last-update">—</span>
 </footer>
@@ -3951,12 +3951,10 @@ function cardHtml(e, multi){      // mismo diseño que Producción Agenda: categ
 function cardStyle(e){ return 'background:#f6f9fc;color:#1f2a36;border-left:4px solid ' + (e.accent || catColor(e.cat)) + ';'; }
 function monthNow(){ var t = fromSer(todaySer()); return {y:t.y, m:t.m}; }
 function categoriesInUse(){
+  // lista FIJA: solo estas categorías (más MKT y Producción Agenda al final). No se agregan categorías viejas de la pestaña CATEGORIAS ni de filas con valores antiguos
+  // (la pestaña CATEGORIAS, si existe, solo se usa para los colores).
   var seen = {}, list = [];
-  // orden fijo: primero las categorías base (siempre visibles, tengan o no eventos), luego las de la pestaña CATEGORIAS y por último las que aparezcan en eventos
-  // si la pestaña CATEGORIAS tiene datos, manda ella (una categoría borrada ahí desaparece); si no, se usan las base
-  var base = (Object.keys(CATS).length ? Object.keys(CATS) : BASE_CATEGORIES).concat(LAYER_LIST);
-  base.forEach(function(k){ k = norm(k); if(k && !seen[k]){ seen[k] = 1; list.push({k:k, label:LABELS[k] || k}); } });
-  EVENTS.forEach(function(e){ (e.cats || [e.cat]).forEach(function(k){ if(k && !seen[k]){ seen[k] = 1; list.push({k:k, label:LABELS[k] || ((e.cats || [e.cat]).length === 1 ? e.catLabel : k)}); } }); });   // categorías que aún usen filas con valores viejos
+  BASE_CATEGORIES.concat(LAYER_LIST).forEach(function(k){ k = norm(k); if(k && !seen[k]){ seen[k] = 1; list.push({k:k, label:LABELS[k] || k}); } });
   return list;
 }
 function metaLines(e, first){
