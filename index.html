@@ -409,6 +409,19 @@ html.cal-pop-lock body{overflow:hidden}
   .cal-ev small{font-size:10px}
   .cal-week{min-height:80px}
 }
+.cal-card{border-color:#cfdcec!important}
+.cal-card-top{font-size:11px;font-weight:700;color:#2b4a6b;margin-bottom:2px;text-transform:uppercase;letter-spacing:.03em}
+.cal-card-t{font-weight:700;font-size:12.5px;line-height:1.25}
+.cal-card small.cal-card-d{display:block;font-size:11px;color:#5a6b7d;opacity:1;margin-top:1px}
+.cal-card-por{font-size:11px;font-weight:700;color:#2d7a4a;margin-top:3px}
+.cal-card.done{background:#eef7f0!important;border-left-color:#3d8f5a!important;opacity:.85}
+.cal-card.done .cal-card-t,.cal-card.done .cal-card-d,.cal-card.done .cal-card-top{text-decoration:line-through}
+.cal-ok{font:inherit;font-size:11px;font-weight:700;letter-spacing:.03em;border:1.5px solid #b9cbe0;background:#fff;color:#4a6585;border-radius:999px;padding:2px 11px;margin-top:6px;cursor:pointer}
+.cal-ok:hover{border-color:#2d7a4a;color:#2d7a4a;background:#f1f8f3}
+.cal-ok.done{background:#2d7a4a;border-color:#2d7a4a;color:#fff}
+.cal-pop-ok{margin-top:.8rem;display:flex;gap:.7rem;align-items:center;flex-wrap:wrap}
+.cal-pop-ok .cal-ok{font-size:13px;padding:5px 16px;margin-top:0}
+.cal-ev.cal-card.canc,.cal-li.cal-card.canc{opacity:.7}
 </style>
 <!-- CALENDARIO:END -->
 <!-- MKT:START --><style>
@@ -1041,7 +1054,7 @@ tbody.mkt tr:hover td{background:#f6dde5!important;transition:background .12s}
 </div>
 <!-- PAGENDA:END -->
 <footer class="footer">
-  <span>Portal Bosque · <a href="https://www.portalbosque.com" target="_blank">portalbosque.com</a> · versión 19-11 AC</span>
+  <span>Portal Bosque · <a href="https://www.portalbosque.com" target="_blank">portalbosque.com</a> · versión 25-11 AE</span>
 
   <span id="last-update">—</span>
 </footer>
@@ -3698,15 +3711,20 @@ var MONTHS = ['ENERO','FEBRERO','MARZO','ABRIL','MAYO','JUNIO','JULIO','AGOSTO',
 var SEASON_BY_MONTH = ['VERANO','VERANO','OTOÑO','OTOÑO','OTOÑO','INVIERNO','INVIERNO','INVIERNO','PRIMAVERA','PRIMAVERA','PRIMAVERA','VERANO'];
 // colores de las etiquetas del Sheet: [fondo, texto]
 var DEFAULT_COLORS = {'EVENTO':['#c5e0f4','#2254a3'],'WORKSHOP':['#553682','#e2d0f0'],'CAPACITACION':['#cadbe0','#30596a'],'CHARLA':['#a42116','#f8d1cb'],
-  'RETIRO':['#e3d0f0','#553682'],'AGENDA GENERAL':['#fbe5a9','#453924'],'TRIBUS':['#d9ecc1','#33714e'],'ESPECIAL':['#e9e8e8','#1f1f1f'],'MKT & COMUNICACION':['#e8863a','#1f1f1f']};
-var LABELS = {'CAPACITACION':'CAPACITACIÓN','MKT & COMUNICACION':'MKT & COMUNICACIÓN'};
+  'RETIRO':['#e3d0f0','#553682'],'AGENDA GENERAL':['#fbe5a9','#453924'],'TRIBUS':['#d9ecc1','#33714e'],'ESPECIAL':['#e9e8e8','#1f1f1f'],'MKT & COMUNICACION':['#e8863a','#1f1f1f'],'PRODUCCION AGENDA':['#9fc5cf','#1f2d3a'],
+  'CICLOS':['#c5e0f4','#2254a3'],'SEMILLERO':['#d9ecc1','#33714e'],'APRENDER JUGANDO':['#fbe5a9','#453924'],'MINI APRENDER JUGANDO':['#fbd5c0','#6b3a1f'],'ADULTOS TALLERES':['#6fa8dc','#10243c'],
+  'EVENTOS':['#e3d0f0','#553682'],'EXPERIENCIA PORTAL':['#f4c7d4','#7a2a45'],'TIERRA':['#d8c3a5','#4a3520'],'GASTRONOMIA':['#ea9999','#5c1a1a']};
+var LABELS = {'CAPACITACION':'CAPACITACIÓN','MKT & COMUNICACION':'MKT & COMUNICACIÓN','PRODUCCION AGENDA':'PRODUCCIÓN AGENDA','GASTRONOMIA':'GASTRONOMÍA'};
+var PAG_CAT = 'PRODUCCION AGENDA';
+var LAYER_CATS = {'MKT & COMUNICACION':1,'PRODUCCION AGENDA':1};   // secciones que se suman al calendario solo si se eligen en el filtro
 // Categorías que SIEMPRE muestran su filtro (aunque no tengan eventos). Si agregás una categoría nueva al desplegable
 // del Sheet, sumala acá o en una pestaña "CATEGORIAS" (columnas CATEGORIA | COLOR) y aparece sola.
-var ALL_CATEGORIES = ['EVENTO','WORKSHOP','CAPACITACION','CHARLA','RETIRO','AGENDA GENERAL','TRIBUS','ESPECIAL','MKT & COMUNICACION'];
+var BASE_CATEGORIES = ['CICLOS','SEMILLERO','APRENDER JUGANDO','MINI APRENDER JUGANDO','ADULTOS TALLERES','EVENTOS','EXPERIENCIA PORTAL','TIERRA','GASTRONOMIA'];
+var LAYER_LIST = ['MKT & COMUNICACION','PRODUCCION AGENDA'];   // siempre al final
 var PALETTE = ['#b6d7a8','#f9cb9c','#ea9999','#a2c4c9','#b4a7d6','#d9d2e9','#fce5cd','#c9daf8'];
 var DAY = 86400000;
 
-var SKIPPED = 0, MKT_FAIL = false, EVENTS = [], EV_MAIN = [], EV_MKT = [], CATS = {}, FILTERS = [], VIEW = null, LOADED = false, LAST_OK = null;
+var SKIPPED = 0, MKT_FAIL = false, EVENTS = [], EV_MAIN = [], EV_MKT = [], EV_PAG = [], CATS = {}, FILTERS = [], VIEW = null, LOADED = false, LAST_OK = null;
 
 function esc(s){ return String(s == null ? '' : s).replace(/[&<>"']/g, function(c){ return {'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]; }); }
 function norm(s){ return String(s == null ? '' : s).normalize('NFD').replace(/[̀-ͯ]/g,'').replace(/\s+/g,' ').trim().toUpperCase(); }
@@ -3824,8 +3842,10 @@ function parseEvents(text){
     var est = norm(g(iEst)), kind = 'ok';
     if(/CANCEL/.test(est)) kind = 'canc'; else if(/CONFIRMAR|PENDIENTE|TENTATIV/.test(est) ) kind = 'conf';
     var fields = rowFields(heads, r);
+    var cats = g(iCat).split(/\s*[,;]\s*/).map(function(x){ return fixCat(norm(x)); }).filter(Boolean);   // categoría doble: "CICLOS, TIERRA"
+    var catLab = cats.length > 1 ? cats.map(function(k){ return LABELS[k] || k; }).join(' · ') : (fixCat(norm(g(iCat))) === norm(g(iCat)) ? g(iCat) : fixCat(norm(g(iCat))));
     ranges.forEach(function(rg){
-      out.push({key:'ev:' + (idx + 2), fields:fields, need:iNec >= 0 && r[iNec] != null ? String(r[iNec]) : '', s:rg.s, e:rg.e, name:name, cat:fixCat(norm(g(iCat))), catLabel:fixCat(norm(g(iCat))) === norm(g(iCat)) ? g(iCat) : fixCat(norm(g(iCat))), est:g(iEst), kind:kind,
+      out.push({key:'ev:' + (idx + 2), fields:fields, need:iNec >= 0 && r[iNec] != null ? String(r[iNec]) : '', s:rg.s, e:rg.e, name:name, cat:cats[0] || '', cats:cats, catLabel:catLab, est:g(iEst), kind:kind,
         desc:g(iDesc), lugar:g(iLug), resp:g(iResp), hora:g(iHora)});
     });
   });
@@ -3882,11 +3902,9 @@ async function calFetch(manual){
   try{
     var ev = parseEvents(await fetchCsv(EVENTS_TAB, 0));
     try{ var c = parseCats(await fetchCsv(CATS_TAB)); CATS = c || {}; }catch(e){ CATS = {}; }
-    var mk = EV_MKT; MKT_FAIL = false;
-    try{ mk = parseMktEvents(await fetchCsv('', 0, MKT_ID)); }catch(e){ MKT_FAIL = true; console.warn('[CALENDARIO] no se pudo leer MKT & COMUNICACIÓN', e); }
-    EV_MAIN = ev; EV_MKT = mk; EVENTS = ev.concat(mk); EVENTS.forEach(function(x, i){ x.i = i; });
+    EV_MAIN = ev; rebuildEvents();
     LOADED = true; LAST_OK = new Date();
-    if(st) st.textContent = 'Conectado al Sheet · ' + EVENTS.length + ' eventos · ' + pad(LAST_OK.getHours()) + ':' + pad(LAST_OK.getMinutes()) + (MKT_FAIL ? ' · ⚠ no se pudo leer MKT & COMUNICACIÓN' : '') + (SKIPPED ? ' · ⚠ ' + SKIPPED + (SKIPPED === 1 ? ' fila sin fecha válida' : ' filas sin fecha válida') : '');
+    if(st) st.textContent = 'Conectado al Sheet · ' + EV_MAIN.length + ' eventos · ' + pad(LAST_OK.getHours()) + ':' + pad(LAST_OK.getMinutes()) + (SKIPPED ? ' · ⚠ ' + SKIPPED + (SKIPPED === 1 ? ' fila sin fecha válida' : ' filas sin fecha válida') : '');
   }catch(e){
     console.error('[CALENDARIO]', e);
     if(st) st.textContent = 'No se pudo leer el Sheet: ' + e.message + (LOADED ? ' (se muestran los últimos datos)' : '');
@@ -3896,14 +3914,49 @@ async function calFetch(manual){
 }
 
 /* ---------- Render ---------- */
+/* ---------- Capas: MKT & COMUNICACIÓN y PRODUCCIÓN AGENDA (datos de sus propias secciones, así el check es el mismo) ---------- */
+function buildMktLayer(){
+  var out = [], data, map;
+  try{ data = MKT_DATA; map = MKT_ROW_MAP; }catch(x){ return out; }
+  (data || []).forEach(function(r, i){
+    if(!r || r.fechaSer == null) return;
+    var row = map[i], need = String(r.necesidad || ''), fields = (r.fields || []).filter(function(f){ return String(f[0]).trim().toUpperCase() !== 'NOTIFICADO'; });
+    out.push({key:'mkt:' + row, mkt:true, layer:'mkt', row:row, fields:fields, need:need, s:r.fechaSer, e:r.fechaSer, name:need.trim() || String(r.resp || '').trim() || 'Tarea',
+      cat:MKT_CAT, cats:[MKT_CAT], catLabel:'MKT & COMUNICACIÓN', topLabel:'MKT & COMUNICACIÓN', est:'', kind:'ok', desc:'', lugar:r.espacio || '', resp:r.resp || '', hora:r.horario || '',
+      done:!!r.completado, por:r.completadoPor || '', canOk:true, cardDesc:[r.resp, r.horario, r.espacio].filter(function(x){ return String(x || '').trim(); }).join(' · ')});
+  });
+  return out;
+}
+function buildPagLayer(){
+  var out = [], B = window.PAG_BRIDGE;
+  if(!B) return out;
+  (B.rows() || []).forEach(function(r){
+    var s = Math.round(r.s / DAY), e = Math.round(r.e / DAY), c = norm(String(r.cat || '').split(/\s*[,;]\s*/)[0]), est = norm(r.est), kind = /CANCEL/.test(est) ? 'canc' : (/CONFIRMAR|PENDIENTE|TENTATIV/.test(est) ? 'conf' : 'ok');
+    out.push({key:'pag:' + r.row, pag:true, layer:'pag', row:r.row, fields:r.fields, need:'', s:s, e:e, name:r.name || '(sin nombre)', cat:PAG_CAT, cats:[PAG_CAT], catLabel:'PRODUCCIÓN AGENDA', topLabel:r.cat || 'PRODUCCIÓN AGENDA',
+      accent:catColor(fixCat(c)), est:r.est || '', kind:kind, desc:'', lugar:'', resp:'', hora:'', done:!!r.done, canOk:!!B.enabled(), cardDesc:r.task || ''});
+  });
+  return out;
+}
+function rebuildEvents(){
+  EV_MKT = buildMktLayer(); EV_PAG = buildPagLayer();
+  EVENTS = EV_MAIN.concat(EV_MKT, EV_PAG); EVENTS.forEach(function(x, i){ x.i = i; });
+}
+function cardHtml(e, multi){      // mismo diseño que Producción Agenda: categoría arriba, título, descripción y botón Completar
+  var ok = '';
+  if(e.canOk) ok = '<div><button type="button" class="cal-ok' + (e.done ? ' done' : '') + '" data-ok="' + esc(e.key) + '"' + (e.done ? ' title="Tocá para volver a dejarla pendiente"' : '') + '>' + (e.done ? '✓ Completado · deshacer' : 'Completar') + '</button></div>';
+  return '<div class="cal-card-top">' + esc(e.topLabel) + tagHtml(e) + '</div><div class="cal-card-t">' + esc(e.name) + '</div>' +
+    (e.cardDesc ? '<small class="cal-card-d">' + esc(e.cardDesc) + '</small>' : '') + (multi || '') +
+    (e.done && e.por ? '<div class="cal-card-por">✓ Completó: ' + esc(e.por) + '</div>' : '') + ok;
+}
+function cardStyle(e){ return 'background:#f6f9fc;color:#1f2a36;border-left:4px solid ' + (e.accent || catColor(e.cat)) + ';'; }
 function monthNow(){ var t = fromSer(todaySer()); return {y:t.y, m:t.m}; }
 function categoriesInUse(){
   var seen = {}, list = [];
   // orden fijo: primero las categorías base (siempre visibles, tengan o no eventos), luego las de la pestaña CATEGORIAS y por último las que aparezcan en eventos
   // si la pestaña CATEGORIAS tiene datos, manda ella (una categoría borrada ahí desaparece); si no, se usan las base
-  var base = Object.keys(CATS).length ? ['MKT & COMUNICACION'] : ALL_CATEGORIES;
-  base.concat(Object.keys(CATS)).forEach(function(k){ k = norm(k); if(k && !seen[k]){ seen[k] = 1; list.push({k:k, label:LABELS[k] || k}); } });
-  EVENTS.forEach(function(e){ if(e.cat && !seen[e.cat]){ seen[e.cat] = 1; list.push({k:e.cat, label:e.catLabel}); } });
+  var base = (Object.keys(CATS).length ? Object.keys(CATS) : BASE_CATEGORIES).concat(LAYER_LIST);
+  base.forEach(function(k){ k = norm(k); if(k && !seen[k]){ seen[k] = 1; list.push({k:k, label:LABELS[k] || k}); } });
+  EVENTS.forEach(function(e){ (e.cats || [e.cat]).forEach(function(k){ if(k && !seen[k]){ seen[k] = 1; list.push({k:k, label:LABELS[k] || ((e.cats || [e.cat]).length === 1 ? e.catLabel : k)}); } }); });   // categorías que aún usen filas con valores viejos
   return list;
 }
 function metaLines(e, first){
@@ -3917,6 +3970,7 @@ function metaLines(e, first){
 }
 function needHtml(e){ return e.need && String(e.need).trim() ? '<span class="cal-need">' + esc(e.need) + '</span>' : ''; }
 function evBody(e, cl, cr, first){       // contenido de cada actividad (barra o ítem de lista)
+  if(e.layer) return cardHtml(e);
   if(e.mkt){       // MKT: la NECESIDAD es el contenido; si está vacía se muestran responsable y horario reales de la fila
     var alt = [e.resp, e.hora].filter(function(x){ return String(x).trim(); }).join(' · ');
     return '<b class="cal-mk">' + (cl ? '◂ ' : '') + (String(e.need).trim() ? '<span class="cal-need0">' + esc(e.need) + '</span>' : '<span class="cal-need0 cal-alt">' + esc(alt) + '</span>') + (cr ? ' ▸' : '') + '</b>';
@@ -3929,7 +3983,7 @@ function tagHtml(e){
   if(e.est && !/^CONFIRMAD/.test(norm(e.est))) return '<span class="cal-tag">' + esc(e.est) + '</span>';
   return '';
 }
-function visibleEvents(){ return EVENTS.filter(function(e){ return !FILTERS.length || FILTERS.indexOf(e.cat) >= 0; }); }
+function visibleEvents(){ return EVENTS.filter(function(e){ var cs = e.cats || [e.cat]; return FILTERS.length ? cs.some(function(k){ return FILTERS.indexOf(k) >= 0; }) : !LAYER_CATS[e.cat]; }); }   // sin filtro: calendario limpio (MKT y Producción Agenda solo si se eligen)
 
 function render(){
   if(!VIEW) VIEW = monthNow();
@@ -3970,8 +4024,8 @@ function render(){
       lanes[lane] = ce;
       // cada día de una actividad de varios días es una caja individual (no una tira continua)
       for(var dd2 = cs; dd2 <= ce; dd2++){
-        segs += '<div class="cal-ev cal-day ' + (e.kind === 'canc' ? 'canc ' : e.kind === 'conf' ? 'conf' : '') +
-          '" style="grid-column:' + (dd2 - ws + 1) + ' / span 1;grid-row:' + (lane + 2) + ';background:' + catColor(e.cat) + ';color:' + catFg(e.cat) + '" data-i="' + e.i + '" role="button" tabindex="0" title="' + esc(e.name + ' · ' + fmt(e.s) + (e.e > e.s ? ' – ' + fmt(e.e) : '') + ' · clic para ver el detalle') + '">' +
+        segs += '<div class="cal-ev cal-day ' + (e.layer ? 'cal-card' + (e.done ? ' done ' : ' ') : '') + (e.kind === 'canc' ? 'canc ' : e.kind === 'conf' ? 'conf' : '') +
+          '" style="grid-column:' + (dd2 - ws + 1) + ' / span 1;grid-row:' + (lane + 2) + ';' + (e.layer ? cardStyle(e) : 'background:' + catColor(e.cat) + ';color:' + catFg(e.cat)) + '" data-i="' + e.i + '" role="button" tabindex="0" title="' + esc(e.name + ' · ' + fmt(e.s) + (e.e > e.s ? ' – ' + fmt(e.e) : '') + ' · clic para ver el detalle') + '">' +
           evBody(e, false, false, false) + '</div>';
       }
     });
@@ -3987,7 +4041,7 @@ function render(){
     lh += '<div class="cal-li-day' + (dd === today ? ' today' : '') + '">' + names[dowMon(dd)] + ' ' + od.d + (dd === today ? ' <em>HOY</em>' : '') + '</div>';
     todays.forEach(function(e){
       var multi = e.e > e.s ? '<small>Día ' + (dd - e.s + 1) + ' de ' + (e.e - e.s + 1) + '</small>' : '';
-      lh += '<div class="cal-li ' + (e.kind === 'canc' ? 'canc' : e.kind === 'conf' ? 'conf' : '') + '" data-i="' + e.i + '" role="button" tabindex="0" style="background:' + catColor(e.cat) + ';color:' + catFg(e.cat) + '">' + (e.mkt ? evBody(e, false, false, false) + multi : '<b>' + esc(e.name) + tagHtml(e) + '</b>' + multi + metaLines({e:e.s, s:e.s, hora:e.hora, lugar:e.lugar, resp:e.resp, desc:e.desc}, false) + needHtml(e)) + '</div>';
+      lh += '<div class="cal-li ' + (e.layer ? 'cal-card' + (e.done ? ' done ' : ' ') : '') + (e.kind === 'canc' ? 'canc' : e.kind === 'conf' ? 'conf' : '') + '" data-i="' + e.i + '" role="button" tabindex="0" style="' + (e.layer ? cardStyle(e) : 'background:' + catColor(e.cat) + ';color:' + catFg(e.cat)) + '">' + (e.layer ? cardHtml(e, multi) : e.mkt ? evBody(e, false, false, false) + multi : '<b>' + esc(e.name) + tagHtml(e) + '</b>' + multi + metaLines({e:e.s, s:e.s, hora:e.hora, lugar:e.lugar, resp:e.resp, desc:e.desc}, false) + needHtml(e)) + '</div>';
     });
   }
   el('cal-list').innerHTML = lh;
@@ -4018,6 +4072,7 @@ function fillPop(e){
     h += '<div class="cal-pop-f"><dt>' + esc(f[0]) + '</dt><dd class="' + (has ? '' : 'vacio') + '">' + (has ? esc(v) : '—') + '</dd></div>';
   });
   h += '</dl>';
+  if(e.layer && e.canOk) h += '<div class="cal-pop-ok"><button type="button" class="cal-ok' + (e.done ? ' done' : '') + '" data-ok="' + esc(e.key) + '">' + (e.done ? '✓ Completado · deshacer' : 'Completar') + '</button>' + (e.done && e.por ? '<span class="cal-card-por">✓ Completó: ' + esc(e.por) + '</span>' : '') + '</div>';
   document.getElementById('cal-pop-body').innerHTML = h;
   document.getElementById('cal-pop-body').scrollTop = 0;
 }
@@ -4045,9 +4100,20 @@ function refreshPopup(){        // si la planilla cambió mientras el pop-up est
 }
 document.addEventListener('keydown', function(ev){
   if(ev.key === 'Escape' && POP){ closePop(); return; }
-  if((ev.key === 'Enter' || ev.key === ' ') && ev.target && ev.target.matches && ev.target.matches('#section-cal [data-i]')){ ev.preventDefault(); openPop(EVENTS[+ev.target.getAttribute('data-i')], ev.target); }
+  if((ev.key === 'Enter' || ev.key === ' ') && ev.target && ev.target.matches && ev.target.matches('#section-cal [data-i]') && !(ev.target.closest && ev.target.closest('.cal-ok'))){ ev.preventDefault(); openPop(EVENTS[+ev.target.getAttribute('data-i')], ev.target); }
 });
 document.addEventListener('click', function(ev){
+  var ok = ev.target.closest && ev.target.closest('.cal-ok[data-ok]');
+  if(ok){            // completar desde el calendario: usa exactamente la misma lógica de cada sección (MKT pide quién completa)
+    ev.preventDefault(); ev.stopPropagation();
+    var key = ok.getAttribute('data-ok'), f = null; EVENTS.forEach(function(x){ if(!f && x.key === key) f = x; });
+    if(!f) return;
+    try{
+      if(f.layer === 'mkt'){ var ix = MKT_ROW_MAP.indexOf(f.row); if(ix >= 0) window.toggleOk(ix, 'mkt'); }
+      else if(f.layer === 'pag' && window.PAG_BRIDGE) window.PAG_BRIDGE.toggle(f.row);
+    }catch(x){ console.error('[CALENDARIO] completar', x); }
+    return;
+  }
   var n = ev.target.closest && ev.target.closest('#section-cal .cal-ev[data-i], #section-cal .cal-li[data-i]'); if(!n) return;
   openPop(EVENTS[+n.getAttribute('data-i')], n);
 });
@@ -4100,6 +4166,10 @@ window.showSection = function(which){
 };
 
 (function(){ var nb = document.querySelector('.nav-bar'); if(nb) nb.classList.add('nav-collapsed'); stickyTop(); })();
+var _nt = null;
+document.addEventListener('nucleo:data', function(){        // MKT / Producción Agenda cargaron o cambiaron (también al completar una tarea)
+  clearTimeout(_nt); _nt = setTimeout(function(){ if(!LOADED) return; rebuildEvents(); render(); refreshPopup(); }, 0);
+});
 calFetch();
 setInterval(calFetch, 5 * 60 * 1000);
 })();
@@ -4191,6 +4261,7 @@ async function fetchMkt(){
     const n=new Date();
     MKT_BASE_STATUS=`Sincronizado · ${n.toLocaleDateString('es-UY')} ${n.toLocaleTimeString('es-UY',{hour:'2-digit',minute:'2-digit'})} · ${MKT_DATA.length} registros${MKT_DATA.some(r=>r.fechaSer!=null)?' ('+MKT_DATA.filter(r=>r.fechaSer!=null).length+' con fecha)':''}${MKT_INVALID?' · ⚠ '+MKT_INVALID+(MKT_INVALID===1?' fila con FECHA inválida (no se muestra)':' filas con FECHA inválida (no se muestran)'):''}`;
     await syncEstadosMkt();
+    try{ document.dispatchEvent(new Event('nucleo:data')); }catch(e){}
     mktDeepLink();
   }catch(e){
     document.getElementById('mkt-loading').textContent='Error al cargar datos. Verificá la conexión.';
@@ -4473,7 +4544,7 @@ function mktApplyView(){
 }
 function mktMove(delta){ if(!MKT_VM){ const t=mktFromSer(mktTodaySer()); MKT_VM={y:t.y,m:t.m}; } const t=new Date(Date.UTC(MKT_VM.y,MKT_VM.m+delta,1)); MKT_VM={y:t.getUTCFullYear(),m:t.getUTCMonth()}; renderMktMonth(); }
 function mktGoToday(){ const t=mktFromSer(mktTodaySer()); MKT_VM={y:t.y,m:t.m}; renderMktMonth(); }
-function mktSyncChips(){ document.querySelectorAll('.mkt-t[data-i]').forEach(el=>{ const r=MKT_DATA[+el.getAttribute('data-i')]; if(!r) return; el.classList.toggle('done',!!r.completado);
+function mktSyncChips(){ try{ document.dispatchEvent(new Event('nucleo:data')); }catch(e){} document.querySelectorAll('.mkt-t[data-i]').forEach(el=>{ const r=MKT_DATA[+el.getAttribute('data-i')]; if(!r) return; el.classList.toggle('done',!!r.completado);
   const old=el.querySelector('.mkt-t-por'); if(old) old.remove();
   if(r.completado&&r.completadoPor){ const d=document.createElement('div'); d.className='mkt-t-por'; d.textContent='✓ Completó: '+r.completadoPor; const b=el.querySelector('.ok-btn'); if(b) el.insertBefore(d,b); else el.appendChild(d); } }); }
 function mktSetPorField(r){   // la ficha (pop-up) muestra la columna COMPLETADO POR con el valor al día
@@ -4803,7 +4874,9 @@ function render(){
   $('pag-viewhint').textContent = HINTS[VIEW];
   var list = visible();
   if(VIEW === 'lista') renderLista(list); else if(VIEW === 'sem') renderSemana(list); else renderMes(list);
+  try{ document.dispatchEvent(new Event('nucleo:data')); }catch(e){}   // Calendario muestra estas mismas tareas (capa opcional)
 }
+window.PAG_BRIDGE = {rows:function(){ return ROWS; }, enabled:function(){ return !!PAG_APPS_SCRIPT_URL; }, toggle:function(row){ for(var i = 0; i < ROWS.length; i++) if(ROWS[i].row === row) return toggleOk(i); }};
 function setView(v){ VIEW = v; try{ localStorage.setItem('pag_view', v); }catch(e){} render(); }
 /* ---------- pop-up (mismo diseño que Calendario / MKT) ---------- */
 function popClose(){
